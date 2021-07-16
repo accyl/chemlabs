@@ -1,0 +1,36 @@
+{
+    "PRISTINE": [
+        {
+            "SMI_TYPE": "CAN", 
+            "NEL": 76, 
+            "uvvis": [
+                {
+                    "doi": "https://doi.org/10.1016/j.desal.2011.11.052", 
+                    "peaks": [
+                        {
+                            "extinction_unit": "NULL", 
+                            "extinction": "NULL", 
+                            "solvent": "NULL", 
+                            "lambda_unit": "NULL", 
+                            "lambda": "254"
+                        }
+                    ]
+                }, 
+                {
+                    "doi": "https://doi.org/10.1016/j.cej.2013.03.024", 
+                    "peaks": [
+                        {
+                            "extinction_unit": "NULL", 
+                            "extinction": "NULL", 
+                            "solvent": "NULL", 
+                            "lambda_unit": "NULL", 
+                            "lambda": "254"
+                        }
+                    ]
+                }
+            ], 
+            "SMI": "[O-][Mn](=O)(=O)=O.[K+]"
+        }
+    ], 
+    "inchikey": "VZJVWSHVAAUDKD-UHFFFAOYSA-N"
+}

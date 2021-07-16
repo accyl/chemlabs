@@ -1,0 +1,21 @@
+https://jcheminf.biomedcentral.com/articles/10.1186/s13321-021-00512-4
+
+- SMILES to IUPAC using machine learning
+
+PUBCHEM:
+https://pubchem.ncbi.nlm.nih.gov/compound/Sodium-hydroxide
+
+https://cactus.nci.nih.gov/chemical/structure
+
+CHemAxon: 
+https://docs.chemaxon.com/display/docs/pka-calculation.md
+https://chemicalize.com/app/calculation/S
+
+
+Drawers:
+https://pubchem.ncbi.nlm.nih.gov//edit3/index.html
+Marvin JS
+RDKit
+https://github.com/rdkit/OCEAN
+https://pubs.acs.org/doi/abs/10.1021/acs.jcim.6b00067
+Open Babel
