@@ -6,10 +6,6 @@
 // H2O(l) 2mol
 // H2O (l) 5mL
 // CH3CH2OH(l) 16g
-class Tokenized {
-    tokens: string[] = [];
-
-}
 class ElementTracker {
     _elems: string[]=[];
     _qtys:num[] = [];
@@ -334,18 +330,19 @@ function matchTknr(inp: string, rfncstr = '', startidx:num=0): [string, num] {
  * @returns
  * [prefix: string, base_unit: string, next_idx: num]
  */
-function SI_tknr(inp:string, startidx:num=0, base_units=['g','L','mol','M','m', 'J', 'V', 'W-h', 'atm']): [string, string, num] {
-    let si_prefixes = ['n', 'µ','m','c','d','','k'];
+function unitTknr(inp:string, startidx:num=0, 
+    base_units=['g','L','mol','M','m', 'J', 'V', 'W-h', 'atm']): [string, string, num] {
+    let si_prefixes = ['n', 'µ','m','c','d','k'];
     // for(let i=startidx;i<inp.length;i++) {
     let c = inp[startidx];
     let i2 = 0;
     let s2 = '';
-    let prefix = false;
+    let prefix = '';
     if(si_prefixes.includes(c)) {
         // we're not in the clear yet. We have to find a matching base unit
                 // TODO edge case for mol it gets confused for base unit of m
         i2 = startidx+1;
-        prefix = true;
+        prefix = c;
     } else {
         // we don't have a prefix, it's just the regular base unit
         i2 = startidx;
@@ -364,7 +361,7 @@ function SI_tknr(inp:string, startidx:num=0, base_units=['g','L','mol','M','m', 
                 if(_isCapital(inp[nextidx]) || _isLower(inp[nextidx])) continue;
             }
             // return [inp.slice(startidx, nextidx), nextidx]
-            return [inp.slice(startidx, startidx+1), base, nextidx];
+            return [prefix, base, nextidx];
         }
     }
     // no match
@@ -393,9 +390,9 @@ function SI_tknr(inp:string, startidx:num=0, base_units=['g','L','mol','M','m', 
 }
 
 // let q = [] as [num, string, string][];
-class QuantityBuilder {
+class QtyUnitList {
     qtys: num[] = [];
-    si_pref: string[] = [];
+    si_prefixes: string[] = [];
     units: string[] = [];
     push(qty: num, unit1: string, unit2?: string) {
         this.qtys.push(qty);
@@ -403,10 +400,10 @@ class QuantityBuilder {
             // if we have unit2, then we know
             // that unit1 is a prefix, and unit2 is a base unit
             // 
-            this.si_pref.push(unit1);
+            this.si_prefixes.push(unit1);
             this.units.push(unit2);
         } else {
-            this.si_pref.push('');
+            this.si_prefixes.push('');
             this.units.push(unit1);
         }
     }
@@ -417,19 +414,94 @@ class QuantityBuilder {
         }
         return str;
     }
-    prefixToMultiplier(si_pref: string) {
+    toBuilder() {
+        let b = new QtyBuilder();
+        for(let i=0;i<this.qtys.length;i++) {
+            let qty = this.qtys[i];
+            let pref = this.si_prefixes[i];
+            let unit = this.units[i];
+            b.push(qty, pref, unit);
+        }
+        return b;
+    }
+}
+class QtyBuilder {
+    _tolPct:num;
+    constructor(tolerancePercent=0.0001) { // use percents, because of sigfigs
+        // because otherwise small numbers like 5 mm would have ridiculously small tolerance
+        this._tolPct = tolerancePercent; // use tolerance=-1 to disable
+    }
+    mass?: num;
+    volume?: num;
+    mol?: num;
+    static prefixToMultiplier(si_pref: string) {
         let si_prefixes = ['n', 'µ', 'm', 'c', 'd', '', 'k'];
         let mults = [1e-9, 1e-6, 1e-3, 1e-2, 1e-1, 1, 1e3]
         let idx = si_prefixes.indexOf(si_pref);
-        if(idx >= 0) {
+        if (idx >= 0) {
             return mults[idx];
         } else {
             throw ReferenceError(`prefix ${si_pref} not recognized!`);;
         }
     }
+    private isOutsideTolerance(orig:num|undefined, tent:num, throwme=true) {
+        // orig: undefined -> false
+        //       0         -> tolerance is checked
+        //       17        -> tolerance is checked
+        // tent: undefined -> not permitted
+        //       0         -> tolerance is checked
+        //       17        -> tolerance is checked
+        let b = (orig !== undefined) && Math.abs(tent - orig) <= this._tolPct * orig;
+        if(b && throwme) throw `outside tolerance ${orig} ${tent}`;
+        return b;
+    }
+    push(qty:num, prefix:string, unit:string, check=true) {
+        let mult = QtyBuilder.prefixToMultiplier(prefix);
+        let tent = qty * mult;// tentative
+        switch(unit) { // TODO: checking breaks when there are zeroes
+            // so there might be some wacky stuff like infinite volume,
+            // infinite molarity / mass
+            case 'L':
+                if(check) this.isOutsideTolerance(this.volume, tent);
+                this.volume = tent;
+                break;
+            case 'g':
+                if (check) this.isOutsideTolerance(this.mass, tent);
+                this.mass = tent;
+                break;
+            case 'mol':
+                if (check) this.isOutsideTolerance(this.mol, tent);
+                this.mol = tent
+                break;
+            case 'M':
+                let molarity = tent; // M = mol / volume
+                if(this.mol === undefined) {
+                    if(this.volume === undefined) {
+                        // we got nothing
+                        // whatever let's just set default
+                        this.volume = 1;
+                        this.mol = this.volume * molarity;
+                    } else { // volume is defined
+                        this.mol = this.volume * molarity;
+                    }
+                } else { // mol is defined
+                    if(this.volume === undefined) { // volume = mol / M
+                        this.volume = this.mol / molarity;
+                    } else { // both mol & volume is defined
+                        this.isOutsideTolerance(this.mol / this.volume, molarity);
+                    }
+                }
+                break;
+            default:
+                break;
+                
+
+        }
+        
+    }
 }
-const gqbdr = new QuantityBuilder();
-function qtyTknr(inp: string, startidx: num = 0, qbdr: QuantityBuilder = gqbdr): [string, num] {
+const gqul = new QtyUnitList();
+function qtyTknr(inp: string, startidx: num = 0, qul: QtyUnitList = gqul): [string, num] {
     // notice that "mL L g aq kg mol mmol" all can't be formed by chemical symbols
     // However Mg can, but not mg 
     // return ['', 0]; // TODO
@@ -446,12 +518,12 @@ function qtyTknr(inp: string, startidx: num = 0, qbdr: QuantityBuilder = gqbdr):
             return ['', startidx];
         }
         let [__, idx3] = whitespaceTknr(inp, idx2);
-        let [si1, si2, idx4] = SI_tknr(inp, idx3);
+        let [si1, si2, idx4] = unitTknr(inp, idx3);
         if (si2 === '') {
             // if we don't find a SI unit
             return ['', startidx];
         }
-        qbdr.push(parseFloat(num), si1, si2);
+        qul.push(parseFloat(num), si1, si2);
         return [inp.slice(startidx, idx4), idx4];
     } else {
         // if there's no number then
@@ -462,7 +534,7 @@ function qtyTknr(inp: string, startidx: num = 0, qbdr: QuantityBuilder = gqbdr):
         // throw "quantity tokenizer didn't find a ";
     }
 }
-function qtysTknr(inp: string, startidx = 0, qbdr: QuantityBuilder = gqbdr): [string, num] {
+function qtysTknr(inp: string, startidx = 0, qbdr: QtyUnitList = gqul): [string, num] {
     let [qtystr, idx] = qtyTknr(inp, startidx, qbdr);
     let __ = '';
     while(qtystr && idx < inp.length) {
@@ -472,10 +544,10 @@ function qtysTknr(inp: string, startidx = 0, qbdr: QuantityBuilder = gqbdr): [st
     return [inp.slice(startidx, idx), idx];
 }
 
-function grandUnifiedTknr(inp:string, startidx=0): [ChemicalBuilder, QuantityBuilder] {
+function grandUnifiedTknr(inp:string, startidx=0): [ChemicalBuilder, QtyUnitList] {
     if(startidx >= inp.length) throw ReferenceError("bruh"); // really?
     if(_isNumeric(inp[startidx])) {
-        let qbdr = new QuantityBuilder();
+        let qbdr = new QtyUnitList();
         let [qty, idx] = qtysTknr(inp, startidx, qbdr);
         let [__, idx2] = whitespaceTknr(inp, idx);
         let fbdr = new ChemicalBuilder();
@@ -485,7 +557,7 @@ function grandUnifiedTknr(inp:string, startidx=0): [ChemicalBuilder, QuantityBui
 
         let fbdr = new ChemicalBuilder();
         let [formula, idx] = formulaTknr(inp, startidx, fbdr);
-        let qbdr = new QuantityBuilder();
+        let qbdr = new QtyUnitList();
         let [qty, idx2] = qtysTknr(inp, idx, qbdr);
         let [__, idx3] = whitespaceTknr(inp, idx2);
         return [fbdr, qbdr];
@@ -496,13 +568,21 @@ function w(inp: string) {
     // form.formula
     let formula = chem.formula;
     if(chemicals.has(formula)) {
-        let f = chemicals.get(formula);
-        if(f) {
-            let protos = f();
-            let pargs = protos.args();
-            
+        let protos = chemicals.get(formula);
+        if (protos) {
+            // let pargs = protos.args();
+            // let qbuild = qty.toBuilder();
+            return protos.amt(qty);
         } else {
-            throw f;
+            throw protos;
         }
+    } else {
+        throw `formula ${formula} not found in list of chemicals!`;
     }
+    // TODO: with a greedy algorithm, we can
+    // actually attempt to process formulas that
+    // are 'lazily' in all lower case. for
+    // example kmno4. 
+    // although by definition it won't always work - see no
+    // or hga - HGa
 }

@@ -50,9 +50,30 @@ var ProtoSubstance = /** @class */ (function (_super) {
         var retn = new ProtoSubstanceWithArgs(this);
         return retn;
     };
+    ProtoSubstance.prototype.amt = function (qty) {
+        var qbdr;
+        if (qty instanceof QtyUnitList) {
+            qbdr = qty.toBuilder();
+        }
+        else
+            qbdr = qty;
+        var ret = new ProtoSubstanceWithArgs(this);
+        ret.mass = qbdr.mass;
+        ret.mol = qbdr.mol;
+        if (qbdr.volume)
+            ret.volmL = qbdr.volume * 1000;
+        else
+            ret.volmL = qbdr.volume;
+        return ret.form();
+        // return ret;
+    };
     ProtoSubstance.prototype._getProtoSubstanceWithArgsOf = function (args) {
         return this; // doesn't work right now
     };
+    /**
+     * Shortcut for getting one with default args
+     * @returns
+     */
     ProtoSubstance.prototype.form = function () {
         return new Substance(this);
     };
@@ -83,6 +104,11 @@ var ProtoSubstanceWithArgs = /** @class */ (function () {
         this.state = stateOfMatter;
         return this;
     };
+    /**
+     * @deprecated
+     * @param amt
+     * @returns
+     */
     ProtoSubstanceWithArgs.prototype.amt = function (amt) {
         if (typeof amt == 'number') {
             // assume mol

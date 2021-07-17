@@ -30,6 +30,20 @@ class ProtoSubstance extends SubstanceType{
         let retn = new ProtoSubstanceWithArgs(this);
         return retn;
     }
+    amt(qty: QtyUnitList | QtyBuilder) {
+        let qbdr;
+        if(qty instanceof QtyUnitList) {
+            qbdr = qty.toBuilder();
+        } else qbdr = qty;
+
+        let ret = new ProtoSubstanceWithArgs(this);
+        ret.mass = qbdr.mass;
+        ret.mol = qbdr.mol;
+        if(qbdr.volume) ret.volmL = qbdr.volume * 1000;
+        else ret.volmL = qbdr.volume;
+        return ret.form();
+        // return ret;
+    }
     _getProtoSubstanceWithArgsOf(args: ProtoSubstanceWithArgs): ProtoSubstance {
         return this; // doesn't work right now
     }
@@ -77,6 +91,11 @@ class ProtoSubstanceWithArgs {
     mol?: number;
     mass?: number;
     volmL?: number;
+    /**
+     * @deprecated
+     * @param amt 
+     * @returns 
+     */
     amt(amt: number | string): ProtoSubstanceWithArgs {
         if(typeof amt == 'number') {
             // assume mol

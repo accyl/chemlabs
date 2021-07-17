@@ -1,15 +1,10 @@
 "use strict";
 /// <reference path='ptable.ts'/>
+/// <reference path='chemicals.ts'/>
 // H2O (l) 2mol 
 // H2O(l) 2mol
 // H2O (l) 5mL
 // CH3CH2OH(l) 16g
-var Tokenized = /** @class */ (function () {
-    function Tokenized() {
-        this.tokens = [];
-    }
-    return Tokenized;
-}());
 var ElementTracker = /** @class */ (function () {
     function ElementTracker() {
         this._elems = [];
@@ -25,15 +20,15 @@ var ElementTracker = /** @class */ (function () {
     };
     return ElementTracker;
 }());
-var TokenBuilder = /** @class */ (function () {
-    function TokenBuilder() {
+var ChemicalBuilder = /** @class */ (function () {
+    function ChemicalBuilder() {
         this.elemt = new ElementTracker();
         // elems: string[] = [];
         this.formula = '';
         this.state = '';
         this.qty = '';
     }
-    return TokenBuilder;
+    return ChemicalBuilder;
 }());
 function _isLower(inp) {
     return inp.length === 1 && 'abcdefghijklmnopqrstuvwxyz'.includes(inp);
@@ -44,7 +39,7 @@ function _isCapital(inp) {
 function _isNumeric(inp) {
     return inp.length === 1 && '1234567890'.includes(inp);
 }
-var gbdr = new TokenBuilder();
+var gbdr = new ChemicalBuilder();
 function formulaTknr(inp, startidx, bdr) {
     if (startidx === void 0) { startidx = 0; }
     if (bdr === void 0) { bdr = gbdr; }
@@ -173,7 +168,7 @@ function formulaTknr(inp, startidx, bdr) {
             // ie. H2O (g) 5mol
             // let next = inp[i+1];
             // if(next)
-            var _c = whitespaceTknr(inp, i), __ = _c[0], newidx = _c[1];
+            var _c = whitespaceTknr(inp, i), __1 = _c[0], newidx = _c[1];
             if (newidx >= inp.length)
                 return updateBdr(i); // [inp.slice(startidx, i), i]; // if we reach the end then return and ignore the whitesp
             var c2 = inp[newidx];
@@ -364,21 +359,23 @@ function matchTknr(inp, rfncstr, startidx) {
 }
 /**
  * Parses and tokenizes SI Units
+ * @returns
+ * [prefix: string, base_unit: string, next_idx: num]
  */
-function SI_tknr(inp, startidx, base_units) {
+function unitTknr(inp, startidx, base_units) {
     if (startidx === void 0) { startidx = 0; }
-    if (base_units === void 0) { base_units = ['g', 'L', 'mol', 'M', 'm', 'J', 'V', 'W-h']; }
-    var si_prefixes = ['n', 'µ', 'm', 'c', 'd', '', 'k'];
+    if (base_units === void 0) { base_units = ['g', 'L', 'mol', 'M', 'm', 'J', 'V', 'W-h', 'atm']; }
+    var si_prefixes = ['n', 'µ', 'm', 'c', 'd', 'k'];
     // for(let i=startidx;i<inp.length;i++) {
     var c = inp[startidx];
     var i2 = 0;
     var s2 = '';
-    var prefix = false;
+    var prefix = '';
     if (si_prefixes.includes(c)) {
         // we're not in the clear yet. We have to find a matching base unit
         // TODO edge case for mol it gets confused for base unit of m
         i2 = startidx + 1;
-        prefix = true;
+        prefix = c;
     }
     else {
         // we don't have a prefix, it's just the regular base unit
@@ -398,7 +395,8 @@ function SI_tknr(inp, startidx, base_units) {
                 if (_isCapital(inp[nextidx]) || _isLower(inp[nextidx]))
                     continue;
             }
-            return [inp.slice(startidx, nextidx), nextidx];
+            // return [inp.slice(startidx, nextidx), nextidx]
+            return [prefix, base, nextidx];
         }
     }
     // no match
@@ -416,36 +414,140 @@ function SI_tknr(inp, startidx, base_units) {
                     // if there's more characters, we need to check that
                     // there aren't any additional letters
                     // for example, `cLasp` shouldn't be recognized as `cL`
-                    return [inp.slice(startidx, nextidx), nextidx];
+                    // return [inp.slice(startidx, nextidx), nextidx];
+                    return ['', base, nextidx]; // TODO not hard code this in
                 }
             }
         }
     }
-    return ['', startidx];
+    return ['', '', startidx];
     // }
 }
-var QuantitiesBuilder = /** @class */ (function () {
-    function QuantitiesBuilder() {
+// let q = [] as [num, string, string][];
+var QtyUnitList = /** @class */ (function () {
+    function QtyUnitList() {
         this.qtys = [];
+        this.si_prefixes = [];
         this.units = [];
     }
-    QuantitiesBuilder.prototype.push = function (qty, unit) {
+    QtyUnitList.prototype.push = function (qty, unit1, unit2) {
         this.qtys.push(qty);
-        this.units.push(unit);
+        if (unit2) {
+            // if we have unit2, then we know
+            // that unit1 is a prefix, and unit2 is a base unit
+            // 
+            this.si_prefixes.push(unit1);
+            this.units.push(unit2);
+        }
+        else {
+            this.si_prefixes.push('');
+            this.units.push(unit1);
+        }
     };
-    QuantitiesBuilder.prototype.toString = function () {
+    QtyUnitList.prototype.toString = function () {
         var str = '';
         for (var i = 0; i < this.qtys.length; i++) {
             str += "[" + this.qtys[i] + " " + this.units[i] + "], ";
         }
         return str;
     };
-    return QuantitiesBuilder;
+    QtyUnitList.prototype.toBuilder = function () {
+        var b = new QtyBuilder();
+        for (var i = 0; i < this.qtys.length; i++) {
+            var qty = this.qtys[i];
+            var pref = this.si_prefixes[i];
+            var unit = this.units[i];
+            b.push(qty, pref, unit);
+        }
+        return b;
+    };
+    return QtyUnitList;
 }());
-var gqbdr = new QuantitiesBuilder();
-function qtyTknr(inp, startidx, qbdr) {
+var QtyBuilder = /** @class */ (function () {
+    function QtyBuilder(tolerancePercent) {
+        if (tolerancePercent === void 0) { tolerancePercent = 0.0001; }
+        // because otherwise small numbers like 5 mm would have ridiculously small tolerance
+        this._tolPct = tolerancePercent; // use tolerance=-1 to disable
+    }
+    QtyBuilder.prefixToMultiplier = function (si_pref) {
+        var si_prefixes = ['n', 'µ', 'm', 'c', 'd', '', 'k'];
+        var mults = [1e-9, 1e-6, 1e-3, 1e-2, 1e-1, 1, 1e3];
+        var idx = si_prefixes.indexOf(si_pref);
+        if (idx >= 0) {
+            return mults[idx];
+        }
+        else {
+            throw ReferenceError("prefix " + si_pref + " not recognized!");
+            ;
+        }
+    };
+    QtyBuilder.prototype.isOutsideTolerance = function (orig, tent, throwme) {
+        if (throwme === void 0) { throwme = true; }
+        // orig: undefined -> false
+        //       0         -> tolerance is checked
+        //       17        -> tolerance is checked
+        // tent: undefined -> not permitted
+        //       0         -> tolerance is checked
+        //       17        -> tolerance is checked
+        var b = (orig !== undefined) && Math.abs(tent - orig) <= this._tolPct * orig;
+        if (b && throwme)
+            throw "outside tolerance " + orig + " " + tent;
+        return b;
+    };
+    QtyBuilder.prototype.push = function (qty, prefix, unit, check) {
+        if (check === void 0) { check = true; }
+        var mult = QtyBuilder.prefixToMultiplier(prefix);
+        var tent = qty * mult; // tentative
+        switch (unit) { // TODO: checking breaks when there are zeroes
+            // so there might be some wacky stuff like infinite volume,
+            // infinite molarity / mass
+            case 'L':
+                if (check)
+                    this.isOutsideTolerance(this.volume, tent);
+                this.volume = tent;
+                break;
+            case 'g':
+                if (check)
+                    this.isOutsideTolerance(this.mass, tent);
+                this.mass = tent;
+                break;
+            case 'mol':
+                if (check)
+                    this.isOutsideTolerance(this.mol, tent);
+                this.mol = tent;
+                break;
+            case 'M':
+                var molarity = tent; // M = mol / volume
+                if (this.mol === undefined) {
+                    if (this.volume === undefined) {
+                        // we got nothing
+                        // whatever let's just set default
+                        this.volume = 1;
+                        this.mol = this.volume * molarity;
+                    }
+                    else { // volume is defined
+                        this.mol = this.volume * molarity;
+                    }
+                }
+                else { // mol is defined
+                    if (this.volume === undefined) { // volume = mol / M
+                        this.volume = this.mol / molarity;
+                    }
+                    else { // both mol & volume is defined
+                        this.isOutsideTolerance(this.mol / this.volume, molarity);
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+    };
+    return QtyBuilder;
+}());
+var gqul = new QtyUnitList();
+function qtyTknr(inp, startidx, qul) {
     if (startidx === void 0) { startidx = 0; }
-    if (qbdr === void 0) { qbdr = gqbdr; }
+    if (qul === void 0) { qul = gqul; }
     // notice that "mL L g aq kg mol mmol" all can't be formed by chemical symbols
     // However Mg can, but not mg 
     // return ['', 0]; // TODO
@@ -461,13 +563,13 @@ function qtyTknr(inp, startidx, qbdr) {
             // if we don't find a number
             return ['', startidx];
         }
-        var _c = whitespaceTknr(inp, idx2), __1 = _c[0], idx3 = _c[1];
-        var _d = SI_tknr(inp, idx3), si = _d[0], idx4 = _d[1];
-        if (si === '') {
+        var _c = whitespaceTknr(inp, idx2), __2 = _c[0], idx3 = _c[1];
+        var _d = unitTknr(inp, idx3), si1 = _d[0], si2 = _d[1], idx4 = _d[2];
+        if (si2 === '') {
             // if we don't find a SI unit
             return ['', startidx];
         }
-        qbdr.push(parseFloat(num), si);
+        qul.push(parseFloat(num), si1, si2);
         return [inp.slice(startidx, idx4), idx4];
     }
     else {
@@ -482,7 +584,7 @@ function qtyTknr(inp, startidx, qbdr) {
 function qtysTknr(inp, startidx, qbdr) {
     var _a;
     if (startidx === void 0) { startidx = 0; }
-    if (qbdr === void 0) { qbdr = gqbdr; }
+    if (qbdr === void 0) { qbdr = gqul; }
     var _b = qtyTknr(inp, startidx, qbdr), qtystr = _b[0], idx = _b[1];
     var __ = '';
     while (qtystr && idx < inp.length) {
@@ -496,19 +598,44 @@ function grandUnifiedTknr(inp, startidx) {
     if (startidx >= inp.length)
         throw ReferenceError("bruh"); // really?
     if (_isNumeric(inp[startidx])) {
-        var qbdr = new QuantitiesBuilder();
+        var qbdr = new QtyUnitList();
         var _a = qtysTknr(inp, startidx, qbdr), qty = _a[0], idx = _a[1];
-        var _b = whitespaceTknr(inp, idx), __ = _b[0], idx2 = _b[1];
-        var fbdr = new TokenBuilder();
+        var _b = whitespaceTknr(inp, idx), __3 = _b[0], idx2 = _b[1];
+        var fbdr = new ChemicalBuilder();
         var _c = formulaTknr(inp, idx2, fbdr), formula = _c[0], idx3 = _c[1];
         return [fbdr, qbdr];
     }
     else {
-        var fbdr = new TokenBuilder();
+        var fbdr = new ChemicalBuilder();
         var _d = formulaTknr(inp, startidx, fbdr), formula = _d[0], idx = _d[1];
-        var qbdr = new QuantitiesBuilder();
+        var qbdr = new QtyUnitList();
         var _e = qtysTknr(inp, idx, qbdr), qty = _e[0], idx2 = _e[1];
-        var _f = whitespaceTknr(inp, idx2), __ = _f[0], idx3 = _f[1];
+        var _f = whitespaceTknr(inp, idx2), __4 = _f[0], idx3 = _f[1];
         return [fbdr, qbdr];
     }
+}
+function w(inp) {
+    var _a = grandUnifiedTknr(inp), chem = _a[0], qty = _a[1];
+    // form.formula
+    var formula = chem.formula;
+    if (chemicals.has(formula)) {
+        var protos = chemicals.get(formula);
+        if (protos) {
+            // let pargs = protos.args();
+            // let qbuild = qty.toBuilder();
+            return protos.amt(qty);
+        }
+        else {
+            throw protos;
+        }
+    }
+    else {
+        throw "formula " + formula + " not found in list of chemicals!";
+    }
+    // TODO: with a greedy algorithm, we can
+    // actually attempt to process formulas that
+    // are 'lazily' in all lower case. for
+    // example kmno4. 
+    // although by definition it won't always work - see no
+    // or hga - HGa
 }
