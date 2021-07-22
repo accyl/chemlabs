@@ -95,5 +95,9 @@ function _componentToHex(c) {
     return hex.length == 1 ? "0" + hex : hex;
 }
 function _hex(r, g, b) {
+    var extras = [];
+    for (var _i = 3; _i < arguments.length; _i++) {
+        extras[_i - 3] = arguments[_i];
+    }
     return "#" + _componentToHex(r) + _componentToHex(g) + _componentToHex(b);
 }

@@ -11,7 +11,11 @@
 
 // import _ from 'lodash';
 
-var [irgb_from_xyz, rgb_from_xyz, xyz_color] = function(){
+// var [irgb_from_xyz, rgb_from_xyz, xyz_color] = 
+let irgb_from_xyz: (xyz: num[]) => number[];
+let rgb_from_xyz: (xyz: num[]) => number[];
+let xyz_color: (x: num, y: num, z?: number | undefined) => number[];
+__ = function(){
 
 // selected python polyfill from org.transcrypt.__runtime__.js
 /**/ function int(number: num) {
@@ -43,7 +47,7 @@ var [irgb_from_xyz, rgb_from_xyz, xyz_color] = function(){
 
 
 // var __name__ = '__main__';
-/**/ var xyz_color = function (x: num, y: num, z?: num) {
+/**/ xyz_color = function (x: num, y: num, z?: num) {
 	// if (typeof z == 'undefined' || (z != null && z.hasOwnProperty ("__kwargtrans__"))) {;
 		// z = null;
 	// };
@@ -169,7 +173,7 @@ function mult(mtx: num[][], vec: num[]) {
     return mtx.map((arr) => arr.reduce((accum, val, j) => accum + val * vec[j], 0));
 }
 
-/**/ var rgb_from_xyz = function (xyz: num[]) {
+/**/ rgb_from_xyz = function (xyz: num[]) {
 	return mult(rgb_from_xyz_matrix, xyz);
 };
 /**/ var xyz_from_rgb = function (rgb: num[]) {
@@ -497,7 +501,7 @@ function mult(mtx: num[][], vec: num[]) {
 /**/ var irgb_string_from_rgb = function (rgb: num[]) {
 	return irgb_string_from_irgb (irgb_from_rgb (rgb));
 };
-/**/ var irgb_from_xyz = function (xyz: num[]) {
+/**/ irgb_from_xyz = function (xyz: num[]) {
 	return irgb_from_rgb (rgb_from_xyz (xyz));
 };
 /**/ var irgb_string_from_xyz = function (xyz: num[]) {
@@ -508,8 +512,9 @@ init ();
 // sourceMappingURL=colormodels.map
 
 // what
-	return [irgb_from_xyz, rgb_from_xyz, xyz_color];
-}() as [(xyz: num[]) => number[], (xyz: num[]) => number[], (x: num, y: num, z?: number | undefined) => number[]]; 
+	// return [irgb_from_xyz, rgb_from_xyz, xyz_color];
+}();
+//  as [(xyz: num[]) => number[], (xyz: num[]) => number[], (x: num, y: num, z?: number | undefined) => number[]]; 
 // tuples don't work correctly ;-;
 
 function rgb_from_spectrum(sp: (x: num)=> num):num[] {

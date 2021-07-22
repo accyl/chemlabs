@@ -50,7 +50,7 @@ var ProtoSubstance = /** @class */ (function (_super) {
         var retn = new ProtoSubstanceWithArgs(this);
         return retn;
     };
-    ProtoSubstance.prototype.amt = function (qty) {
+    ProtoSubstance.prototype.amt = function (qty, state) {
         var qbdr;
         if (qty instanceof QtyUnitList) {
             qbdr = qty.toBuilder();
@@ -58,6 +58,8 @@ var ProtoSubstance = /** @class */ (function (_super) {
         else
             qbdr = qty;
         var ret = new ProtoSubstanceWithArgs(this);
+        if (state)
+            ret.setState(state);
         ret.mass = qbdr.mass;
         ret.mol = qbdr.mol;
         if (qbdr.volume)
@@ -160,7 +162,7 @@ var Substance = /** @class */ (function () {
     function Substance(type) {
         // loc: Locatable = Locatable.NONE;
         this.physhook = undefined;
-        this._v = 0;
+        this._v = 1;
         this._T = 0;
         this.type = type ? type : SubstanceType.NONE;
         this.state = type ? type.state : "";
@@ -309,6 +311,18 @@ var AqueousSubstance = /** @class */ (function (_super) {
     };
     return AqueousSubstance;
 }(MolecularSubstance));
+var SpectralAqueousSubstance = /** @class */ (function (_super) {
+    __extends(SpectralAqueousSubstance, _super);
+    function SpectralAqueousSubstance() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    SpectralAqueousSubstance.prototype.color = function (background, l) {
+        if (background === void 0) { background = [255, 255, 255]; }
+        if (l === void 0) { l = 1; }
+        return this.transmittance(l).map(function (x, i) { return x * background[i]; }); // we assume that we're plotting it against a white
+    };
+    return SpectralAqueousSubstance;
+}(AqueousSubstance));
 var BalancedRxn = /** @class */ (function () {
     function BalancedRxn() {
         this.reactants = [];

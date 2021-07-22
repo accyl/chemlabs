@@ -30,13 +30,14 @@ class ProtoSubstance extends SubstanceType{
         let retn = new ProtoSubstanceWithArgs(this);
         return retn;
     }
-    amt(qty: QtyUnitList | QtyBuilder) {
+    amt(qty: QtyUnitList | QtyBuilder, state?: string) {
         let qbdr;
         if(qty instanceof QtyUnitList) {
             qbdr = qty.toBuilder();
         } else qbdr = qty;
 
         let ret = new ProtoSubstanceWithArgs(this);
+        if(state) ret.setState(state);
         ret.mass = qbdr.mass;
         ret.mol = qbdr.mol;
         if(qbdr.volume) ret.volmL = qbdr.volume * 1000;
@@ -152,7 +153,7 @@ class Substance {
     set mass(mass:num) {
         this.volume = mass / this.type.density;
     }
-    _v = 0;
+    _v = 1;
     get volume() { // in mL
         return this._v;
     }
@@ -251,6 +252,12 @@ class AqueousSubstance extends MolecularSubstance {
     transmittance(length_traveled: num=1): tup {
         return this.type.molar_absorptivity.map(x => Math.pow(10, -x * length_traveled * this.concentration));
     }
+    color(background: tup = [255, 255, 255], l: num = 1) {
+        return this.transmittance(l).map((x, i) => x * background[i]); // we assume that we're plotting it against a white
+    }
+}
+
+class SpectralAqueousSubstance extends AqueousSubstance {
     color(background: tup = [255, 255, 255], l: num = 1) {
         return this.transmittance(l).map((x, i) => x * background[i]); // we assume that we're plotting it against a white
     }

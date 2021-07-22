@@ -96,7 +96,7 @@ function _componentToHex(c: number) {
     return hex.length == 1 ? "0" + hex : hex;
 }
 
-function _hex(r: num, g: num, b: num) {
+function _hex(r: num, g: num, b: num, ...extras: num[]) {
     return "#" + _componentToHex(r) + _componentToHex(g) + _componentToHex(b);
 }
 

@@ -499,6 +499,7 @@ class QtyBuilder {
         }
         
     }
+    
 }
 const gqul = new QtyUnitList();
 function qtyTknr(inp: string, startidx: num = 0, qul: QtyUnitList = gqul): [string, num] {
@@ -563,7 +564,8 @@ function grandUnifiedTknr(inp:string, startidx=0): [ChemicalBuilder, QtyUnitList
         return [fbdr, qbdr];
     }
 }
-function w(inp: string) {
+function w(inp: string, display=true) {
+    let subst;
     let [chem, qty] = grandUnifiedTknr(inp);
     // form.formula
     let formula = chem.formula;
@@ -572,13 +574,18 @@ function w(inp: string) {
         if (protos) {
             // let pargs = protos.args();
             // let qbuild = qty.toBuilder();
-            return protos.amt(qty);
+            subst = protos.amt(qty, chem.state);
         } else {
             throw protos;
         }
     } else {
         throw `formula ${formula} not found in list of chemicals!`;
     }
+    if(display) {
+        tang(subst);
+        redraw();
+        return subst;
+    } else return subst;
     // TODO: with a greedy algorithm, we can
     // actually attempt to process formulas that
     // are 'lazily' in all lower case. for

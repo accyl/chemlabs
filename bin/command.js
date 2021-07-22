@@ -614,7 +614,9 @@ function grandUnifiedTknr(inp, startidx) {
         return [fbdr, qbdr];
     }
 }
-function w(inp) {
+function w(inp, display) {
+    if (display === void 0) { display = true; }
+    var subst;
     var _a = grandUnifiedTknr(inp), chem = _a[0], qty = _a[1];
     // form.formula
     var formula = chem.formula;
@@ -623,7 +625,7 @@ function w(inp) {
         if (protos) {
             // let pargs = protos.args();
             // let qbuild = qty.toBuilder();
-            return protos.amt(qty);
+            subst = protos.amt(qty, chem.state);
         }
         else {
             throw protos;
@@ -632,6 +634,13 @@ function w(inp) {
     else {
         throw "formula " + formula + " not found in list of chemicals!";
     }
+    if (display) {
+        tang(subst);
+        redraw();
+        return subst;
+    }
+    else
+        return subst;
     // TODO: with a greedy algorithm, we can
     // actually attempt to process formulas that
     // are 'lazily' in all lower case. for

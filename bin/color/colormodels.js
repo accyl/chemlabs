@@ -13,7 +13,11 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from) {
 // / <reference path='lodash.min.js'/>
 // import * as _ from 'lodash';
 // import _ from 'lodash';
-var _a = function () {
+// var [irgb_from_xyz, rgb_from_xyz, xyz_color] = 
+var irgb_from_xyz;
+var rgb_from_xyz;
+var xyz_color;
+__ = function () {
     // selected python polyfill from org.transcrypt.__runtime__.js
     /**/ function int(number) {
         return number > 0
@@ -52,7 +56,7 @@ var _a = function () {
     ;
     // end python polyfill
     // var __name__ = '__main__';
-    /**/ var xyz_color = function (x, y, z) {
+    /**/ xyz_color = function (x, y, z) {
         // if (typeof z == 'undefined' || (z != null && z.hasOwnProperty ("__kwargtrans__"))) {;
         // z = null;
         // };
@@ -178,7 +182,7 @@ var _a = function () {
     function mult(mtx, vec) {
         return mtx.map(function (arr) { return arr.reduce(function (accum, val, j) { return accum + val * vec[j]; }, 0); });
     }
-    /**/ var rgb_from_xyz = function (xyz) {
+    /**/ rgb_from_xyz = function (xyz) {
         return mult(rgb_from_xyz_matrix, xyz);
     };
     /**/ var xyz_from_rgb = function (rgb) {
@@ -507,7 +511,7 @@ var _a = function () {
     /**/ var irgb_string_from_rgb = function (rgb) {
         return irgb_string_from_irgb(irgb_from_rgb(rgb));
     };
-    /**/ var irgb_from_xyz = function (xyz) {
+    /**/ irgb_from_xyz = function (xyz) {
         return irgb_from_rgb(rgb_from_xyz(xyz));
     };
     /**/ var irgb_string_from_xyz = function (xyz) {
@@ -516,8 +520,9 @@ var _a = function () {
     init();
     // sourceMappingURL=colormodels.map
     // what
-    return [irgb_from_xyz, rgb_from_xyz, xyz_color];
-}(), irgb_from_xyz = _a[0], rgb_from_xyz = _a[1], xyz_color = _a[2];
+    // return [irgb_from_xyz, rgb_from_xyz, xyz_color];
+}();
+//  as [(xyz: num[]) => number[], (xyz: num[]) => number[], (x: num, y: num, z?: number | undefined) => number[]]; 
 // tuples don't work correctly ;-;
 function rgb_from_spectrum(sp) {
     return irgb_from_xyz(xyz_from_spectrum(sp));

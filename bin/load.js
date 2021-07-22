@@ -14,28 +14,40 @@ function slider() {
         var ctxt = canvas.getContext("2d");
         if (ctxt === null)
             throw "Context is null?";
+        gvar.ctxt = ctxt;
         // let m = irgb_from_xyz(xyz_from_spectrum(x => f_daylight(x) * transmittance(spectra_kmno4_f(x), h.value / 1000)));
         // let m = rgb_from_spectrum(f_daylight);
         var m = rgb_from_spectrum(function (x) { return transmittance(spectra_kmno4_f(x), h.value / 10); });
         ctxt.beginPath();
-        ctxt.stroke();
-        // console.log(m);
-        ctxt.fillStyle = _hex(m[0], m[1], m[2]);
-        ctxt.fillRect(0, 10, 10, 10);
-        var n = rgb_from_spectrum(function (x) { return f_daylight(x) * transmittance(spectra_kmno4_f(x), h.value / 10); });
-        ctxt.beginPath();
-        ctxt.stroke();
-        // console.log(m);
-        ctxt.fillStyle = _hex(n[0], n[1], n[2]);
-        ctxt.fillRect(0, 20, 10, 10);
+        makeRect(0, 10, 10, 10, m);
+        var n = rgb_from_spectrum_concen(spectra_kmno4_f, h.value / 10);
+        makeRect(0, 20, 10, 10, n);
         var p = rgb_from_spectrum(function (x) { return f_daylight(x) * transmittance(spectra_kmno4_f(x) / 46 / (149 * 10 ^ -6), h.value / 10); });
-        ctxt.beginPath();
-        ctxt.stroke();
-        // console.log(m);
-        ctxt.fillStyle = _hex(p[0], p[1], p[2]);
-        ctxt.fillRect(0, 30, 10, 10);
+        makeRect(0, 30, 10, 10, p);
+        // let kmno4_base_xyz = [148.40102601907597, 113.28932147129379, 170.4166480460002];
+        // let q = rgb_from_base_xyz(kmno4_base_xyz, h.value / 10);
+        // ctxt.fillStyle = _hex(q[0], q[1], q[2]);
+        // ctxt.fillRect(0, 40, 10, 10);
     }
     // rgb_from_xyz(xyz_from_spectrum(x => transmittance(spectra_kmno4_f(x), 1)));
+}
+function makeRect(x, y, width, height, col, ctxt) {
+    // if(!ctxt) {
+    // ctxt = gvar.ctxt;
+    // }
+    if (!ctxt) {
+        var h = document.getElementsByTagName('canvas')[0];
+        var c = undefined;
+        if (h)
+            c = h.getContext('2d');
+        if (c) {
+            ctxt = c;
+        }
+        else
+            throw "Couldn't find context for canvas";
+    }
+    ctxt.fillStyle = _hex(col[0], col[1], col[2]);
+    ctxt.fillRect(x, y, width, height);
 }
 function graph(f, start, end) {
     if (start === void 0) { start = 360; }
@@ -63,17 +75,20 @@ function onCommandButton() {
     var h2 = h;
     var txt = h2.value;
     // console.log(typeof h);
-    var _a = grandUnifiedTknr(txt), formula = _a[0], quantity = _a[1];
-    console.log(formula);
-    console.log(quantity);
+    // let [formula, quantity] = grandUnifiedTknr(txt);
+    // console.log(formula);
+    // console.log(quantity);
+    var s = w(txt);
+    console.log(s);
+    return s;
 }
-var __ = function () {
+__ = function () {
     var h = document.getElementById("cmdbox");
     function submitOnEnter(event) {
         if (event.which === 13) {
             // event.target.form.dispatchEvent(new Event("submit", { cancelable: true }));
             event.preventDefault(); // Prevents the addition of a new line in the text field (not needed in a lot of cases)
-            onCommandButton();
+            return onCommandButton();
             // console.log('hi!');
         }
     }
