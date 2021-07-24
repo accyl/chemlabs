@@ -95,7 +95,8 @@ chemicals.set('KMnO4', function(){
     // aq.molar_absorptivity = [2042.60286, 3341.11468, 1167.20163];
     aq.molar_absorptivity = [3160.68, 6913.98751, 1777.8825];
     aq.form = function () {
-        return new AqueousSubstance(this, w("H2O 1L")); // H2O.args().setState("l").amt("1 L").form());
+        // return new AqueousSubstance(this, w("H2O 1L")); // H2O.args().setState("l").amt("1 L").form());
+        return new SpectralAqueousSubstance(this, w("H2O 1L"), spectra_kmno4_f); 
     };
 
     aq.chemicalFormula = "KMnO4";

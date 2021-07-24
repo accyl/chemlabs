@@ -1,4 +1,5 @@
 "use strict";
+/// <reference path='../math.ts'/>
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -14,58 +15,6 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var GeneralizedFunction = /** @class */ (function () {
-    function GeneralizedFunction(pos, vel, acc, n3deriv) {
-        this._x0 = pos ? pos : this._zeroes().map(function (x) { return x + 1; });
-        this._v0 = vel ? vel : this._zeroes();
-        this._a0 = acc ? acc : this._zeroes();
-        if (n3deriv) {
-            this.n3deriv = n3deriv;
-        }
-    }
-    GeneralizedFunction.prototype.pos = function (t) {
-        return this._x0;
-    };
-    GeneralizedFunction.prototype.vel = function (t) {
-        return this._v0;
-    };
-    GeneralizedFunction.prototype.acc = function (t) {
-        return this._a0;
-    };
-    ;
-    GeneralizedFunction.prototype.nthderiv = function (n, t) {
-        switch (n) {
-            case 0:
-                return this.pos(t);
-            case 1:
-                return this.vel(t);
-            case 2:
-                return this.acc(t);
-            default:
-                if (this.n3deriv)
-                    return this.n3deriv[n - 3];
-                return this._zeroes();
-        }
-    };
-    GeneralizedFunction.prototype.step = function (t0, dt) {
-        /**
-         * applies euler's method once
-         * dt = stepsize
-         */
-        var dx = this.vel(t0).map(function (v) { return v * dt; });
-        this._x0 = this.pos(t0).map(function (x, i) { return x + dx[i]; }); // perform a veloity update
-        var dv = this.acc(t0).map(function (a) { return a * dt; });
-        this._v0 = this.vel(t0).map(function (v, i) { return v + dv[i]; }); // perform a veloity update
-        // TODO updates of higher order derivatives
-    };
-    GeneralizedFunction.prototype.eulers = function (t0, dt, nsteps) {
-        for (var i = 0; i < nsteps; i++) {
-            this.step(t0, dt);
-            t0 = t0 + dt;
-        }
-    };
-    return GeneralizedFunction;
-}());
 var Locatable = /** @class */ (function (_super) {
     __extends(Locatable, _super);
     function Locatable() {
@@ -83,13 +32,6 @@ var Locatable = /** @class */ (function (_super) {
     }();
     return Locatable;
 }(GeneralizedFunction));
-// function tang(obj: Substance|System): Tangible {
-//     if(obj instanceof Substance) {
-//         let loc = new Locatable();
-//         return {}
-//     } else if(obj instanceof System) {
-//     }
-// }
 var PhysicsHook = /** @class */ (function () {
     function PhysicsHook(pos, size) {
         this.xsize = 10;
@@ -117,6 +59,35 @@ var PhysicsHook = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
-    PhysicsHook.DEFAULT = new PhysicsHook();
+    Object.defineProperty(PhysicsHook.prototype, "vel", {
+        get: function () {
+            return this.loc.vel(0);
+        },
+        set: function (velocity) {
+            for (var i = 0; i < velocity.length; i++) {
+                var x = velocity[i];
+                if (x === undefined)
+                    x = this.loc._v0[i];
+            }
+            this.loc._v0 = velocity;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(PhysicsHook.prototype, "acc", {
+        get: function () {
+            return this.loc.acc(0);
+        },
+        set: function (accel) {
+            for (var i = 0; i < accel.length; i++) {
+                var x = accel[i];
+                if (x === undefined)
+                    x = this.loc._a0[i];
+            }
+            this.loc._a0 = accel;
+        },
+        enumerable: false,
+        configurable: true
+    });
     return PhysicsHook;
 }());

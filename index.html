@@ -1,9 +1,4 @@
 <!DOCTYPE HTML>
-<!--
-	Eventually by HTML5 UP
-	html5up.net | @ajlkn
-	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
--->
 <html>
 	<head>
 		<title>ChemLabs</title>
@@ -30,9 +25,22 @@
 		</div>
 		<br>
 		<div>
-			<div class="textarea-wrapper"><textarea name="message" id="cmdbox" placeholder="Enter Chemical Here" rows="1"></textarea>
-					<button class="button" id="cmdbtn" onclick="onCommandButton()">Graph</button></div>
+			<div class="textarea-wrapper">
+				<input name="message" id="cmdbox" placeholder="Enter Chemical Here" rows="1">
+
+				<button class="button" id="cmdbtn" onclick="onCommandButton()">Graph</button>
+			</div>
 			
+		</div>
+		<div class="system-viewer sm-vw">
+			<div class="sm-vw-query">
+				<span>Major Species in System </span>
+				<input name="message" id="sm-vw-id" value="glob" rows="1">
+				
+			</div>
+			<div class="sm-vw-display">
+
+			</div>
 		</div>
 		<footer id="footer">
 			<ul class="icons">
@@ -57,7 +65,9 @@
 
 	<script src="bin/command.js"></script>
 
-	<script src="bin/phys.js"></script>
+	<script src="bin/math.js"></script>
+
+	<script src="bin/phys/physold.js"></script>
 	<script src="bin/chem.js"></script>
 	<script src="bin/chemicals.js"></script>
 	<script src="bin/vis.js"></script>
@@ -65,13 +75,17 @@
 
 	<!-- <script src="bin/color/colorMatchFuncsCIExyz.js"></script> -->
 	<script src="bin/color/color.js"></script>
-	<script src="bin/color/python.js"></script>
 	<script src="bin/color/colortest.js"></script>
 	<script src="bin/color/colormodels.js"></script>
 	<!-- <script type='module' src="bin/moduleload.js"></script> -->
 	<!-- <script src="bin/command.js"></script> -->
 
 	<script src="bin/load.js"></script>
+
+	<script src="raw/matter.min.js"></script>
+
+	<script src="raw/tut.matter.js"></script>
+
 
 	</body>
 </html>

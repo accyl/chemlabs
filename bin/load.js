@@ -2,13 +2,20 @@
 function defButton() {
     var sub = KMnO4.form();
     tang(sub);
+    var sub2 = w('KMnO4');
+    sub2.physhook.pos = [10, 0, 0];
     redraw();
 }
 function slider() {
     var h = document.querySelector("#slider");
-    var s = glob.s[0];
-    s.concentration = h.value / 10000000;
-    redraw();
+    for (var _i = 0, _a = glob.s; _i < _a.length; _i++) {
+        var s = _a[_i];
+        if (s instanceof AqueousSubstance) {
+            // s.concentration = h.value / 10000000;
+            s.concentration = h.value / 10;
+            redraw();
+        }
+    }
     var canvas = document.getElementById("canvas");
     if (canvas && canvas instanceof HTMLCanvasElement) {
         var ctxt = canvas.getContext("2d");
@@ -82,15 +89,15 @@ function onCommandButton() {
     console.log(s);
     return s;
 }
-__ = function () {
-    var h = document.getElementById("cmdbox");
-    function submitOnEnter(event) {
-        if (event.which === 13) {
-            // event.target.form.dispatchEvent(new Event("submit", { cancelable: true }));
-            event.preventDefault(); // Prevents the addition of a new line in the text field (not needed in a lot of cases)
-            return onCommandButton();
-            // console.log('hi!');
-        }
-    }
-    h.addEventListener("keypress", submitOnEnter);
-}();
+// __ = function () {
+//     let h = document.getElementById("cmdbox") as HTMLTextAreaElement;
+//     function submitOnEnter(event: any) {
+//         if (event.which === 13) {
+//             // event.target.form.dispatchEvent(new Event("submit", { cancelable: true }));
+//             event.preventDefault(); // Prevents the addition of a new line in the text field (not needed in a lot of cases)
+//             return onCommandButton();
+//             // console.log('hi!');
+//         }
+//     }
+//     h.addEventListener("keypress", submitOnEnter);
+// }();

@@ -1,5 +1,5 @@
 "use strict";
-/// <reference path='phys.ts'/>
+/// <reference path='phys/physold.ts'/>
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -206,7 +206,7 @@ var Substance = /** @class */ (function () {
         if (background === void 0) { background = [255, 255, 255]; }
         return this.type.rgb;
     };
-    Substance.prototype.rgb = function (background) {
+    Substance.prototype.hexcolor = function (background) {
         if (background === void 0) { background = [255, 255, 255]; }
         var c = this.color(background);
         return _rgbToHex.apply(void 0, c);
@@ -313,13 +313,19 @@ var AqueousSubstance = /** @class */ (function (_super) {
 }(MolecularSubstance));
 var SpectralAqueousSubstance = /** @class */ (function (_super) {
     __extends(SpectralAqueousSubstance, _super);
-    function SpectralAqueousSubstance() {
-        return _super !== null && _super.apply(this, arguments) || this;
+    function SpectralAqueousSubstance(solute, solvent, spectra_f) {
+        var _this = _super.call(this, solute, solvent) || this;
+        _this.spectra_f = spectra_f;
+        return _this;
     }
+    SpectralAqueousSubstance.prototype._shortcut = function (x) {
+        return f_daylight(x) * transmittance(this.spectra_f(x), this.concentration);
+    };
     SpectralAqueousSubstance.prototype.color = function (background, l) {
+        var _this = this;
         if (background === void 0) { background = [255, 255, 255]; }
         if (l === void 0) { l = 1; }
-        return this.transmittance(l).map(function (x, i) { return x * background[i]; }); // we assume that we're plotting it against a white
+        return rgb_from_spectrum(function (x) { return f_daylight(x) * transmittance(_this.spectra_f(x), _this.concentration); });
     };
     return SpectralAqueousSubstance;
 }(AqueousSubstance));

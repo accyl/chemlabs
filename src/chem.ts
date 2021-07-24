@@ -1,4 +1,4 @@
-/// <reference path='phys.ts'/>
+/// <reference path='phys/physold.ts'/>
 
 
 class Constants {
@@ -181,7 +181,7 @@ class Substance {
     color(background: tup = [255, 255, 255]): tup {
         return this.type.rgb;
     }
-    rgb(background: tup = [255, 255, 255]): string {
+    hexcolor(background: tup = [255, 255, 255]): string {
         let c = this.color(background) as tup3;
         return _rgbToHex(...c);
     }
@@ -258,8 +258,18 @@ class AqueousSubstance extends MolecularSubstance {
 }
 
 class SpectralAqueousSubstance extends AqueousSubstance {
+    spectra_f;
+    constructor(solute: SubstanceType, solvent: Substance, spectra_f: (wl: num)=>num) {
+        super(solute, solvent);
+        this.spectra_f = spectra_f;
+
+    }
+    private _shortcut(x: num) {
+            return f_daylight(x) * transmittance(this.spectra_f(x), this.concentration);
+
+    }
     color(background: tup = [255, 255, 255], l: num = 1) {
-        return this.transmittance(l).map((x, i) => x * background[i]); // we assume that we're plotting it against a white
+        return rgb_from_spectrum(x => f_daylight(x) * transmittance(this.spectra_f(x), this.concentration));
     }
 }
 

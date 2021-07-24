@@ -1,5 +1,5 @@
 "use strict";
-/// <reference path='phys.ts'/>
+/// <reference path='phys/physold.ts'/>
 /// <reference path='chem.ts'/>
 /// <reference path='color/colormodels.ts'/>
 function phys(s, pos, size) {
@@ -48,12 +48,12 @@ var Drawer = /** @class */ (function () {
                 ctx.beginPath();
                 ctx.stroke();
                 // ctx.fillStyle = "#" + s.color().join("");
-                ctx.fillStyle = s.rgb();
+                ctx.fillStyle = s.hexcolor();
                 if (!s.physhook)
                     s = phys(s);
                 if (!s.physhook)
                     throw "broke";
-                ctx.fillRect(s.physhook.loc.pos()[0], s.physhook.loc.pos()[1], s.physhook.xsize, s.physhook.ysize);
+                ctx.fillRect(s.physhook.pos[0], s.physhook.pos[1], s.physhook.xsize, s.physhook.ysize);
                 return;
             }
         }
