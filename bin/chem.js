@@ -150,13 +150,13 @@ var ProtoSubstanceWithArgs = /** @class */ (function () {
     };
     return ProtoSubstanceWithArgs;
 }());
-function _componentToHex2(c) {
-    var hex = Math.round(c).toString(16);
-    return hex.length == 1 ? "0" + hex : hex;
-}
-function _rgbToHex(r, g, b) {
-    return "#" + _componentToHex(r) + _componentToHex(g) + _componentToHex(b);
-}
+// function _componentToHex2(c: number) {
+//     var hex = Math.round(c).toString(16);
+//     return hex.length == 1 ? "0" + hex : hex;
+// }
+// function _rgbToHex(r: num, g: num, b: num) {
+//     return "#" + _componentToHex(r) + _componentToHex(g) + _componentToHex(b);
+// }
 // alert(rgbToHex(0, 51, 255)); // #0033ff
 var Substance = /** @class */ (function () {
     function Substance(type) {
@@ -209,7 +209,7 @@ var Substance = /** @class */ (function () {
     Substance.prototype.hexcolor = function (background) {
         if (background === void 0) { background = [255, 255, 255]; }
         var c = this.color(background);
-        return _rgbToHex.apply(void 0, c);
+        return _hex.apply(void 0, c);
     };
     return Substance;
 }());
@@ -354,7 +354,6 @@ var EqbReaction = /** @class */ (function (_super) {
 }(BalancedRxn));
 var System = /** @class */ (function () {
     function System() {
-        this.physhook = undefined;
         this.substances = [];
         this.equilibria = [];
         this.subsystems = [];

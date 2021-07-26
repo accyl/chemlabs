@@ -3,7 +3,7 @@ function defButton() {
     tang(sub);
 
     let sub2 = w('KMnO4');
-    sub2.physhook!.pos = [10, 0, 0];
+    // sub2.physhook!.pos = {x:10, y:0};
     redraw();
 }
 

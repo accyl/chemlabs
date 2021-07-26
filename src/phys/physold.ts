@@ -16,12 +16,11 @@ class Locatable extends GeneralizedFunction {
 
 }
 
-interface PhysicsHookCommon {
-}
 
 
 
-class PhysicsHook {
+
+class PhysicsHook { //implements PhysicsHookCommon{
     private loc: Locatable;
     xsize: num = 10;
     ysize: num = 10;
@@ -64,6 +63,12 @@ class PhysicsHook {
     }
     get acc() {
         return this.loc.acc(0) as [num, num, num];
+    }
+    get size() {
+        return [this.xsize, this.ysize, this.zsize];
+    }
+    set size(x: tup3) {
+        [this.xsize, this.ysize, this.zsize] = x;
     }
 
 }

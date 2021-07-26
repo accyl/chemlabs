@@ -132,20 +132,20 @@ class ProtoSubstanceWithArgs {
     }
 
 }
-function _componentToHex2(c: number) {
-    var hex = Math.round(c).toString(16);
-    return hex.length == 1 ? "0" + hex : hex;
-}
+// function _componentToHex2(c: number) {
+//     var hex = Math.round(c).toString(16);
+//     return hex.length == 1 ? "0" + hex : hex;
+// }
 
-function _rgbToHex(r: num, g: num, b: num) {
-    return "#" + _componentToHex(r) + _componentToHex(g) + _componentToHex(b);
-}
+// function _rgbToHex(r: num, g: num, b: num) {
+//     return "#" + _componentToHex(r) + _componentToHex(g) + _componentToHex(b);
+// }
 
 // alert(rgbToHex(0, 51, 255)); // #0033ff
 
 class Substance {
     // loc: Locatable = Locatable.NONE;
-    physhook?: PhysicsHook = undefined;
+    physhook?: PhysicsHookNew = undefined;
     // mol = 0; 
     get mass() {
         return this.type.density * this.volume;
@@ -183,7 +183,7 @@ class Substance {
     }
     hexcolor(background: tup = [255, 255, 255]): string {
         let c = this.color(background) as tup3;
-        return _rgbToHex(...c);
+        return _hex(...c);
     }
 
 }
@@ -293,7 +293,7 @@ class EqbReaction extends BalancedRxn {
 
 
 class System {
-    physhook: any = undefined;
+    physhook?: PhysicsHookNew;
 
     substances: Substance[] = [];
     get s() {return this.substances;}

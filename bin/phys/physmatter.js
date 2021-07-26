@@ -1,25 +1,33 @@
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+// <reference path='../../raw/matter.min.js'/>
+// 
+// import Matter  = require("../../raw/matter.min.js");
 // Bridge between matter.js and the rest of my code
 // 
-var MatterPhysHook = /** @class */ (function (_super) {
-    __extends(MatterPhysHook, _super);
-    function MatterPhysHook() {
-        return _super !== null && _super.apply(this, arguments) || this;
+var PhysicsHookNew = /** @class */ (function () {
+    function PhysicsHookNew(pos, size) {
+        this.size = size;
+        this.rect = Matter.Bodies.rectangle(pos.x, pos.y, size.x, size.y);
     }
-    return MatterPhysHook;
-}(PhysicsHook));
+    Object.defineProperty(PhysicsHookNew.prototype, "pos", {
+        get: function () {
+            return this.rect.position;
+        },
+        set: function (x) {
+            this.rect.position = x;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(PhysicsHookNew.prototype, "vel", {
+        get: function () {
+            return this.rect.velocity;
+        },
+        set: function (x) {
+            this.rect.velocity = x;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    return PhysicsHookNew;
+}());

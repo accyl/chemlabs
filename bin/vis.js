@@ -2,17 +2,37 @@
 /// <reference path='phys/physold.ts'/>
 /// <reference path='chem.ts'/>
 /// <reference path='color/colormodels.ts'/>
+// <reference path='../raw/tut.matter.js'/>
+// @ts-ignore
+// let universe = universe ? universe : 0 as any;
 function phys(s, pos, size) {
     if (!s.physhook) {
+        var vec = void 0;
+        if (pos) {
+            vec = { 'x': pos[0], 'y': pos[1] };
+        }
+        else {
+            vec = { 'x': 100, 'y': 100 };
+        }
+        var vsize = void 0;
+        if (size) {
+            vsize = { 'x': size[0], 'y': size[1] };
+        }
+        else {
+            vsize = { 'x': 100, 'y': 100 };
+        }
         if (s instanceof System) {
-            s.physhook = new PhysicsHook(pos, size);
+            // s.physhook = new PhysicsHook(pos, size);
+            s.physhook = new PhysicsHookNew(vec, vsize);
             for (var _i = 0, _a = s.substances; _i < _a.length; _i++) {
                 var subs = _a[_i];
                 phys(subs);
             }
         }
         else if (s instanceof Substance) {
-            s.physhook = new PhysicsHook(pos, size);
+            // s.physhook = new PhysicsHook(pos, size);
+            s.physhook = new PhysicsHookNew(vec, vsize);
+            Matter.Composite.add(universe.world, [s.physhook.rect]);
         }
         else {
             throw "Somehow passed arg was neither substance nor system? " + s;
@@ -34,29 +54,57 @@ var Drawer = /** @class */ (function () {
                 var subsys = _c[_b];
                 this.draw(ctx, subsys);
             }
-            ctx.beginPath();
-            ctx.stroke();
-            ctx.fillStyle = "#FFFFFFFF";
+            // ctx.beginPath();
+            // ctx.stroke();
+            var prevs = ctx.fillStyle;
+            ctx.fillStyle = "#000000";
             if (!s.physhook)
                 s = phys(s);
-            ctx.fillRect(s.physhook.loc[0], s.physhook.loc[1], s.physhook.xsize, s.physhook.ysize);
+            // ctx.fillRect(s.physhook.loc[0], s.physhook.loc[1], s.physhook.xsize, s.physhook.ysize);
+            if (!s.physhook)
+                throw "broke";
+            this.drawB(ctx, s.physhook.rect);
+            ctx.fillStyle = prevs;
             // the order kinda matters but I'll leave that up to custom drawers
             return;
         }
         else if (s instanceof Substance) {
             if (s instanceof AqueousSubstance) {
-                ctx.beginPath();
-                ctx.stroke();
+                // ctx.beginPath();
+                // ctx.stroke();
                 // ctx.fillStyle = "#" + s.color().join("");
+                var prevs = ctx.fillStyle;
                 ctx.fillStyle = s.hexcolor();
                 if (!s.physhook)
                     s = phys(s);
                 if (!s.physhook)
                     throw "broke";
-                ctx.fillRect(s.physhook.pos[0], s.physhook.pos[1], s.physhook.xsize, s.physhook.ysize);
+                this.drawB(ctx, s.physhook.rect);
+                // ctx.fillRect(s.physhook.pos.x, s.physhook.pos.y, s.physhook.size.x, s.physhook.size.y);
+                ctx.fillStyle = prevs;
                 return;
             }
         }
+    };
+    Drawer.prototype.drawC = function (ctx, cs) {
+        // ctx.stroke();
+        ctx.strokeStyle = '#888888';
+        for (var _i = 0, _a = Matter.Composite.allBodies(cs); _i < _a.length; _i++) {
+            var b = _a[_i];
+            this.drawB(ctx, b);
+        }
+    };
+    Drawer.prototype.drawB = function (ctx, b) {
+        var vs = b.vertices;
+        ctx.beginPath();
+        ctx.moveTo(vs[0].x, vs[0].y);
+        for (var i = 1; i < vs.length; i++) {
+            var v = vs[i];
+            ctx.lineTo(v.x, v.y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        ctx.fill();
     };
     return Drawer;
 }());
@@ -84,20 +132,19 @@ function redraw(t) {
         var ctxt = canvas.getContext("2d");
         if (ctxt === null)
             throw "Context is null?";
+        ctxt.clearRect(0, 0, canvas.width, canvas.height);
+        ctxt.fillStyle = '#000000';
+        drawer.drawC(ctxt, universe.world);
         drawer.draw(ctxt, glob);
     }
     else {
         throw "Canvas doesn't exist?";
     }
 }
-function _componentToHex(c) {
-    var hex = Math.round(Math.min(c, 255)).toString(16);
-    return hex.length == 1 ? "0" + hex : hex;
-}
-function _hex(r, g, b) {
-    var extras = [];
-    for (var _i = 3; _i < arguments.length; _i++) {
-        extras[_i - 3] = arguments[_i];
-    }
-    return "#" + _componentToHex(r) + _componentToHex(g) + _componentToHex(b);
-}
+(function () {
+    var func = function () {
+        redraw();
+        requestAnimationFrame(func);
+    };
+    window.requestAnimationFrame(func);
+})();

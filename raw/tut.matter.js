@@ -1,4 +1,5 @@
 /// <reference path='matter.min.js'/>
+// const universe = {};
 __ = function() {
     // module aliases
     var Engine = Matter.Engine,
@@ -10,22 +11,13 @@ __ = function() {
     // create an engine
     var engine = Engine.create();
     var world = engine.world;
+    universe.engine = engine;
+    universe.world = world;
 
     var canva = document.getElementById('canvas');
-    // create a renderer
-    var render = Render.create({
-        // element: document.body,
-        canvas: canva,
+    canva.width = 1000;
+    canva.height = 600;
 
-        engine: engine,
-        options: {
-            width: 1000,
-            height: 600,
-            background: 'transparent',
-            wireframes: false,
-            showAngleIndicator: false
-        }
-    });
 
     // create two boxes and a ground
     var boxA = Bodies.rectangle(400, 200, 80, 80);
@@ -34,12 +26,26 @@ __ = function() {
     var lwall = Bodies.rectangle(0, 0, 60, 1500, {isStatic:true});
     var rwall = Bodies.rectangle(canva.width, 0, 60, 2000, { isStatic: true });
     var ceil = Bodies.rectangle(500, 0, 1000, 60, { isStatic: true });
-
+    
     // add all of the bodies to the world
     Composite.add(engine.world, [boxA, boxB, ground, lwall, rwall, ceil]);
 
+    // create a renderer
+    var render = Render.create({
+        // element: document.body,
+        canvas: canva,
+
+        engine: engine,
+        options: {
+            width: canva.width,
+            height: canva.height,
+            background: 'transparent',
+            wireframes: false,
+            showAngleIndicator: false
+        }
+    });
     // run the renderer
-    Render.run(render);
+    // Render.run(render);
 
     var mouse = Matter.Mouse.create(canva);
     // TODO mouse.pixelRatio

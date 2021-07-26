@@ -89,5 +89,15 @@ var PhysicsHook = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(PhysicsHook.prototype, "size", {
+        get: function () {
+            return [this.xsize, this.ysize, this.zsize];
+        },
+        set: function (x) {
+            this.xsize = x[0], this.ysize = x[1], this.zsize = x[2];
+        },
+        enumerable: false,
+        configurable: true
+    });
     return PhysicsHook;
 }());
