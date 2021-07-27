@@ -76,6 +76,8 @@ Using the website http://www.graphreader.com/:
 // is important - 
 // so epsilon data is not very useful
 
+// ACTUALLY - the Y in XYZ tells us the brightness and that must go into the RGB calculation
+
 
 https://www.fourmilab.ch/documents/specrend/
 

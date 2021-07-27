@@ -33,11 +33,13 @@ var KMnO4 = function () {
     var aq = new ProtoSubstance();
     // me.stateOfMatter = "s"; // TODO this feels dumb
     aq.state = "aq";
-    // aq.molar_absorptivity = [0.8, 1.75, 0.45];
-    // aq.molar_absorptivity = [2042.60286, 3341.11468, 1167.20163];
-    aq.molar_absorptivity = [3160.68, 6913.98751, 1777.8825];
+    aq.molar_absorptivity = [0.8, 1.75, 0.45];
+    aq.molar_absorptivity = [2042.60286, 3341.11468, 1167.20163];
+    // aq.molar_absorptivity = [3160.68,6913.98751,1777.8825];
     aq.form = function () {
-        return new AqueousSubstance(this, H2O.args().setState("l").amt("1 L").form());
+        var x = new AqueousSubstance(this, H2O.args().setState("l").amt("1 L").form());
+        // x.maxConcentration = 0.405; // 6.4 g/100mL = 0.04049761443739955 mol / 0.1 L = 0.405 M
+        return x;
     };
     aq.chemicalFormula = "KMnO4";
     aq.molarMass = 158.034; // g/mol
@@ -85,7 +87,9 @@ chemicals.set('KMnO4', function () {
     aq.molar_absorptivity = [3160.68, 6913.98751, 1777.8825];
     aq.form = function () {
         // return new AqueousSubstance(this, w("H2O 1L")); // H2O.args().setState("l").amt("1 L").form());
-        return new SpectralAqueousSubstance(this, w("H2O 1L"), spectra_kmno4_f);
+        var x = new SpectralAqueousSubstance(this, w("H2O 1L"), spectra_kmno4_f);
+        // x.maxConcentration = 0.405;
+        return x;
     };
     aq.chemicalFormula = "KMnO4";
     aq.molarMass = 158.034; // g/mol

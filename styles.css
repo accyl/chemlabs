@@ -4,12 +4,23 @@
     /* color: rgb(119, 119, 119); */
 	font-family: "Source Sans Pro", Helvetica, sans-serif;
 }
-
+#cwrap {
+    display: inline-block;
+}
 #cdiv {
     height: 30vw;
     width: 50vw;
     border: solid blue 1px;
     margin: 1vh 0vw 1vh 0vw;
+    display: inline-block;
+
+}
+#huddiv {
+    height: 30vw;
+    width: 5vw;
+    border: solid purple 1px;
+    margin: 1vh 0vw 1vh 0vw;
+    display: inline-block;
 
 }
 canvas {
@@ -18,6 +29,7 @@ canvas {
     width: 100%;
     height: 100%;
 }
+
 /* h1 { */
     /* margin: 3vh 1vw 3vh 5vw; */
 /* } */
