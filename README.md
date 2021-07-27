@@ -21,11 +21,11 @@ return the relative spectral specific intensity
 Then to find the rgb color corresponding to a specific spectrum, simply do
 rgb_from_spectrum(f);
 
-But note. A huge misconception is that white light is
+But note. A misconception is that white light is
 an even mix of all wavelengths, when actually there are certain wavelengths
 like green/blue that are more prevalent in what is perceived as pure white.
 For convenience a function f_daylight(wl) is provided that produces a
-fairly white color on most display screens. 
+fairly white color on (at least one) display screen. 
 
 f_daylight is loosely modeled on these 2 sources for spectral info for daylight
 (s1)[https://en.wikipedia.org/wiki/Sunlight#/media/File:Solar_spectrum_en.svg]

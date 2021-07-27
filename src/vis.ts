@@ -57,15 +57,16 @@ class Drawer {
             }
             // ctx.beginPath();
             // ctx.stroke();
-            let prevs = ctx.fillStyle;
-            ctx.fillStyle = "#000000";
+            // let prevs = ctx.fillStyle;
+            // ctx.fillStyle = "#FFFFFFFF";
             if (!s.physhook) s = phys(s);
             // ctx.fillRect(s.physhook.loc[0], s.physhook.loc[1], s.physhook.xsize, s.physhook.ysize);
             if(!s.physhook) throw "broke";
-            this.drawB(ctx, s.physhook.rect);
-            ctx.fillStyle = prevs;
+            // this.drawB(ctx, s.physhook.rect);
+            // ctx.fillStyle = prevs;
 // the order kinda matters but I'll leave that up to custom drawers
-
+            // actually let's not draw Systems
+            // Also Systems correspond to Composites extremely closely - reduce objects
             return;
         } else if (s instanceof Substance) {
             if (s instanceof AqueousSubstance) {

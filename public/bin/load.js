@@ -59,9 +59,9 @@ function makeRect(x, y, width, height, col, ctxt) {
 function graph(f, start, end) {
     if (start === void 0) { start = 360; }
     if (end === void 0) { end = 830; }
-    // if(!f) f = f_daylight;
     if (!f)
-        f = spectra_kmno4_f;
+        f = f_daylight;
+    // if (!f) f = spectra_kmno4_f;
     var canvas = document.getElementById("canvas");
     if (canvas && canvas instanceof HTMLCanvasElement) {
         var ctxt = canvas.getContext("2d");
@@ -70,10 +70,9 @@ function graph(f, start, end) {
         // let m = irgb_from_xyz(xyz_from_spectrum(x => f_fluor_white(x)));
         for (var i = start; i < end; i++) {
             ctxt.beginPath();
-            // ctxt.stroke();
-            // ctxt.fillRect()
             ctxt.fillStyle = '#FF0000';
             ctxt.fillRect(0.6 * (i - start), 130 * (1 - f(i)) + 10, 0.6, 1);
+            ctxt.stroke();
         }
     }
 }

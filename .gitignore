@@ -3,3 +3,10 @@ node_modules
 idea
 package-lock.json
 # tsconfig.json
+
+.firebase
+.firebaserc
+firebase.json
+old.txt
+
+nhs

@@ -63,8 +63,8 @@ function makeRect(x: num, y: num, width: num, height: num, col: num[], ctxt?: Ca
 }
 
 function graph(f?: (x: num) => num, start: num = 360, end: num = 830) {
-    // if(!f) f = f_daylight;
-    if (!f) f = spectra_kmno4_f;
+    if(!f) f = f_daylight;
+    // if (!f) f = spectra_kmno4_f;
 
     let canvas = document.getElementById("canvas");
     if (canvas && canvas instanceof HTMLCanvasElement) {
@@ -73,11 +73,9 @@ function graph(f?: (x: num) => num, start: num = 360, end: num = 830) {
         // let m = irgb_from_xyz(xyz_from_spectrum(x => f_fluor_white(x)));
         for (let i = start; i < end; i++) {
             ctxt.beginPath();
-            // ctxt.stroke();
-            // ctxt.fillRect()
             ctxt.fillStyle = '#FF0000';
             ctxt.fillRect(0.6 * (i - start), 130 * (1 - f(i)) + 10, 0.6, 1);
-
+            ctxt.stroke();
         }
     }
 }

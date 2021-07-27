@@ -22,10 +22,10 @@ __ = function() {
     // create two boxes and a ground
     var boxA = Bodies.rectangle(400, 200, 80, 80);
     var boxB = Bodies.rectangle(450, 50, 80, 80);
-    var ground = Bodies.rectangle(500, 610, 1000, 60, { isStatic: true });
-    var lwall = Bodies.rectangle(0, 0, 60, 1500, {isStatic:true});
-    var rwall = Bodies.rectangle(canva.width, 0, 60, 2000, { isStatic: true });
-    var ceil = Bodies.rectangle(500, 0, 1000, 60, { isStatic: true });
+    var ground = Bodies.rectangle(500, 610, 1000, 60, { isStatic: true }); ground.label = 'ground';
+    var lwall = Bodies.rectangle(0, 0, 60, 1500, {isStatic:true}); lwall.label = 'lwall';
+    var rwall = Bodies.rectangle(canva.width, 0, 60, 2000, { isStatic: true }); rwall.label = 'rwall';
+    var ceil = Bodies.rectangle(500, 0, 1000, 60, { isStatic: true }); ceil.label = 'ceil';
     
     // add all of the bodies to the world
     Composite.add(engine.world, [boxA, boxB, ground, lwall, rwall, ceil]);
