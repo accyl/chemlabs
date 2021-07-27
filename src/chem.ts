@@ -224,6 +224,7 @@ class GaseousSubstance extends MolecularSubstance{
 
 class AqueousSubstance extends MolecularSubstance {
     solvent: Substance;
+    maxConcentration: num = Number.POSITIVE_INFINITY; // Also called the maximum solubility
     constructor(solute: SubstanceType, solvent: Substance) {
         super(solute);
         this.solvent = solvent;
@@ -233,6 +234,12 @@ class AqueousSubstance extends MolecularSubstance {
     }
     set concentration(val) {
         // we probably can assume that they want to change mols, not volume
+        if(val > this.maxConcentration) {
+            // TODO supersaturated. Actually normally this would be 
+            // solved using equilibria but it's not implemented yet
+            // so let's just reject it for now
+            return;
+        }
         let molneeded = val * this.solvent.volume;
         this.mol = molneeded;
     }
@@ -250,7 +257,7 @@ class AqueousSubstance extends MolecularSubstance {
         // -A = log(T) T = 10^(-A)
     }
     transmittance(length_traveled: num=1): tup {
-        return this.type.molar_absorptivity.map(x => Math.pow(10, -x * length_traveled * this.concentration));
+        return this.type.molar_absorptivity.map(x => Math.pow(10, -x * length_traveled * this.concentration / 100)); // / 100000));
     }
     color(background: tup = [255, 255, 255], l: num = 1) {
         return this.transmittance(l).map((x, i) => x * background[i]); // we assume that we're plotting it against a white
@@ -266,7 +273,6 @@ class SpectralAqueousSubstance extends AqueousSubstance {
     }
     private _shortcut(x: num) {
             return f_daylight(x) * transmittance(this.spectra_f(x), this.concentration);
-
     }
     color(background: tup = [255, 255, 255], l: num = 1) {
         return rgb_from_spectrum(x => f_daylight(x) * transmittance(this.spectra_f(x), this.concentration));

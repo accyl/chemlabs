@@ -12,25 +12,28 @@ function slider() {
         var s = _a[_i];
         if (s instanceof AqueousSubstance) {
             // s.concentration = h.value / 10000000;
-            s.concentration = h.value / 10;
+            // s.concentration = h.value / 10;
+            // apparently the maximum molarity of KMnO4 is a mere 0.405 M lol
+            s.concentration = h.value / 2500;
             redraw();
         }
     }
     var canvas = document.getElementById("canvas");
-    if (canvas && canvas instanceof HTMLCanvasElement) {
-        var ctxt = canvas.getContext("2d");
-        if (ctxt === null)
+    var hud = document.getElementById("hud");
+    if (hud && hud instanceof HTMLCanvasElement) {
+        var ctx = hud.getContext("2d");
+        if (ctx === null)
             throw "Context is null?";
-        gvar.ctxt = ctxt;
+        // gvar.ctxt = ctxt;
         // let m = irgb_from_xyz(xyz_from_spectrum(x => f_daylight(x) * transmittance(spectra_kmno4_f(x), h.value / 1000)));
         // let m = rgb_from_spectrum(f_daylight);
-        var m = rgb_from_spectrum(function (x) { return transmittance(spectra_kmno4_f(x), h.value / 10); });
-        ctxt.beginPath();
-        makeRect(0, 10, 10, 10, m);
-        var n = rgb_from_spectrum_concen(spectra_kmno4_f, h.value / 10);
-        makeRect(0, 20, 10, 10, n);
+        var m = rgb_from_spectrum(function (x) { return transmittance(spectra_kmno4_f(x), h.value / 2500); }); // / 10));
+        // ctxt.beginPath();
+        makeRect(0, 10, 10, 10, m, ctx);
+        var n = rgb_from_spectrum_concen(spectra_kmno4_f, h.value / 2500); // / 10);
+        makeRect(0, 20, 10, 10, n, ctx);
         var p = rgb_from_spectrum(function (x) { return f_daylight(x) * transmittance(spectra_kmno4_f(x) / 46 / (149 * 10 ^ -6), h.value / 10); });
-        makeRect(0, 30, 10, 10, p);
+        makeRect(0, 30, 10, 10, p, ctx);
         // let kmno4_base_xyz = [148.40102601907597, 113.28932147129379, 170.4166480460002];
         // let q = rgb_from_base_xyz(kmno4_base_xyz, h.value / 10);
         // ctxt.fillStyle = _hex(q[0], q[1], q[2]);

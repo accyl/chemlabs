@@ -269,6 +269,7 @@ var AqueousSubstance = /** @class */ (function (_super) {
     __extends(AqueousSubstance, _super);
     function AqueousSubstance(solute, solvent) {
         var _this = _super.call(this, solute) || this;
+        _this.maxConcentration = Number.POSITIVE_INFINITY; // Also called the maximum solubility
         _this.solvent = solvent;
         return _this;
     }
@@ -278,6 +279,12 @@ var AqueousSubstance = /** @class */ (function (_super) {
         },
         set: function (val) {
             // we probably can assume that they want to change mols, not volume
+            if (val > this.maxConcentration) {
+                // TODO supersaturated. Actually normally this would be 
+                // solved using equilibria but it's not implemented yet
+                // so let's just reject it for now
+                return;
+            }
             var molneeded = val * this.solvent.volume;
             this.mol = molneeded;
         },
@@ -302,7 +309,7 @@ var AqueousSubstance = /** @class */ (function (_super) {
     AqueousSubstance.prototype.transmittance = function (length_traveled) {
         var _this = this;
         if (length_traveled === void 0) { length_traveled = 1; }
-        return this.type.molar_absorptivity.map(function (x) { return Math.pow(10, -x * length_traveled * _this.concentration); });
+        return this.type.molar_absorptivity.map(function (x) { return Math.pow(10, -x * length_traveled * _this.concentration / 100); }); // / 100000));
     };
     AqueousSubstance.prototype.color = function (background, l) {
         if (background === void 0) { background = [255, 255, 255]; }

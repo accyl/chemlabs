@@ -11,10 +11,12 @@ let spectra_kmno4_f = function() {
         let diff = x - 10 * floored;
         let idx = floored - 26;//(floored > 46 ? 46 : floored) - 26;
 
+        // let factor = // 1 / 46/(149 * 10 ^ -6);
+        let divisor  = 46 * 149 * 10e-6;
         // return spectra_kmno4[idx][1];
-        if (diff === 0) return spectra_kmno4[idx][1];
+        if (diff === 0) return spectra_kmno4[idx][1] / divisor;
 
-        return ((spectra_kmno4[idx + 1][1] - spectra_kmno4[idx][1]) / 10 * diff + spectra_kmno4[idx][1] ); // normalize it somewhat by dividing by 72
+        return ((spectra_kmno4[idx + 1][1] - spectra_kmno4[idx][1]) / 10 * diff + spectra_kmno4[idx][1]) / divisor; // normalize it somewhat by dividing by 72
 
         // return spectra_kmno4[(y > 46 ? 46 : y) - 26][1];
     };
