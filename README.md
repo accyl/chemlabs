@@ -28,13 +28,13 @@ For convenience a function f_daylight(wl) is provided that produces a
 fairly white color on (at least one) display screen. 
 
 f_daylight is loosely modeled on these 2 sources for spectral info for daylight
-(s1)[https://en.wikipedia.org/wiki/Sunlight#/media/File:Solar_spectrum_en.svg]
-(s2)[https://www.researchgate.net/figure/Spectral-distribution-of-natural-sunlight-in-San-Marcos-TX-at-noon-top-A-and-Phillips_fig1_339457060];
+[s1](https://en.wikipedia.org/wiki/Sunlight#/media/File:Solar_spectrum_en.svg)
+[s2](https://www.researchgate.net/figure/Spectral-distribution-of-natural-sunlight-in-San-Marcos-TX-at-noon-top-A-and-Phillips_fig1_339457060);
 and is pretty savagely approximated with 2 lines: 
 
 Suppose the naive way of simply plugging in transmittance:
 `rgb_from_spectrum(x => transmittance(spectra_f(x), c));`
-setting it at 0 concentration yields a very noticable hue.
+setting it at 0 concentration yields a very noticable pinkish hue.
 
 Because transmittance is the ratio of light that passes through a substance
 (as opposed to the light that gets absorbed.)
