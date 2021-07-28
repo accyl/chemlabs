@@ -69,7 +69,7 @@ class Drawer {
             // Also Systems correspond to Composites extremely closely - reduce objects
             return;
         } else if (s instanceof Substance) {
-            if (s instanceof AqueousSubstance) {
+            // if (s instanceof AqueousSubstance) {
                 // ctx.beginPath();
                 // ctx.stroke();
                 // ctx.fillStyle = "#" + s.color().join("");
@@ -83,7 +83,7 @@ class Drawer {
                 ctx.fillStyle = prevs;
 
                 return;
-            }
+            // }
         }
 
     }

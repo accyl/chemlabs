@@ -76,11 +76,11 @@ chemicals.set('H2O', function(){
     g.chemicalFormula = l.chemicalFormula = s.chemicalFormula = "H2O";
     g.molarMass = l.molarMass = s.molarMass = 18.01528; // g/mol;
 
-    g._getProtoSubstanceWithArgsOf = function (args: ProtoSubstanceWithArgs): ProtoSubstance {
+    l._getProtoSubstanceWithArgsOf = function (args: ProtoSubstanceWithArgs): ProtoSubstance {
         if (args.state === "s") return s;
         if (args.state === "l") return l;
         if (args.state === "g") return g;
-        return ProtoSubstance.NONE;
+        return l;
 
     }
 
@@ -88,7 +88,7 @@ chemicals.set('H2O', function(){
     Object.freeze(l);
     Object.freeze(s);
 
-    return g;
+    return l;
 }());
 chemicals.set('KMnO4', function(){
     // molar mass: 158.033949
@@ -100,7 +100,7 @@ chemicals.set('KMnO4', function(){
     aq.molar_absorptivity = [3160.68, 6913.98751, 1777.8825];
     aq.form = function () {
         // return new AqueousSubstance(this, w("H2O 1L")); // H2O.args().setState("l").amt("1 L").form());
-        let x = new SpectralAqueousSubstance(this, w("H2O 1L"), spectra_kmno4_f); 
+        let x = new SpectralAqueousSubstance(this, w("H2O 1L", false), spectra_kmno4_f); 
         // x.maxConcentration = 0.405;
         return x;
     };
@@ -108,6 +108,16 @@ chemicals.set('KMnO4', function(){
     aq.chemicalFormula = "KMnO4";
     aq.molarMass = 158.034; // g/mol
 
+    let s = new ProtoSubstance();
+    s.state = 's';
+    s.rgb = [0x9F,0x00,0xFF];
+    aq._getProtoSubstanceWithArgsOf = function (args: ProtoSubstanceWithArgs): ProtoSubstance {
+        if (args.state === "aq") return aq;
+        if (args.state === "s") return s;
+        return aq; // default condition, for if a state is omitted
+
+    }
+    Object.freeze(s); 
     Object.freeze(aq); // lock 
     return aq;
 }());

@@ -36,8 +36,8 @@ function slider() {
 
         let n = rgb_from_spectrum_concen(spectra_kmno4_f, h.value / 2500); // / 10);
         makeRect(0, 20, 10, 10, n, ctx);
-
-        let p = rgb_from_spectrum(x => f_daylight(x) * transmittance(spectra_kmno4_f(x) / 46 / (149 * 10 ^ -6), h.value / 10));
+//  / 46 / (149 * 10 ^ -6)
+        let p = rgb_from_spectrum(x => f_daylight(x) * transmittance(spectra_kmno4_f(x), h.value / 2500)); // 10));
         makeRect(0, 30, 10, 10, p, ctx);
         
         // let kmno4_base_xyz = [148.40102601907597, 113.28932147129379, 170.4166480460002];

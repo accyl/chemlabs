@@ -28,11 +28,10 @@ var SubstanceType = /** @class */ (function () {
         this.density = 1; // g/mL
         this.specificHeatCapacity = 0; // J/(g-K)
         this.chemicalFormula = "";
-        this.molar_absorptivity = [1, 1, 1]; // This is pretty cool. It gives us.
-        // Problem - we aren't simulating the full absorptivity for the full spectrum of color?
-        // Solution - we only need the absorptivity for red, green, and blue, since we assume 
-        // that white light is an equal mix of red, green and blue, we just need the absorptivity of the
-        // material in response to red, green and blue
+        /**
+         * @deprecated I was wrong. You can't use spectral data for only 3 specific wavelengths to predict rgb
+         * */
+        this.molar_absorptivity = [1, 1, 1];
         this.rgb = [255, 255, 255];
         this.state = "g";
         this.molarMass = -1;
@@ -267,8 +266,8 @@ var GaseousSubstance = /** @class */ (function (_super) {
 }(MolecularSubstance));
 var AqueousSubstance = /** @class */ (function (_super) {
     __extends(AqueousSubstance, _super);
-    function AqueousSubstance(solute, solvent) {
-        var _this = _super.call(this, solute) || this;
+    function AqueousSubstance(solutetype, solvent) {
+        var _this = _super.call(this, solutetype) || this;
         _this.maxConcentration = Number.POSITIVE_INFINITY; // Also called the maximum solubility
         _this.solvent = solvent;
         return _this;
@@ -286,7 +285,21 @@ var AqueousSubstance = /** @class */ (function (_super) {
                 return;
             }
             var molneeded = val * this.solvent.volume;
+            // we assume that the volume of solute is negligible
+            // because technically molarity is volume of solution, not
+            // volume of solvent
             this.mol = molneeded;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(AqueousSubstance.prototype, "volume", {
+        get: function () {
+            return this.solvent.volume;
+        },
+        set: function (val) {
+            // they probably want to change the solvent volume
+            this.solvent.volume = val;
         },
         enumerable: false,
         configurable: true

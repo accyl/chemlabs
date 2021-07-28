@@ -11,11 +11,10 @@ class SubstanceType {
     density: number = 1; // g/mL
     specificHeatCapacity: number = 0; // J/(g-K)
     chemicalFormula = "";
-    molar_absorptivity = [1, 1, 1]; // This is pretty cool. It gives us.
-    // Problem - we aren't simulating the full absorptivity for the full spectrum of color?
-    // Solution - we only need the absorptivity for red, green, and blue, since we assume 
-    // that white light is an equal mix of red, green and blue, we just need the absorptivity of the
-    // material in response to red, green and blue
+    /** 
+     * @deprecated I was wrong. You can't use spectral data for only 3 specific wavelengths to predict rgb
+     * */
+    molar_absorptivity = [1, 1, 1]; 
     rgb: tup = [255, 255, 255];
     state = "g";
     static NONE = new SubstanceType();
@@ -225,8 +224,8 @@ class GaseousSubstance extends MolecularSubstance{
 class AqueousSubstance extends MolecularSubstance {
     solvent: Substance;
     maxConcentration: num = Number.POSITIVE_INFINITY; // Also called the maximum solubility
-    constructor(solute: SubstanceType, solvent: Substance) {
-        super(solute);
+    constructor(solutetype: SubstanceType, solvent: Substance) {
+        super(solutetype);
         this.solvent = solvent;
     }
     get concentration() {
@@ -240,8 +239,18 @@ class AqueousSubstance extends MolecularSubstance {
             // so let's just reject it for now
             return;
         }
-        let molneeded = val * this.solvent.volume;
+        let molneeded = val * this.solvent.volume; 
+        // we assume that the volume of solute is negligible
+        // because technically molarity is volume of solution, not
+        // volume of solvent
         this.mol = molneeded;
+    }
+    set volume(val: num) {
+        // they probably want to change the solvent volume
+        this.solvent.volume = val;
+    }
+    get volume() {
+        return this.solvent.volume;
     }
     kValue() {
         return this.concentration;
