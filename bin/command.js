@@ -55,6 +55,7 @@ function formulaTknr(inp, startidx, bdr) {
         bdr.formula = inp.slice(startidx, sliceidx);
         return [bdr.formula, sliceidx];
     }
+    var pre_whitespace_idx = -1;
     for (; i < inp.length; i++) {
         var c = inp[i];
         if (_isCapital(c)) {
@@ -131,6 +132,7 @@ function formulaTknr(inp, startidx, bdr) {
             if (!(parens[0] === '(' && parens[parens.length - 1] === ')'))
                 throw "parenthesizer returned a fragment that doesn't both start and end with parentheses: " + parens;
             var insides = parens.slice(1, parens.length - 1);
+            var stop_1 = (pre_whitespace_idx !== -1) ? pre_whitespace_idx : i;
             if (insides === 's') {
                 // It could be a lone sulfur as a polyatomic ion
                 // although wtf
@@ -138,19 +140,19 @@ function formulaTknr(inp, startidx, bdr) {
                 // bdr.formula = inp.slice(startidx, i);
                 // we reached a state of matter. we can stop now
                 bdr.state = 's';
-                return updateBdr(newidx); // [inp.slice(startidx, newidx), newidx];
+                return updateBdr(stop_1); // omit the parenthesized portion
             }
             else if (insides === 'l' || insides === 'L') {
                 bdr.state = 'l';
-                return updateBdr(newidx); //[inp.slice(startidx, newidx), newidx];
+                return updateBdr(stop_1); //[inp.slice(startidx, newidx), newidx];
             }
             else if (insides === 'g' || insides === 'G') {
                 bdr.state = 'g';
-                return updateBdr(newidx); //[inp.slice(startidx, newidx), newidx];
+                return updateBdr(stop_1);
             }
             else if (insides.toLowerCase() === 'aq') {
                 bdr.state = 'aq';
-                return updateBdr(newidx); //[inp.slice(startidx, newidx), newidx];
+                return updateBdr(stop_1);
             }
             else {
                 // then it's probably a polyatomic ion
@@ -162,7 +164,7 @@ function formulaTknr(inp, startidx, bdr) {
         }
         else if (c === ' ') {
             // ooh this is tough. Should we ignore whitespace or treat it as a delimiter?
-            // well certain situations it's important to terat it as a delim
+            // well certain situations it's important to treat it as a delim
             // ie. H2O 5ml
             // but in other circumstances we should look ahead before returning
             // ie. H2O (g) 5mol
@@ -174,6 +176,7 @@ function formulaTknr(inp, startidx, bdr) {
             var c2 = inp[newidx];
             if (c2 == '(') {
                 // go run the parenthesizer
+                pre_whitespace_idx = i;
                 i = newidx - 1;
                 // this will get incremented at the end of the loop so
                 // i = (newidx-1)++ = newidx

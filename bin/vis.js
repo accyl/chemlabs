@@ -71,21 +71,21 @@ var Drawer = /** @class */ (function () {
             return;
         }
         else if (s instanceof Substance) {
-            if (s instanceof AqueousSubstance) {
-                // ctx.beginPath();
-                // ctx.stroke();
-                // ctx.fillStyle = "#" + s.color().join("");
-                var prevs = ctx.fillStyle;
-                ctx.fillStyle = s.hexcolor();
-                if (!s.physhook)
-                    s = phys(s);
-                if (!s.physhook)
-                    throw "broke";
-                this.drawB(ctx, s.physhook.rect);
-                // ctx.fillRect(s.physhook.pos.x, s.physhook.pos.y, s.physhook.size.x, s.physhook.size.y);
-                ctx.fillStyle = prevs;
-                return;
-            }
+            // if (s instanceof AqueousSubstance) {
+            // ctx.beginPath();
+            // ctx.stroke();
+            // ctx.fillStyle = "#" + s.color().join("");
+            var prevs = ctx.fillStyle;
+            ctx.fillStyle = s.hexcolor();
+            if (!s.physhook)
+                s = phys(s);
+            if (!s.physhook)
+                throw "broke";
+            this.drawB(ctx, s.physhook.rect);
+            // ctx.fillRect(s.physhook.pos.x, s.physhook.pos.y, s.physhook.size.x, s.physhook.size.y);
+            ctx.fillStyle = prevs;
+            return;
+            // }
         }
     };
     Drawer.prototype.drawC = function (ctx, cs) {
