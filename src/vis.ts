@@ -24,7 +24,7 @@ function phys<S extends Substance | System>(s: S, pos?: [num,num,num], size?:[nu
         if (s instanceof System) {
             // s.physhook = new PhysicsHook(pos, size);
 
-            s.physhook = new PhysicsHookNew(vec, vsize);
+            s.physhook = PhysicsHook2(vec, vsize); // new PhysicsHookNew(vec, vsize);
 
             for(let subs of s.substances) {
                 phys(subs);
@@ -33,7 +33,7 @@ function phys<S extends Substance | System>(s: S, pos?: [num,num,num], size?:[nu
 
         } else if (s instanceof Substance) {
             // s.physhook = new PhysicsHook(pos, size);
-            s.physhook = new PhysicsHookNew(vec, vsize);
+            s.physhook = PhysicsHook2(vec, vsize); //new PhysicsHookNew(vec, vsize);
             Matter.Composite.add(universe.world, [s.physhook.rect]);
 
         } else {

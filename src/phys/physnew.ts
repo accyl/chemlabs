@@ -7,6 +7,39 @@ type Vector = Matter.Vector;
 
 // Bridge between matter.js and the rest of my code
 // 
+interface PhysicsHookNew {
+    rect: Matter.Body;
+    size: Vector;
+    pos: Vector;
+    vel: Vector;
+}
+
+function PhysicsHook2(arg1: Matter.Body | Vector, size: Vector): PhysicsHookNew {
+    let body: any;//Matter.Body;
+
+    if ('x' in arg1 && 'y' in arg1) {
+        // Vector
+        arg1 = arg1 as Vector;
+        body = Matter.Bodies.rectangle(arg1.x, arg1.y, size.x, size.y, {
+            restitution: 0
+        });
+    } else {
+        body = arg1 as any;// Matter.Body;
+    }
+    body['size'] = size;
+    body['rect'] = body;
+    Object.defineProperty(body, 'pos', {
+        get: function () { return body.position },
+        set: function (x) { body.position = x }
+    });
+    Object.defineProperty(body, 'vel', {
+        get: function () { return body.velocity },
+        set: function (x) { body.velocity = x }
+    });
+    return body;
+}
+
+/*
 class PhysicsHookNew { //implements PhysicsHookCommon {
     rect;
     readonly size;
@@ -33,3 +66,4 @@ class PhysicsHookNew { //implements PhysicsHookCommon {
 
 
 }
+*/

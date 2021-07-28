@@ -144,7 +144,7 @@ class ProtoSubstanceWithArgs {
 
 class Substance {
     // loc: Locatable = Locatable.NONE;
-    physhook?: PhysicsHookNew = undefined;
+    physhook?: PhysicsHookNew;
     // mol = 0; 
     get mass() {
         return this.type.density * this.volume;
