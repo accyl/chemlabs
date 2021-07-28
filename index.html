@@ -31,13 +31,21 @@
 		<br>
 		<div>
 			<div class="textarea-wrapper">
-				<input name="message" id="cmdbox" placeholder="Enter Chemical Here" rows="1">
+				<form action="" onsubmit="return false;">
+				<input type='text' name="message" id="cmdbox" placeholder="Enter Chemical Here" rows="1">
 
-				<button class="button" id="cmdbtn" onclick="onCommandButton()">Graph</button>
+				<input type='submit' class="button" id="cmdbtn" onclick="onCommandButton()">Add to World</button>
+				</form>
 			</div>
 			
 		</div>
 		<div class="system-viewer sm-vw">
+			<div class="debug-viewer db-vw">
+				<span>Last Clicked Object</span>
+				<div class="db-vw-paste">
+
+				</div>
+			</div>
 			<div class="sm-vw-query">
 				<span>Major Species in System </span>
 				<input name="message" id="sm-vw-id" value="glob" rows="1">
@@ -60,41 +68,42 @@
 		</footer>
 
 	<!-- Scripts -->
-	<!-- <script>var exports = {};</script> -->
-	<!-- <script src="https://unpkg.com/lodash@4.17.20"></script> -->
+	<div class="scripts-div">
+		<!-- <script>var exports = {};</script> -->
+		<!-- <script src="https://unpkg.com/lodash@4.17.20"></script> -->
 
-	<!-- <script src="data/ptabledata.js"></script> -->
-	<script src="bin/first.js"></script>
+		<!-- <script src="data/ptabledata.js"></script> -->
+		<script src="bin/first.js"></script>
 
-	<script src="bin/ptable.js"></script>
+		<script src="bin/ptable.js"></script>
 
-	<script src="bin/command.js"></script>
+		<script src="bin/command.js"></script>
 
-	<script src="bin/math.js"></script>
-
-
-	<script src="raw/matter.min.js"></script>
-	
-	<script src="raw/tut.matter.js"></script>
-
-	<script src="bin/phys/physold.js"></script>
-	<script src="bin/phys/physnew.js"></script>
-
-	<script src="bin/chem.js"></script>
-	<script src="bin/chemicals.js"></script>
-	<script src="bin/vis.js"></script>
+		<script src="bin/math.js"></script>
 
 
-	<!-- <script src="bin/color/colorMatchFuncsCIExyz.js"></script> -->
-	<script src="bin/color/color.js"></script>
-	<script src="bin/color/colortest.js"></script>
-	<script src="bin/color/colormodels.js"></script>
-	<!-- <script type='module' src="bin/moduleload.js"></script> -->
-	<!-- <script src="bin/command.js"></script> -->
+		<script src="raw/matter.min.js"></script>
+		
+		<script src="raw/tut.matter.js"></script>
 
-	<script src="bin/load.js"></script>
+		<script src="bin/phys/physold.js"></script>
+		<script src="bin/phys/physnew.js"></script>
+
+		<script src="bin/chem.js"></script>
+		<script src="bin/chemicals.js"></script>
+		<script src="bin/vis.js"></script>
 
 
+		<!-- <script src="bin/color/colorMatchFuncsCIExyz.js"></script> -->
+		<script src="bin/color/color.js"></script>
+		<script src="bin/color/colortest.js"></script>
+		<script src="bin/color/colormodels.js"></script>
+		<!-- <script type='module' src="bin/moduleload.js"></script> -->
+		<!-- <script src="bin/command.js"></script> -->
+
+		<script src="bin/load.js"></script>
+
+	</div>
 
 	</body>
 </html>

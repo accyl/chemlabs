@@ -55,11 +55,11 @@ chemicals.set('H2O', function () {
     g.specificHeatCapacity = 2.080;
     var l = new ProtoSubstance();
     l.state = "l";
-    l.density = 0.9998395;
+    l.density = 999.8395;
     l.specificHeatCapacity = 4.184;
     var s = new ProtoSubstance();
     s.state = "s";
-    s.density = 0.9168; // ice
+    s.density = 916.8; // ice
     s.specificHeatCapacity = 2.05;
     g.chemicalFormula = l.chemicalFormula = s.chemicalFormula = "H2O";
     g.molarMass = l.molarMass = s.molarMass = 18.01528; // g/mol;
@@ -96,6 +96,7 @@ chemicals.set('KMnO4', function () {
     var s = new ProtoSubstance();
     s.state = 's';
     s.rgb = [0x9F, 0x00, 0xFF];
+    s.density = 2700;
     aq._getProtoSubstanceWithArgsOf = function (args) {
         if (args.state === "aq")
             return aq;

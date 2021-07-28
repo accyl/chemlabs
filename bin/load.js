@@ -92,6 +92,21 @@ function onCommandButton() {
     console.log(s);
     return s;
 }
+function debugBody(body) {
+    var paste = document.getElementsByClassName('db-vw-paste')[0];
+    if ('subst' in body) {
+        var ph = body;
+        var ret = '';
+        if (!(ph.subst instanceof Substance))
+            throw "subst field isn't a substance?";
+        var s = ph.subst;
+        ret = s.type.chemicalFormula + " " + s.mass + "g " + s.volume + "L " + s.temperature + "K";
+        paste.textContent = ret;
+    }
+    else {
+        paste.textContent = "None";
+    }
+}
 // __ = function () {
 //     let h = document.getElementById("cmdbox") as HTMLTextAreaElement;
 //     function submitOnEnter(event: any) {
