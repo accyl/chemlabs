@@ -12,9 +12,10 @@ interface PhysicsHookNew {
     size: Vector;
     pos: Vector;
     vel: Vector;
+    subst?: Substance;
 }
 
-function PhysicsHook2(arg1: Matter.Body | Vector, size: Vector): PhysicsHookNew {
+function PhysicsHook2(arg1: Matter.Body | Vector, size: Vector, subst?: Substance): PhysicsHookNew {
     let body: any;//Matter.Body;
 
     if ('x' in arg1 && 'y' in arg1) {
@@ -28,6 +29,8 @@ function PhysicsHook2(arg1: Matter.Body | Vector, size: Vector): PhysicsHookNew 
     }
     body['size'] = size;
     body['rect'] = body;
+    body['subst'] = subst;
+
     Object.defineProperty(body, 'pos', {
         get: function () { return body.position },
         set: function (x) { body.position = x }

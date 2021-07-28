@@ -98,6 +98,19 @@ function onCommandButton() {
     return s;
 }
 
+function debugBody(body: Matter.Body) {
+    let paste = document.getElementsByClassName('db-vw-paste')[0];
+    if('subst' in body) {
+        let ph = body as Matter.Body & {'subst': any};
+        let ret = '';
+        if(!(ph.subst instanceof Substance)) throw "subst field isn't a substance?";
+        let s = ph.subst as Substance;
+        ret = `${s.type.chemicalFormula} ${s.mass}g ${s.volume}L ${s.temperature}K`;
+        paste.textContent = ret;
+    } else {
+        paste.textContent = "None";
+    }
+}
 // __ = function () {
 //     let h = document.getElementById("cmdbox") as HTMLTextAreaElement;
 //     function submitOnEnter(event: any) {

@@ -1,6 +1,6 @@
 "use strict";
 // <reference path='../../raw/matter.min.js'/>
-function PhysicsHook2(arg1, size) {
+function PhysicsHook2(arg1, size, subst) {
     var body; //Matter.Body;
     if ('x' in arg1 && 'y' in arg1) {
         // Vector
@@ -14,6 +14,7 @@ function PhysicsHook2(arg1, size) {
     }
     body['size'] = size;
     body['rect'] = body;
+    body['subst'] = subst;
     Object.defineProperty(body, 'pos', {
         get: function () { return body.position; },
         set: function (x) { body.position = x; }

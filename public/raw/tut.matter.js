@@ -84,9 +84,15 @@ __ = function() {
     // Matter.Events.on(engine, 'beforeUpdate', limitMaxSpeed);
 
     Matter.World.add(world, mouseConstraint);
+    Matter.Events.on(mouseConstraint, "startdrag", (event) => {
+        let body = event.body;
+        debugBody(body);
+    });
+
     // run the engine
     // Render.setPixelRatio(render, 'auto');
     Runner.run(runner, engine);
+
 
 
 

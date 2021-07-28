@@ -65,12 +65,12 @@ chemicals.set('H2O', function(){
 
     let l = new ProtoSubstance();
     l.state = "l";
-    l.density = 0.9998395;
+    l.density = 999.8395;
     l.specificHeatCapacity = 4.184;
 
     let s = new ProtoSubstance();
     s.state = "s";
-    s.density = 0.9168; // ice
+    s.density = 916.8; // ice
     s.specificHeatCapacity = 2.05;
 
     g.chemicalFormula = l.chemicalFormula = s.chemicalFormula = "H2O";
@@ -111,6 +111,7 @@ chemicals.set('KMnO4', function(){
     let s = new ProtoSubstance();
     s.state = 's';
     s.rgb = [0x9F,0x00,0xFF];
+    s.density = 2700;
     aq._getProtoSubstanceWithArgsOf = function (args: ProtoSubstanceWithArgs): ProtoSubstance {
         if (args.state === "aq") return aq;
         if (args.state === "s") return s;
