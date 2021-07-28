@@ -23,7 +23,7 @@ function phys(s, pos, size) {
         }
         if (s instanceof System) {
             // s.physhook = new PhysicsHook(pos, size);
-            s.physhook = new PhysicsHookNew(vec, vsize);
+            s.physhook = PhysicsHook2(vec, vsize); // new PhysicsHookNew(vec, vsize);
             for (var _i = 0, _a = s.substances; _i < _a.length; _i++) {
                 var subs = _a[_i];
                 phys(subs);
@@ -31,7 +31,7 @@ function phys(s, pos, size) {
         }
         else if (s instanceof Substance) {
             // s.physhook = new PhysicsHook(pos, size);
-            s.physhook = new PhysicsHookNew(vec, vsize);
+            s.physhook = PhysicsHook2(vec, vsize); //new PhysicsHookNew(vec, vsize);
             Matter.Composite.add(universe.world, [s.physhook.rect]);
         }
         else {

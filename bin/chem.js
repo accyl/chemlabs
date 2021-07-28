@@ -159,8 +159,6 @@ var ProtoSubstanceWithArgs = /** @class */ (function () {
 // alert(rgbToHex(0, 51, 255)); // #0033ff
 var Substance = /** @class */ (function () {
     function Substance(type) {
-        // loc: Locatable = Locatable.NONE;
-        this.physhook = undefined;
         this._v = 1;
         this._T = 0;
         this.type = type ? type : SubstanceType.NONE;
