@@ -1,20 +1,21 @@
 "use strict";
 // <reference path='../../raw/matter.min.js'/>
 function PhysicsHook2(arg1, size, subst) {
-    var body; //Matter.Body;
+    var body0;
     if ('x' in arg1 && 'y' in arg1) {
         // Vector
         arg1 = arg1;
-        body = Matter.Bodies.rectangle(arg1.x, arg1.y, size.x, size.y, {
+        body0 = Matter.Bodies.rectangle(arg1.x, arg1.y, size.x, size.y, {
             restitution: 0
         });
     }
     else {
-        body = arg1; // Matter.Body;
+        body0 = arg1; // Matter.Body;
     }
+    var body = body0; //Matter.Body;
     body['size'] = size;
-    body['rect'] = body;
-    body['subst'] = subst;
+    body['rect'] = body0;
+    body['substs'] = coerceToSystem(subst);
     Object.defineProperty(body, 'pos', {
         get: function () { return body.position; },
         set: function (x) { body.position = x; }

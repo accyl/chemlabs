@@ -157,13 +157,56 @@ var ProtoSubstanceWithArgs = /** @class */ (function () {
 //     return "#" + _componentToHex(r) + _componentToHex(g) + _componentToHex(b);
 // }
 // alert(rgbToHex(0, 51, 255)); // #0033ff
-var Substance = /** @class */ (function () {
-    function Substance(type) {
-        this._v = 1;
-        this._T = 0;
-        this.type = type ? type : SubstanceType.NONE;
-        this.state = type ? type.state : "";
+/**
+ * Coerce a substance into basically being a unit system
+ * @param x
+ */
+function coerceToSystem(x) {
+    // if(!x) return undefined;
+    var a = x;
+    if ('substances' in x && 'equilibria' in x && 'subsystems' in x)
+        return x;
+    if ('substances' in x || 'equilibria' in x || 'subsystems' in x)
+        throw "partially initialized substance/system hybrid: " + x;
+    a['substances'] = [a];
+    a['equilibria'] = [];
+    a['subsystems'] = [];
+    a.getSubstance = function () { return a; };
+    return a;
+}
+var System = /** @class */ (function () {
+    function System() {
+        this.substances = [];
+        this.equilibria = [];
+        this.subsystems = [];
     }
+    Object.defineProperty(System.prototype, "s", {
+        get: function () { return this.substances; },
+        enumerable: false,
+        configurable: true
+    });
+    System.prototype.getSubstance = function (key) {
+        if (key === void 0) { key = 0; }
+        return this.substances[key];
+    };
+    return System;
+}());
+var Substance = /** @class */ (function (_super) {
+    __extends(Substance, _super);
+    function Substance(type) {
+        var _this = _super.call(this) || this;
+        _this.subsystems = [];
+        _this.equilibria = [];
+        _this._v = 1;
+        _this._T = 0;
+        _this.type = type ? type : SubstanceType.NONE;
+        _this.state = type ? type.state : "";
+        var a = [];
+        a.push(_this);
+        _this.substances = a;
+        return _this;
+    }
+    Substance.prototype.getSubstance = function (key) { return this; };
     Object.defineProperty(Substance.prototype, "mass", {
         // mol = 0; 
         get: function () {
@@ -209,7 +252,7 @@ var Substance = /** @class */ (function () {
         return _hex.apply(void 0, c);
     };
     return Substance;
-}());
+}(System));
 var MolecularSubstance = /** @class */ (function (_super) {
     __extends(MolecularSubstance, _super);
     // molarMass = 1;
@@ -370,22 +413,6 @@ var EqbReaction = /** @class */ (function (_super) {
     }
     return EqbReaction;
 }(BalancedRxn));
-var System = /** @class */ (function () {
-    function System() {
-        this.substances = [];
-        this.equilibria = [];
-        this.subsystems = [];
-    }
-    Object.defineProperty(System.prototype, "s", {
-        get: function () { return this.substances; },
-        enumerable: false,
-        configurable: true
-    });
-    System.prototype.getSubstance = function (key) {
-        return this.substances[key];
-    };
-    return System;
-}());
 var SystemEquilibrium = /** @class */ (function () {
     function SystemEquilibrium(sys, eqb) {
         this.reactants = [];

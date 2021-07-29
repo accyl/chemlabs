@@ -21,22 +21,21 @@ function phys(s, pos, size) {
         else {
             vsize = { 'x': 100, 'y': 100 };
         }
-        if (s instanceof System) {
+        if (s instanceof Substance) {
             // s.physhook = new PhysicsHook(pos, size);
-            s.physhook = PhysicsHook2(vec, vsize); // new PhysicsHookNew(vec, vsize);
+            s.physhook = PhysicsHook2(vec, vsize, s); //new PhysicsHookNew(vec, vsize);
+            Matter.Composite.add(universe.world, [s.physhook]); //.rect]);
+        }
+        else if (s instanceof System) {
+            // s.physhook = new PhysicsHook(pos, size);
+            s.physhook = PhysicsHook2(vec, vsize, s); // new PhysicsHookNew(vec, vsize);
             for (var _i = 0, _a = s.substances; _i < _a.length; _i++) {
                 var subs = _a[_i];
                 phys(subs);
             }
         }
-        else if (s instanceof Substance) {
-            // s.physhook = new PhysicsHook(pos, size);
-            s.physhook = PhysicsHook2(vec, vsize, s); //new PhysicsHookNew(vec, vsize);
-            Matter.Composite.add(universe.world, [s.physhook.rect]);
-        }
-        else {
+        else
             throw "Somehow passed arg was neither substance nor system? " + s;
-        }
     }
     return s;
 }
@@ -44,7 +43,24 @@ var Drawer = /** @class */ (function () {
     function Drawer() {
     }
     Drawer.prototype.draw = function (ctx, s) {
-        if (s instanceof System) {
+        if (s instanceof Substance) {
+            // if (s instanceof AqueousSubstance) {
+            // ctx.beginPath();
+            // ctx.stroke();
+            // ctx.fillStyle = "#" + s.color().join("");
+            var prevs = ctx.fillStyle;
+            ctx.fillStyle = s.hexcolor();
+            if (!s.physhook)
+                s = phys(s);
+            if (!s.physhook)
+                throw "broke";
+            this.drawB(ctx, s.physhook); //.rect);
+            // ctx.fillRect(s.physhook.pos.x, s.physhook.pos.y, s.physhook.size.x, s.physhook.size.y);
+            ctx.fillStyle = prevs;
+            return;
+            // }
+        }
+        else if (s instanceof System) {
             s = s;
             for (var _i = 0, _a = s.substances; _i < _a.length; _i++) {
                 var sub = _a[_i];
@@ -58,11 +74,9 @@ var Drawer = /** @class */ (function () {
             // ctx.stroke();
             // let prevs = ctx.fillStyle;
             // ctx.fillStyle = "#FFFFFFFF";
-            if (!s.physhook)
-                s = phys(s);
+            // if (!s.physhook) s = phys(s);
             // ctx.fillRect(s.physhook.loc[0], s.physhook.loc[1], s.physhook.xsize, s.physhook.ysize);
-            if (!s.physhook)
-                throw "broke";
+            // if (!s.physhook) throw "broke";
             // this.drawB(ctx, s.physhook.rect);
             // ctx.fillStyle = prevs;
             // the order kinda matters but I'll leave that up to custom drawers
@@ -70,29 +84,16 @@ var Drawer = /** @class */ (function () {
             // Also Systems correspond to Composites extremely closely - reduce objects
             return;
         }
-        else if (s instanceof Substance) {
-            // if (s instanceof AqueousSubstance) {
-            // ctx.beginPath();
-            // ctx.stroke();
-            // ctx.fillStyle = "#" + s.color().join("");
-            var prevs = ctx.fillStyle;
-            ctx.fillStyle = s.hexcolor();
-            if (!s.physhook)
-                s = phys(s);
-            if (!s.physhook)
-                throw "broke";
-            this.drawB(ctx, s.physhook.rect);
-            // ctx.fillRect(s.physhook.pos.x, s.physhook.pos.y, s.physhook.size.x, s.physhook.size.y);
-            ctx.fillStyle = prevs;
-            return;
-            // }
-        }
+        else
+            throw "Somehow passed arg was neither substance nor system? " + s;
     };
     Drawer.prototype.drawC = function (ctx, cs) {
         // ctx.stroke();
         ctx.strokeStyle = '#888888';
         for (var _i = 0, _a = Matter.Composite.allBodies(cs); _i < _a.length; _i++) {
             var b = _a[_i];
+            if ('substs' in b)
+                continue; // skip it to avoid duplicates
             this.drawB(ctx, b);
         }
     };
@@ -110,17 +111,19 @@ var Drawer = /** @class */ (function () {
     };
     return Drawer;
 }());
+var canvas = document.getElementById('canvas');
+var ctx = canvas.getContext('2d');
 var glob = new System();
-phys(glob);
+phys(glob, [0, 0, 0], [canvas.width, canvas.height, 0]);
 function tang(s, addToGlobal, pos, size) {
     if (addToGlobal === void 0) { addToGlobal = true; }
     var ret = phys(s);
     if (addToGlobal) {
-        if (ret instanceof System) {
-            glob.subsystems.push(ret);
-        }
-        else if (ret instanceof Substance) {
+        if (ret instanceof Substance) {
             glob.substances.push(ret);
+        }
+        else if (ret instanceof System) {
+            glob.subsystems.push(ret);
         }
         else
             throw "s " + ret + "not instanceof System nor Substance!";
