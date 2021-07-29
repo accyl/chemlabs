@@ -1,4 +1,4 @@
-function defButton() {
+function addDefault() {
     let sub = KMnO4.form();
     tang(sub);
 
@@ -9,7 +9,7 @@ function defButton() {
 
 function slider() {
     let h = document.querySelector("#slider") as any;
-    for(let s of glob.s) {
+    for(let s of glob.substances) {
         if(s instanceof AqueousSubstance) {
             // s.concentration = h.value / 10000000;
             // s.concentration = h.value / 10;
@@ -100,12 +100,14 @@ function onCommandButton() {
 
 function debugBody(body: Matter.Body) {
     let paste = document.getElementsByClassName('db-vw-paste')[0];
-    if('subst' in body) {
-        let ph = body as Matter.Body & {'subst': any};
+    if('substs' in body) {
+        let ph = body as Matter.Body & {'substs': System};
         let ret = '';
-        if(!(ph.subst instanceof Substance)) throw "subst field isn't a substance?";
-        let s = ph.subst as Substance;
-        ret = `${s.type.chemicalFormula} ${s.mass}g ${s.volume}L ${s.temperature}K`;
+        if(!(ph.substs instanceof System)) throw "substs field isn't a system?";
+        let ss = ph.substs as System;
+        for(let s of ss.substances) {
+            ret += `${s.type.chemicalFormula} (${s.state}) ${s.mass}g ${s.volume}L ${s.temperature}K \n`;
+        }
         paste.textContent = ret;
     } else {
         paste.textContent = "None";
@@ -124,3 +126,4 @@ function debugBody(body: Matter.Body) {
 
 //     h.addEventListener("keypress", submitOnEnter);
 // }();
+addDefault();

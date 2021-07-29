@@ -1,5 +1,5 @@
 "use strict";
-function defButton() {
+function addDefault() {
     var sub = KMnO4.form();
     tang(sub);
     var sub2 = w('KMnO4');
@@ -8,7 +8,7 @@ function defButton() {
 }
 function slider() {
     var h = document.querySelector("#slider");
-    for (var _i = 0, _a = glob.s; _i < _a.length; _i++) {
+    for (var _i = 0, _a = glob.substances; _i < _a.length; _i++) {
         var s = _a[_i];
         if (s instanceof AqueousSubstance) {
             // s.concentration = h.value / 10000000;
@@ -21,20 +21,20 @@ function slider() {
     var canvas = document.getElementById("canvas");
     var hud = document.getElementById("hud");
     if (hud && hud instanceof HTMLCanvasElement) {
-        var ctx = hud.getContext("2d");
-        if (ctx === null)
+        var ctx_1 = hud.getContext("2d");
+        if (ctx_1 === null)
             throw "Context is null?";
         // gvar.ctxt = ctxt;
         // let m = irgb_from_xyz(xyz_from_spectrum(x => f_daylight(x) * transmittance(spectra_kmno4_f(x), h.value / 1000)));
         // let m = rgb_from_spectrum(f_daylight);
         var m = rgb_from_spectrum(function (x) { return transmittance(spectra_kmno4_f(x), h.value / 2500); }); // / 10));
         // ctxt.beginPath();
-        makeRect(0, 10, 10, 10, m, ctx);
+        makeRect(0, 10, 10, 10, m, ctx_1);
         var n = rgb_from_spectrum_concen(spectra_kmno4_f, h.value / 2500); // / 10);
-        makeRect(0, 20, 10, 10, n, ctx);
+        makeRect(0, 20, 10, 10, n, ctx_1);
         //  / 46 / (149 * 10 ^ -6)
         var p = rgb_from_spectrum(function (x) { return f_daylight(x) * transmittance(spectra_kmno4_f(x), h.value / 2500); }); // 10));
-        makeRect(0, 30, 10, 10, p, ctx);
+        makeRect(0, 30, 10, 10, p, ctx_1);
         // let kmno4_base_xyz = [148.40102601907597, 113.28932147129379, 170.4166480460002];
         // let q = rgb_from_base_xyz(kmno4_base_xyz, h.value / 10);
         // ctxt.fillStyle = _hex(q[0], q[1], q[2]);
@@ -94,13 +94,16 @@ function onCommandButton() {
 }
 function debugBody(body) {
     var paste = document.getElementsByClassName('db-vw-paste')[0];
-    if ('subst' in body) {
+    if ('substs' in body) {
         var ph = body;
         var ret = '';
-        if (!(ph.subst instanceof Substance))
-            throw "subst field isn't a substance?";
-        var s = ph.subst;
-        ret = s.type.chemicalFormula + " " + s.mass + "g " + s.volume + "L " + s.temperature + "K";
+        if (!(ph.substs instanceof System))
+            throw "substs field isn't a system?";
+        var ss = ph.substs;
+        for (var _i = 0, _a = ss.substances; _i < _a.length; _i++) {
+            var s = _a[_i];
+            ret += s.type.chemicalFormula + " (" + s.state + ") " + s.mass + "g " + s.volume + "L " + s.temperature + "K \n";
+        }
         paste.textContent = ret;
     }
     else {
@@ -119,3 +122,4 @@ function debugBody(body) {
 //     }
 //     h.addEventListener("keypress", submitOnEnter);
 // }();
+addDefault();

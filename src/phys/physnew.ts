@@ -7,30 +7,31 @@ type Vector = Matter.Vector;
 
 // Bridge between matter.js and the rest of my code
 // 
-interface PhysicsHookNew {
-    rect: Matter.Body;
+interface Beakerlike extends Matter.Body{
+    // rect: Matter.Body;
     size: Vector;
     pos: Vector;
     vel: Vector;
-    subst?: Substance;
+    substs?: System;
+    // area: num; 10 area = 1 mL
 }
 
-function PhysicsHook2(arg1: Matter.Body | Vector, size: Vector, subst?: Substance): PhysicsHookNew {
-    let body: any;//Matter.Body;
-
+function PhysicsHook2(arg1: Matter.Body | Vector, size: Vector, subst: Substance | System): Beakerlike {
+    let body0: Matter.Body;
     if ('x' in arg1 && 'y' in arg1) {
         // Vector
         arg1 = arg1 as Vector;
-        body = Matter.Bodies.rectangle(arg1.x, arg1.y, size.x, size.y, {
+        body0 = Matter.Bodies.rectangle(arg1.x, arg1.y, size.x, size.y, {
             restitution: 0
         });
+        
     } else {
-        body = arg1 as any;// Matter.Body;
+        body0 = arg1 as any;// Matter.Body;
     }
+    let body = body0 as Matter.Body & { 'size': Vector, 'rect': Matter.Body, 'substs': System };//Matter.Body;
     body['size'] = size;
-    body['rect'] = body;
-    body['subst'] = subst;
-
+    body['rect'] = body0;
+    body['substs'] = coerceToSystem(subst);
     Object.defineProperty(body, 'pos', {
         get: function () { return body.position },
         set: function (x) { body.position = x }
@@ -39,7 +40,7 @@ function PhysicsHook2(arg1: Matter.Body | Vector, size: Vector, subst?: Substanc
         get: function () { return body.velocity },
         set: function (x) { body.velocity = x }
     });
-    return body;
+    return body as any;
 }
 
 /*

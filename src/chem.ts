@@ -142,9 +142,41 @@ class ProtoSubstanceWithArgs {
 
 // alert(rgbToHex(0, 51, 255)); // #0033ff
 
-class Substance {
+/**
+ * Coerce a substance into basically being a unit system
+ * @param x 
+ */
+function coerceToSystem(x: Substance | System): System {
+    // if(!x) return undefined;
+    let a = x as any;
+    if ('substances' in x && 'equilibria' in x && 'subsystems' in x) return x;
+    if ('substances' in x || 'equilibria' in x || 'subsystems' in x) throw "partially initialized substance/system hybrid: " + x;
+    a['substances'] = [a];
+    a['equilibria'] = [];
+    a['subsystems'] = [];
+    a.getSubstance = function () { return a; }
+    return a;
+}
+
+class System {
+    physhook?: Beakerlike;
+
+    substances: Substance[] = [];
+    equilibria: EqbReaction[] = [];
+    subsystems: System[] = [];
+    get s() { return this.substances; }
+    getSubstance(key = 0) {
+        return this.substances[key];
+    }
+}
+class Substance extends System {
     // loc: Locatable = Locatable.NONE;
-    physhook?: PhysicsHookNew;
+    physhook?: Beakerlike;
+    // add some stuff to coerce it into technically being a system with only 1 thing in it
+    readonly substances: Substance[];
+    readonly subsystems: System[] = [];
+    readonly equilibria: EqbReaction[] = [];
+    getSubstance(key: number) {return this;}
     // mol = 0; 
     get mass() {
         return this.type.density * this.volume;
@@ -173,9 +205,12 @@ class Substance {
         // this is usually the molarity
     }
     constructor(type?: SubstanceType) {
-        
+        super();
         this.type = type ? type : SubstanceType.NONE;
         this.state = type ? type.state : "";
+        let a = [];
+        a.push(this);
+        this.substances = a;
     }
     color(background: tup = [255, 255, 255]): tup {
         return this.type.rgb;
@@ -306,18 +341,6 @@ class EqbReaction extends BalancedRxn {
     K = 1;
 }
 
-
-class System {
-    physhook?: PhysicsHookNew;
-
-    substances: Substance[] = [];
-    get s() {return this.substances;}
-    equilibria: EqbReaction[] = [];
-    getSubstance(key: number) {
-        return this.substances[key];
-    }
-    subsystems: System[] = [];
-}
 class SystemEquilibrium {
     sys: System;
     reactants: Substance[] = [];
@@ -343,5 +366,9 @@ class SystemEquilibrium {
         }
         return Rs/Ps;
     }
+
+    // ΔG = ΔG° + RTlnQ
+    // ΔG° = -RTlnK
+    // K = exp(-RT/ΔG°)
     
 }
