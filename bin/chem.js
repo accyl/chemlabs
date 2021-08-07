@@ -149,17 +149,11 @@ var ProtoSubstanceWithArgs = /** @class */ (function () {
     };
     return ProtoSubstanceWithArgs;
 }());
-// function _componentToHex2(c: number) {
-//     var hex = Math.round(c).toString(16);
-//     return hex.length == 1 ? "0" + hex : hex;
-// }
-// function _rgbToHex(r: num, g: num, b: num) {
-//     return "#" + _componentToHex(r) + _componentToHex(g) + _componentToHex(b);
-// }
-// alert(rgbToHex(0, 51, 255)); // #0033ff
 /**
  * Coerce a substance into basically being a unit system
+ * Not needed since Substances are already SubstGroups
  * @param x
+ * @deprecated
  */
 function coerceToSystem(x) {
     // if(!x) return undefined;
@@ -174,23 +168,43 @@ function coerceToSystem(x) {
     a.getSubstance = function () { return a; };
     return a;
 }
-var System = /** @class */ (function () {
-    function System() {
+var SubstGroup = /** @class */ (function () {
+    function SubstGroup() {
         this.substances = [];
         this.equilibria = [];
         this.subsystems = [];
     }
-    Object.defineProperty(System.prototype, "s", {
+    Object.defineProperty(SubstGroup.prototype, "s", {
         get: function () { return this.substances; },
         enumerable: false,
         configurable: true
     });
-    System.prototype.getSubstance = function (key) {
+    SubstGroup.prototype.getSubstance = function (key) {
         if (key === void 0) { key = 0; }
         return this.substances[key];
     };
-    return System;
+    SubstGroup.prototype.toString = function () {
+        return "[" + ("" + this.substances) + "]";
+    };
+    SubstGroup.BOUNDS_ONLY = new SubstGroup(); // pass this to newPhysicsHook to have a bounds-only physhook
+    return SubstGroup;
 }());
+/*
+var handler = {
+    get: function(target, name) {
+        if (name in target) {
+            return target[name];
+        }
+        if (name == 'length') {
+            return Infinity;
+        }
+        return name * name;
+    }
+};
+var p = new Proxy({}, handler);
+
+p[4]; //returns 16, which is the square of 4.
+*/
 var Substance = /** @class */ (function (_super) {
     __extends(Substance, _super);
     function Substance(type) {
@@ -198,7 +212,7 @@ var Substance = /** @class */ (function (_super) {
         _this.subsystems = [];
         _this.equilibria = [];
         _this._v = 1;
-        _this._T = 0;
+        _this._T = 273.15;
         _this.type = type ? type : SubstanceType.NONE;
         _this.state = type ? type.state : "";
         var a = [];
@@ -251,8 +265,11 @@ var Substance = /** @class */ (function (_super) {
         var c = this.color(background);
         return _hex.apply(void 0, c);
     };
+    Substance.prototype.toString = function () {
+        return this.type.chemicalFormula + " " + this.mass + "g";
+    };
     return Substance;
-}(System));
+}(SubstGroup));
 var MolecularSubstance = /** @class */ (function (_super) {
     __extends(MolecularSubstance, _super);
     // molarMass = 1;

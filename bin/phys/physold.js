@@ -32,8 +32,8 @@ var Locatable = /** @class */ (function (_super) {
     }();
     return Locatable;
 }(GeneralizedFunction));
-var PhysicsHook = /** @class */ (function () {
-    function PhysicsHook(pos, size) {
+var PhysicsHook3 = /** @class */ (function () {
+    function PhysicsHook3(pos, size) {
         this.xsize = 10;
         this.ysize = 10;
         this.zsize = 10;
@@ -44,7 +44,7 @@ var PhysicsHook = /** @class */ (function () {
             this.zsize = size[2];
         }
     }
-    Object.defineProperty(PhysicsHook.prototype, "pos", {
+    Object.defineProperty(PhysicsHook3.prototype, "pos", {
         get: function () {
             return this.loc.pos(0);
         },
@@ -59,7 +59,7 @@ var PhysicsHook = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
-    Object.defineProperty(PhysicsHook.prototype, "vel", {
+    Object.defineProperty(PhysicsHook3.prototype, "vel", {
         get: function () {
             return this.loc.vel(0);
         },
@@ -74,7 +74,7 @@ var PhysicsHook = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
-    Object.defineProperty(PhysicsHook.prototype, "acc", {
+    Object.defineProperty(PhysicsHook3.prototype, "acc", {
         get: function () {
             return this.loc.acc(0);
         },
@@ -89,7 +89,7 @@ var PhysicsHook = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
-    Object.defineProperty(PhysicsHook.prototype, "size", {
+    Object.defineProperty(PhysicsHook3.prototype, "size", {
         get: function () {
             return [this.xsize, this.ysize, this.zsize];
         },
@@ -99,5 +99,5 @@ var PhysicsHook = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
-    return PhysicsHook;
+    return PhysicsHook3;
 }());

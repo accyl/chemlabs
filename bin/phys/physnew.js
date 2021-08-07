@@ -1,6 +1,6 @@
 "use strict";
 // <reference path='../../raw/matter.min.js'/>
-function PhysicsHook2(arg1, size, subst) {
+function newPhysicsHook(arg1, size, subst) {
     var body0;
     if ('x' in arg1 && 'y' in arg1) {
         // Vector
@@ -12,10 +12,26 @@ function PhysicsHook2(arg1, size, subst) {
     else {
         body0 = arg1; // Matter.Body;
     }
-    var body = body0; //Matter.Body;
+    var body = body0; //, 'boundsOnly': boolean };//Matter.Body;
     body['size'] = size;
     body['rect'] = body0;
-    body['substs'] = coerceToSystem(subst);
+    if (!subst || subst === SubstGroup.BOUNDS_ONLY) {
+        // body['substs'] = SubstGroup.BOUNDS_ONLY;
+        body['substs'] = undefined;
+        body['collisionFilter'] = CollisionFilters.GASLIKE;
+        body['ignoreGravity'] = true;
+        body['label'] = 'Bound';
+    }
+    else {
+        body['substs'] = subst; //coerceToSystem(subst);
+        if (subst.substances.length === 1 && subst.s[0].state === 'g') {
+            body['collisionFilter'] = CollisionFilters.GASLIKE;
+        }
+        else {
+            body['collisionFilter'] = CollisionFilters.SOLID;
+        }
+        body['label'] = "" + subst; //.substances[0].type.chemicalFormula;
+    }
     Object.defineProperty(body, 'pos', {
         get: function () { return body.position; },
         set: function (x) { body.position = x; }
@@ -26,31 +42,11 @@ function PhysicsHook2(arg1, size, subst) {
     });
     return body;
 }
-/*
-class PhysicsHookNew { //implements PhysicsHookCommon {
-    rect;
-    readonly size;
-    constructor(pos: Vector, size: Vector) {
-        this.size = size;
-        let options = {
-            restitution: 0
-        }
-        this.rect = Matter.Bodies.rectangle(pos.x, pos.y, size.x, size.y, options);
-        
+function newBounds(arg1, size, addToGlobal) {
+    if (addToGlobal === void 0) { addToGlobal = true; }
+    var h = newPhysicsHook(arg1, size, SubstGroup.BOUNDS_ONLY);
+    if (addToGlobal) {
+        Matter.Composite.add(universe.world, h);
     }
-    get pos() {
-        return this.rect.position;
-    }
-    set pos(x: Vector) {
-        this.rect.position = x;
-    }
-    get vel() {
-        return this.rect.velocity;
-    }
-    set vel(x: Vector) {
-        this.rect.velocity = x;
-    }
-
-
+    return h;
 }
-*/ 

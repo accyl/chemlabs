@@ -5,24 +5,48 @@
 // H2O(l) 2mol
 // H2O (l) 5mL
 // CH3CH2OH(l) 16g
-var ElementTracker = /** @class */ (function () {
-    function ElementTracker() {
-        this._elems = [];
+var AtomTracker = /** @class */ (function () {
+    function AtomTracker() {
+        this._atoms = []; // can be a polyatomic
         this._qtys = [];
+        this._atomicNums = [];
+        this._molarMass = 0;
     }
-    ElementTracker.prototype.push = function (elem, qty) {
+    AtomTracker.prototype.push = function (atom, qty) {
         if (qty === void 0) { qty = 1; }
-        this._elems.push(elem);
+        this._atoms.push(atom);
+        if (atom.startsWith('(')) {
+            // it's a polyatomic ion
+            assert(atom.slice(-1) === ')', 'Unbalanced parens');
+        }
+        else {
+            var idx = ptable_symbs.indexOf(atom);
+            this._atomicNums.push(idx); // Permit 0 and -1
+        }
         this._qtys.push(qty);
+        this._molarMass = 0;
     };
-    ElementTracker.prototype.setLastQty = function (qty) {
+    AtomTracker.prototype.setLastQty = function (qty) {
         this._qtys[this._qtys.length - 1] = qty;
     };
-    return ElementTracker;
+    AtomTracker.prototype.molarMass = function () {
+        if (this._molarMass)
+            return this._molarMass;
+        var tot = 0;
+        for (var i = 0; i < this._atomicNums.length; i++) {
+            var anum = this._atomicNums[i];
+            var m = ptable[anum].atomic_mass;
+            assert(m, "atomic mass for " + anum + " is undefined?");
+            tot += this._qtys[i] * m;
+        }
+        this._molarMass = tot;
+        return tot;
+    };
+    return AtomTracker;
 }());
 var ChemicalBuilder = /** @class */ (function () {
     function ChemicalBuilder() {
-        this.elemt = new ElementTracker();
+        this.atomt = new AtomTracker();
         // elems: string[] = [];
         this.formula = '';
         this.state = '';
@@ -46,8 +70,8 @@ function formulaTknr(inp, startidx, bdr) {
     // TODO: Ambiguous statement: CaRbON
     // CAlcium RuBidium Oxygen Nitrogen = CARBON
     // let elems = [];
-    bdr.elemt = new ElementTracker();
-    var elemt = bdr.elemt;
+    bdr.atomt = new AtomTracker();
+    var elemt = bdr.atomt;
     var ptree = ptable_symb_tree;
     var i = startidx;
     function updateBdr(sliceidx, newidx) {
@@ -157,7 +181,7 @@ function formulaTknr(inp, startidx, bdr) {
             else {
                 // then it's probably a polyatomic ion
                 // like Mg(OH)2g
-                bdr.elemt.push(parens);
+                bdr.atomt.push(parens);
                 i = newidx - 1;
                 continue;
             }
@@ -623,20 +647,23 @@ function w(inp, display) {
     var _a = grandUnifiedTknr(inp), chem = _a[0], qty = _a[1];
     // form.formula
     var formula = chem.formula;
+    var protos = undefined;
     if (chemicals.has(formula)) {
-        var protos = chemicals.get(formula);
-        if (protos) {
-            // let pargs = protos.args();
-            // let qbuild = qty.toBuilder();
-            subst = protos.amt(qty, chem.state);
-        }
-        else {
-            throw protos;
-        }
+        protos = chemicals.get(formula);
     }
     else {
-        throw "formula " + formula + " not found in list of chemicals!";
+        protos = chemicals.getNew(chem);
+        console.log("formula " + formula + " not found in list of chemicals. autogenerating...");
     }
+    if (protos) {
+        // let pargs = protos.args();
+        // let qbuild = qty.toBuilder();
+        subst = protos.amt(qty, chem.state);
+    }
+    else {
+        throw protos;
+    }
+    // } else {
     if (display) {
         tang(subst);
         redraw();
