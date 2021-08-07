@@ -7,16 +7,18 @@ type Vector = Matter.Vector;
 
 // Bridge between matter.js and the rest of my code
 // 
-interface Beakerlike extends Matter.Body{
+
+interface PhysicsHook extends Matter.Body{
     // rect: Matter.Body;
     size: Vector;
     pos: Vector;
     vel: Vector;
-    substs?: System;
+    substs?: SubstGroup;
     // area: num; 10 area = 1 mL
 }
-
-function PhysicsHook2(arg1: Matter.Body | Vector, size: Vector, subst: Substance | System): Beakerlike {
+type WeakPhysHook = Matter.Body & { size: Vector, 
+rect: Matter.Body, substs: SubstGroup | undefined, ignoreGravity?:boolean };
+function newPhysicsHook(arg1: Matter.Body | Vector, size: Vector, subst: Substance | SubstGroup): PhysicsHook {
     let body0: Matter.Body;
     if ('x' in arg1 && 'y' in arg1) {
         // Vector
@@ -28,10 +30,26 @@ function PhysicsHook2(arg1: Matter.Body | Vector, size: Vector, subst: Substance
     } else {
         body0 = arg1 as any;// Matter.Body;
     }
-    let body = body0 as Matter.Body & { 'size': Vector, 'rect': Matter.Body, 'substs': System };//Matter.Body;
+    let body = body0 as WeakPhysHook; //, 'boundsOnly': boolean };//Matter.Body;
     body['size'] = size;
     body['rect'] = body0;
-    body['substs'] = coerceToSystem(subst);
+    if(!subst || subst === SubstGroup.BOUNDS_ONLY) {
+        // body['substs'] = SubstGroup.BOUNDS_ONLY;
+        body['substs'] = undefined;
+        body['collisionFilter'] = CollisionFilters.GASLIKE;
+        body['ignoreGravity'] = true;
+        body['label'] = 'Bound';
+
+    } else {
+        body['substs'] = subst; //coerceToSystem(subst);
+        if (subst.substances.length === 1 && subst.s[0].state === 'g') {
+            body['collisionFilter'] = CollisionFilters.GASLIKE;
+        } else {
+            body['collisionFilter'] = CollisionFilters.SOLID;
+        }
+        body['label'] = "" + subst; //.substances[0].type.chemicalFormula;
+
+    }
     Object.defineProperty(body, 'pos', {
         get: function () { return body.position },
         set: function (x) { body.position = x }
@@ -42,32 +60,10 @@ function PhysicsHook2(arg1: Matter.Body | Vector, size: Vector, subst: Substance
     });
     return body as any;
 }
-
-/*
-class PhysicsHookNew { //implements PhysicsHookCommon {
-    rect;
-    readonly size;
-    constructor(pos: Vector, size: Vector) {
-        this.size = size;
-        let options = {
-            restitution: 0
-        }
-        this.rect = Matter.Bodies.rectangle(pos.x, pos.y, size.x, size.y, options);
-        
+function newBounds(arg1: Matter.Body | Vector, size: Vector, addToGlobal=true) {
+    let h = newPhysicsHook(arg1, size, SubstGroup.BOUNDS_ONLY);
+    if(addToGlobal) {
+        Matter.Composite.add(universe.world, h);
     }
-    get pos() {
-        return this.rect.position;
-    }
-    set pos(x: Vector) {
-        this.rect.position = x;
-    }
-    get vel() {
-        return this.rect.velocity;
-    }
-    set vel(x: Vector) {
-        this.rect.velocity = x;
-    }
-
-
+    return h;
 }
-*/

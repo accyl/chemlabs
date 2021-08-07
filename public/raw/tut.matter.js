@@ -8,6 +8,24 @@ __ = function() {
         Bodies = Matter.Bodies,
         Composite = Matter.Composite;
 
+    // custom modification that checks
+    Engine._bodiesApplyGravity = function (bodies, gravity) {
+        var gravityScale = typeof gravity.scale !== 'undefined' ? gravity.scale : 0.001;
+        if ((gravity.x === 0 && gravity.y === 0) || gravityScale === 0) {
+            return;
+        }
+        for (var i = 0; i < bodies.length; i++) {
+            var body = bodies[i];
+
+            // CHANGE HERE
+            if (body.isStatic || body.isSleeping || body.ignoreGravity) // CHANGE HERE
+                continue;
+
+            // apply gravity
+            body.force.y += body.mass * gravity.y * gravityScale;
+            body.force.x += body.mass * gravity.x * gravityScale;
+        }
+    };
     // create an engine
     var engine = Engine.create();
     var world = engine.world;
@@ -26,7 +44,7 @@ __ = function() {
     var lwall = Bodies.rectangle(0, 0, 60, 1500, {isStatic:true}); lwall.label = 'lwall';
     var rwall = Bodies.rectangle(canva.width, 0, 60, 2000, { isStatic: true }); rwall.label = 'rwall';
     var ceil = Bodies.rectangle(500, 0, 1000, 60, { isStatic: true }); ceil.label = 'ceil';
-    
+    ground.collisionFilter = lwall.collisionFilter = rwall.collisionFilter = ceil.collisionFilter = CollisionFilters.WALL;
     // add all of the bodies to the world
     Composite.add(engine.world, [/*boxA, boxB, */ground, lwall, rwall, ceil]);
 
@@ -60,7 +78,8 @@ __ = function() {
                 visible: false
             },
             stiffness: 0.8
-        }
+        } ,
+        collisionFilter: CollisionFilters.MOUSE
     });
 
 
@@ -92,8 +111,5 @@ __ = function() {
     // run the engine
     // Render.setPixelRatio(render, 'auto');
     Runner.run(runner, engine);
-
-
-
 
 }();

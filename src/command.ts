@@ -6,19 +6,43 @@
 // H2O(l) 2mol
 // H2O (l) 5mL
 // CH3CH2OH(l) 16g
-class ElementTracker {
-    _elems: string[]=[];
+class AtomTracker {
+    _atoms: string[]=[]; // can be a polyatomic
     _qtys:num[] = [];
-    push(elem:string, qty=1) {
-        this._elems.push(elem);
+
+    _atomicNums: num[]=[];
+    _molarMass = 0;
+
+    push(atom:string, qty=1) {
+        this._atoms.push(atom);
+        if(atom.startsWith('(')) {
+            // it's a polyatomic ion
+            assert(atom.slice(-1) === ')', 'Unbalanced parens');
+        } else {
+            let idx = ptable_symbs.indexOf(atom);
+            this._atomicNums.push(idx); // Permit 0 and -1
+        }
         this._qtys.push(qty);
+        this._molarMass = 0;
     }
     setLastQty(qty:num) {
         this._qtys[this._qtys.length-1] = qty;
     }
+    molarMass() {
+        if(this._molarMass) return this._molarMass;
+        let tot = 0;
+        for(let i=0;i<this._atomicNums.length;i++) {
+            let anum = this._atomicNums[i];
+            let m = ptable[anum].atomic_mass as num;
+            assert(m, `atomic mass for ${anum} is undefined?`);
+            tot += this._qtys[i] * m;
+        }
+        this._molarMass = tot;
+        return tot;
+    }
 }
 class ChemicalBuilder {
-    elemt: ElementTracker = new ElementTracker();
+    atomt: AtomTracker = new AtomTracker();
     // elems: string[] = [];
     formula: string = '';
     state: string = '';
@@ -39,8 +63,8 @@ function formulaTknr(inp: string, startidx = 0, bdr = gbdr): [string, num] {
     // TODO: Ambiguous statement: CaRbON
     // CAlcium RuBidium Oxygen Nitrogen = CARBON
     // let elems = [];
-    bdr.elemt = new ElementTracker();
-    let elemt = bdr.elemt;
+    bdr.atomt = new AtomTracker();
+    let elemt = bdr.atomt;
 
     let ptree = ptable_symb_tree as any;
     let i=startidx;
@@ -138,7 +162,7 @@ function formulaTknr(inp: string, startidx = 0, bdr = gbdr): [string, num] {
             } else {
                 // then it's probably a polyatomic ion
                 // like Mg(OH)2g
-                bdr.elemt.push(parens);
+                bdr.atomt.push(parens);
                 i=newidx-1;
                 continue;
             }            
@@ -572,18 +596,23 @@ function w(inp: string, display=true) {
     let [chem, qty] = grandUnifiedTknr(inp);
     // form.formula
     let formula = chem.formula;
+    let protos = undefined;
     if(chemicals.has(formula)) {
-        let protos = chemicals.get(formula);
-        if (protos) {
-            // let pargs = protos.args();
-            // let qbuild = qty.toBuilder();
-            subst = protos.amt(qty, chem.state);
-        } else {
-            throw protos;
-        }
+        protos = chemicals.get(formula);
     } else {
-        throw `formula ${formula} not found in list of chemicals!`;
+        protos = chemicals.getNew(chem);
+        console.log(`formula ${formula} not found in list of chemicals. autogenerating...`);
     }
+
+    if (protos) {
+        // let pargs = protos.args();
+        // let qbuild = qty.toBuilder();
+        subst = protos.amt(qty, chem.state);
+    } else {
+        throw protos;
+    }
+    // } else {
+        
     if(display) {
         tang(subst);
         redraw();

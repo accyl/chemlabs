@@ -20,7 +20,7 @@ class Locatable extends GeneralizedFunction {
 
 
 
-class PhysicsHook { //implements PhysicsHookCommon{
+class PhysicsHook3 { //implements PhysicsHookCommon{
     private loc: Locatable;
     xsize: num = 10;
     ysize: num = 10;

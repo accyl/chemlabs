@@ -38,6 +38,14 @@ body {
     margin: 3vh 1vw 3vh 3vw;
 
 }
+
+code {
+  font-family: Consolas,"courier new";
+  color: crimson;
+  background-color: #f1f1f1;
+  padding: 2px;
+  font-size: 105%;
+}
 ul li {
     display: inline;
 }

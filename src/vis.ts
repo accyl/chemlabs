@@ -7,7 +7,7 @@
 // let universe = universe ? universe : 0 as any;
 
 
-function phys<S extends Substance | System>(s: S, pos?: [num,num,num], size?:[num,num,num],): S {
+function phys<S extends Substance | SubstGroup>(s: S, pos?: [num,num], size?:[num,num],): S {
     if(!s.physhook) {
         let vec;
         if(pos) {
@@ -23,13 +23,15 @@ function phys<S extends Substance | System>(s: S, pos?: [num,num,num], size?:[nu
         }
         if (s instanceof Substance) {
             // s.physhook = new PhysicsHook(pos, size);
-            s.physhook = PhysicsHook2(vec, vsize, s); //new PhysicsHookNew(vec, vsize);
+            s.physhook = newPhysicsHook(vec, vsize, s); //new PhysicsHookNew(vec, vsize);
             Matter.Composite.add(universe.world, [s.physhook]); //.rect]);
 
-        } else if (s instanceof System) {
+        } else if (s === SubstGroup.BOUNDS_ONLY) {
+            assert(false, "Use newBounds()!");
+        } else if(s instanceof SubstGroup) {
             // s.physhook = new PhysicsHook(pos, size);
 
-            s.physhook = PhysicsHook2(vec, vsize, s); // new PhysicsHookNew(vec, vsize);
+            s.physhook = newPhysicsHook(vec, vsize, s); // new PhysicsHookNew(vec, vsize);
 
             for (let subs of s.substances) {
                 phys(subs);
@@ -43,7 +45,7 @@ function phys<S extends Substance | System>(s: S, pos?: [num,num,num], size?:[nu
 }
 
 class Drawer {
-    draw(ctx: CanvasRenderingContext2D, s: Substance | System) {
+    draw(ctx: CanvasRenderingContext2D, s: Substance | SubstGroup) {
         if (s instanceof Substance) {
             // if (s instanceof AqueousSubstance) {
                 // ctx.beginPath();
@@ -60,8 +62,8 @@ class Drawer {
 
                 return;
             // }
-        } else if (s instanceof System) {
-            s = s as System;
+        } else if (s instanceof SubstGroup) {
+            s = s as SubstGroup;
 
             for (let sub of s.substances) {
                 this.draw(ctx, sub);
@@ -113,17 +115,41 @@ class Drawer {
 let canvas = document.getElementById('canvas') as HTMLCanvasElement;
 let ctx = canvas.getContext('2d');
 
-const glob = new System();
-phys(glob, [0, 0, 0], [canvas.width, canvas.height, 0]);
+class Global extends SubstGroup {
+    solids_i=0;
+    gases_i=0;
+    liquids_i=0;
+    addSubst(s: Substance) {
+        if(s.state === 'g') {
+            this.substances.splice(this.gases_i, 0, s); // insert at index of gases_idx
+            this.gases_i++;
+            this.liquids_i++;
+            this.solids_i++;
+        } else if(s.state === 'l') {
+            this.substances.splice(this.liquids_i, 0, s); // insert at index
+            this.liquids_i++;
+            this.solids_i++;
+        } else if (s.state === 'l') {
+            this.substances.splice(this.solids_i, 0, s); // insert at index
+            this.solids_i++;
+        } else {
+            this.substances.push(s);
+        }
+    }
+}
+const glob = new Global();
+phys(glob, [0, 0], [canvas.width, canvas.height]);
+let b = newBounds({x:0, y:0}, {x:canvas.width/2, y:canvas.height/2});
 
-function tang<S extends Substance | System>(s: S, addToGlobal=true, pos?: [num, num, num], size?: [num, num, num],): S {
+function tang<S extends Substance | SubstGroup>(s: S, addToGlobal=true, pos?: [num, num, num], size?: [num, num, num],): S {
     let ret = phys(s);
 
 
     if(addToGlobal) {
         if (ret instanceof Substance) {
-            glob.substances.push(ret);
-        } else if (ret instanceof System) {
+            // glob.substances.push(ret);
+            glob.addSubst(ret);
+        } else if (ret instanceof SubstGroup) {
             glob.subsystems.push(ret);
         } else throw "s " + ret + "not instanceof System nor Substance!";
     }
@@ -148,6 +174,11 @@ function redraw(t?: num) {
         throw "Canvas doesn't exist?";
     }
 }
+function updateZIndex() {
+    // basically, move gases towards the front of the so they're drawn behind solids
+    // TODO: reorder universe.world according to glob
+}
+
 (function() {
     let func = () => {
         redraw();

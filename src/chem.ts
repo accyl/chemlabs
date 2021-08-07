@@ -131,22 +131,14 @@ class ProtoSubstanceWithArgs {
     }
 
 }
-// function _componentToHex2(c: number) {
-//     var hex = Math.round(c).toString(16);
-//     return hex.length == 1 ? "0" + hex : hex;
-// }
-
-// function _rgbToHex(r: num, g: num, b: num) {
-//     return "#" + _componentToHex(r) + _componentToHex(g) + _componentToHex(b);
-// }
-
-// alert(rgbToHex(0, 51, 255)); // #0033ff
 
 /**
  * Coerce a substance into basically being a unit system
+ * Not needed since Substances are already SubstGroups
  * @param x 
+ * @deprecated
  */
-function coerceToSystem(x: Substance | System): System {
+function coerceToSystem(x: Substance | SubstGroup): SubstGroup {
     // if(!x) return undefined;
     let a = x as any;
     if ('substances' in x && 'equilibria' in x && 'subsystems' in x) return x;
@@ -158,23 +150,43 @@ function coerceToSystem(x: Substance | System): System {
     return a;
 }
 
-class System {
-    physhook?: Beakerlike;
+class SubstGroup {
+    static readonly BOUNDS_ONLY = new SubstGroup(); // pass this to newPhysicsHook to have a bounds-only physhook
+    physhook?: PhysicsHook;
 
     substances: Substance[] = [];
     equilibria: EqbReaction[] = [];
-    subsystems: System[] = [];
+    subsystems: SubstGroup[] = [];
     get s() { return this.substances; }
     getSubstance(key = 0) {
         return this.substances[key];
     }
+    toString() {
+        return `[${"" + this.substances}]`;
+    }
 }
-class Substance extends System {
+/*
+var handler = {
+    get: function(target, name) {
+        if (name in target) {
+            return target[name];
+        }
+        if (name == 'length') {
+            return Infinity;
+        }
+        return name * name;
+    }
+};
+var p = new Proxy({}, handler);
+
+p[4]; //returns 16, which is the square of 4.
+*/
+class Substance extends SubstGroup {
     // loc: Locatable = Locatable.NONE;
-    physhook?: Beakerlike;
+    physhook?: PhysicsHook;
     // add some stuff to coerce it into technically being a system with only 1 thing in it
     readonly substances: Substance[];
-    readonly subsystems: System[] = [];
+    readonly subsystems: SubstGroup[] = [];
     readonly equilibria: EqbReaction[] = [];
     getSubstance(key: number) {return this;}
     // mol = 0; 
@@ -191,7 +203,7 @@ class Substance extends System {
     set volume(volume) {
         this._v = volume;
     }
-    _T = 0;
+    _T = 273.15;
     get temperature() {
         return this._T;
     }
@@ -218,6 +230,9 @@ class Substance extends System {
     hexcolor(background: tup = [255, 255, 255]): string {
         let c = this.color(background) as tup3;
         return _hex(...c);
+    }
+    toString() {
+        return `${this.type.chemicalFormula} ${this.mass}g`;
     }
 
 }
@@ -342,10 +357,10 @@ class EqbReaction extends BalancedRxn {
 }
 
 class SystemEquilibrium {
-    sys: System;
+    sys: SubstGroup;
     reactants: Substance[] = [];
     products: Substance[] = [];
-    constructor(sys: System, eqb: EqbReaction) {
+    constructor(sys: SubstGroup, eqb: EqbReaction) {
         this.sys = sys;
         for(let spec of sys.substances) {
             if(eqb.reactants.indexOf(spec.type) >= 0) { // if the equilibrium has the species as a reactant

@@ -97,9 +97,10 @@ function debugBody(body) {
     if ('substs' in body) {
         var ph = body;
         var ret = '';
-        if (!(ph.substs instanceof System))
+        if (!(ph.substs instanceof SubstGroup))
             throw "substs field isn't a system?";
         var ss = ph.substs;
+        lastClickedObject = ss;
         for (var _i = 0, _a = ss.substances; _i < _a.length; _i++) {
             var s = _a[_i];
             ret += s.type.chemicalFormula + " (" + s.state + ") " + s.mass + "g " + s.volume + "L " + s.temperature + "K \n";
