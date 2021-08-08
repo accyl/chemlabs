@@ -67,7 +67,7 @@ chemicals.set('H2O', function(){
     l.state = "l";
     l.density = 999.8395;
     l.specificHeatCapacity = 4.184;
-    l.rgb = [0xF0, 0xF0, 0xFFc];
+    l.rgb = [0xF0, 0xF0, 0xFF];
 
     let s = new ProtoSubstance();
     s.state = "s";
@@ -225,6 +225,11 @@ chemicals.getNew = function(chem: ChemicalBuilder) {
             case 'Gas':
                 phase = 'g';
                 break;
+        }
+        let rgb = ptable[anum].rgb;
+        if(rgb) {
+            // all.rgb = 
+            all.rgb = _rgb(rgb);
         }
     }
     let state = { state: phase };
