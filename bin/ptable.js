@@ -32,7 +32,8 @@ var ptable = [
         "ionization_energies": [
             1312
         ],
-        "cpk-hex": "ffffff"
+        "cpk-hex": "ffffff",
+        "rgb": null
     },
     {
         "name": "Helium",
@@ -66,7 +67,8 @@ var ptable = [
             2372.3,
             5250.5
         ],
-        "cpk-hex": "d9ffff"
+        "cpk-hex": "d9ffff",
+        "rgb": null
     },
     {
         "name": "Lithium",
@@ -102,7 +104,8 @@ var ptable = [
             7298.1,
             11815
         ],
-        "cpk-hex": "cc80ff"
+        "cpk-hex": "cc80ff",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Beryllium",
@@ -139,7 +142,8 @@ var ptable = [
             14848.7,
             21006.6
         ],
-        "cpk-hex": "c2ff00"
+        "cpk-hex": "c2ff00",
+        "rgb": "708090"
     },
     {
         "name": "Boron",
@@ -177,7 +181,8 @@ var ptable = [
             25025.8,
             32826.7
         ],
-        "cpk-hex": "ffb5b5"
+        "cpk-hex": "ffb5b5",
+        "rgb": "000000"
     },
     {
         "name": "Carbon",
@@ -216,7 +221,8 @@ var ptable = [
             37831,
             47277
         ],
-        "cpk-hex": "909090"
+        "cpk-hex": "909090",
+        "rgb": "000000"
     },
     {
         "name": "Nitrogen",
@@ -256,7 +262,8 @@ var ptable = [
             53266.6,
             64360
         ],
-        "cpk-hex": "3050f8"
+        "cpk-hex": "3050f8",
+        "rgb": null
     },
     {
         "name": "Oxygen",
@@ -297,7 +304,8 @@ var ptable = [
             71330,
             84078
         ],
-        "cpk-hex": "ff0d0d"
+        "cpk-hex": "ff0d0d",
+        "rgb": null
     },
     {
         "name": "Fluorine",
@@ -339,7 +347,8 @@ var ptable = [
             92038.1,
             106434.3
         ],
-        "cpk-hex": "90e050"
+        "cpk-hex": "90e050",
+        "rgb": null
     },
     {
         "name": "Neon",
@@ -382,7 +391,8 @@ var ptable = [
             115379.5,
             131432
         ],
-        "cpk-hex": "b3e3f5"
+        "cpk-hex": "b3e3f5",
+        "rgb": null
     },
     {
         "name": "Sodium",
@@ -427,7 +437,8 @@ var ptable = [
             141362,
             159076
         ],
-        "cpk-hex": "ab5cf2"
+        "cpk-hex": "ab5cf2",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Magnesium",
@@ -473,7 +484,8 @@ var ptable = [
             169988,
             189368
         ],
-        "cpk-hex": "8aff00"
+        "cpk-hex": "8aff00",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Aluminium",
@@ -520,7 +532,8 @@ var ptable = [
             201266,
             222316
         ],
-        "cpk-hex": "bfa6a6"
+        "cpk-hex": "bfa6a6",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Silicon",
@@ -568,7 +581,8 @@ var ptable = [
             235196,
             257923
         ],
-        "cpk-hex": "f0c8a0"
+        "cpk-hex": "f0c8a0",
+        "rgb": "808080"
     },
     {
         "name": "Phosphorus",
@@ -617,7 +631,8 @@ var ptable = [
             271791,
             296195
         ],
-        "cpk-hex": "ff8000"
+        "cpk-hex": "ff8000",
+        "rgb": null
     },
     {
         "name": "Sulfur",
@@ -667,7 +682,8 @@ var ptable = [
             311048,
             337138
         ],
-        "cpk-hex": "ffff30"
+        "cpk-hex": "ffff30",
+        "rgb": "FFC832"
     },
     {
         "name": "Chlorine",
@@ -718,7 +734,8 @@ var ptable = [
             352994,
             380760
         ],
-        "cpk-hex": "1ff01f"
+        "cpk-hex": "1ff01f",
+        "rgb": "FFC832"
     },
     {
         "name": "Argon",
@@ -770,7 +787,8 @@ var ptable = [
             397605,
             427066
         ],
-        "cpk-hex": "80d1e3"
+        "cpk-hex": "80d1e3",
+        "rgb": null
     },
     {
         "name": "Potassium",
@@ -824,7 +842,8 @@ var ptable = [
             444880,
             476063
         ],
-        "cpk-hex": "8f40d4"
+        "cpk-hex": "8f40d4",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Calcium",
@@ -879,7 +898,8 @@ var ptable = [
             494850,
             527762
         ],
-        "cpk-hex": "3dff00"
+        "cpk-hex": "3dff00",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Scandium",
@@ -935,7 +955,8 @@ var ptable = [
             547530,
             582163
         ],
-        "cpk-hex": "e6e6e6"
+        "cpk-hex": "e6e6e6",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Titanium",
@@ -992,7 +1013,8 @@ var ptable = [
             602930,
             639294
         ],
-        "cpk-hex": "bfc2c7"
+        "cpk-hex": "bfc2c7",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Vanadium",
@@ -1050,7 +1072,8 @@ var ptable = [
             661050,
             699144
         ],
-        "cpk-hex": "a6a6ab"
+        "cpk-hex": "a6a6ab",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Chromium",
@@ -1109,7 +1132,8 @@ var ptable = [
             721870,
             761733
         ],
-        "cpk-hex": "8a99c7"
+        "cpk-hex": "8a99c7",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Manganese",
@@ -1169,7 +1193,8 @@ var ptable = [
             785450,
             827067
         ],
-        "cpk-hex": "9c7ac7"
+        "cpk-hex": "9c7ac7",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Iron",
@@ -1230,7 +1255,8 @@ var ptable = [
             851800,
             895161
         ],
-        "cpk-hex": "e06633"
+        "cpk-hex": "e06633",
+        "rgb": "808080"
     },
     {
         "name": "Cobalt",
@@ -1292,7 +1318,8 @@ var ptable = [
             920870,
             966023
         ],
-        "cpk-hex": "f090a0"
+        "cpk-hex": "f090a0",
+        "rgb": "808080"
     },
     {
         "name": "Nickel",
@@ -1355,7 +1382,8 @@ var ptable = [
             992718,
             1039668
         ],
-        "cpk-hex": "50d050"
+        "cpk-hex": "50d050",
+        "rgb": "808080"
     },
     {
         "name": "Copper",
@@ -1419,7 +1447,8 @@ var ptable = [
             1067358,
             1116105
         ],
-        "cpk-hex": "c88033"
+        "cpk-hex": "c88033",
+        "rgb": "b87333"
     },
     {
         "name": "Zinc",
@@ -1475,7 +1504,8 @@ var ptable = [
             71200,
             179100
         ],
-        "cpk-hex": "7d80b0"
+        "cpk-hex": "7d80b0",
+        "rgb": "708090"
     },
     {
         "name": "Gallium",
@@ -1514,7 +1544,8 @@ var ptable = [
             2963,
             6180
         ],
-        "cpk-hex": "c28f8f"
+        "cpk-hex": "c28f8f",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Germanium",
@@ -1554,7 +1585,8 @@ var ptable = [
             4411,
             9020
         ],
-        "cpk-hex": "668f8f"
+        "cpk-hex": "668f8f",
+        "rgb": "808080"
     },
     {
         "name": "Arsenic",
@@ -1595,7 +1627,8 @@ var ptable = [
             6043,
             12310
         ],
-        "cpk-hex": "bd80e3"
+        "cpk-hex": "bd80e3",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Selenium",
@@ -1637,7 +1670,8 @@ var ptable = [
             7880,
             14990
         ],
-        "cpk-hex": "ffa100"
+        "cpk-hex": "ffa100",
+        "rgb": "808080"
     },
     {
         "name": "Bromine",
@@ -1680,7 +1714,8 @@ var ptable = [
             9940,
             18600
         ],
-        "cpk-hex": "a62929"
+        "cpk-hex": "a62929",
+        "rgb": "A52A2A"
     },
     {
         "name": "Krypton",
@@ -1745,7 +1780,8 @@ var ptable = [
             311400,
             326200
         ],
-        "cpk-hex": "5cb8d1"
+        "cpk-hex": "5cb8d1",
+        "rgb": null
     },
     {
         "name": "Rubidium",
@@ -1791,7 +1827,8 @@ var ptable = [
             14500,
             26740
         ],
-        "cpk-hex": "702eb0"
+        "cpk-hex": "702eb0",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Strontium",
@@ -1838,7 +1875,8 @@ var ptable = [
             17100,
             31270
         ],
-        "cpk-hex": "00ff00"
+        "cpk-hex": "00ff00",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Yttrium",
@@ -1886,7 +1924,8 @@ var ptable = [
             19900,
             36090
         ],
-        "cpk-hex": "94ffff"
+        "cpk-hex": "94ffff",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Zirconium",
@@ -1928,7 +1967,8 @@ var ptable = [
             7752,
             9500
         ],
-        "cpk-hex": "94e0e0"
+        "cpk-hex": "94e0e0",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Niobium",
@@ -1971,7 +2011,8 @@ var ptable = [
             9847,
             12100
         ],
-        "cpk-hex": "73c2c9"
+        "cpk-hex": "73c2c9",
+        "rgb": "808080"
     },
     {
         "name": "Molybdenum",
@@ -2037,7 +2078,8 @@ var ptable = [
             148100,
             154500
         ],
-        "cpk-hex": "54b5b5"
+        "cpk-hex": "54b5b5",
+        "rgb": "808080"
     },
     {
         "name": "Technetium",
@@ -2076,7 +2118,8 @@ var ptable = [
             1470,
             2850
         ],
-        "cpk-hex": "3b9e9e"
+        "cpk-hex": "3b9e9e",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Ruthenium",
@@ -2115,7 +2158,8 @@ var ptable = [
             1620,
             2747
         ],
-        "cpk-hex": "248f8f"
+        "cpk-hex": "248f8f",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Rhodium",
@@ -2154,7 +2198,8 @@ var ptable = [
             1740,
             2997
         ],
-        "cpk-hex": "0a7d8c"
+        "cpk-hex": "0a7d8c",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Palladium",
@@ -2192,7 +2237,8 @@ var ptable = [
             1870,
             3177
         ],
-        "cpk-hex": "006985"
+        "cpk-hex": "006985",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Silver",
@@ -2231,7 +2277,8 @@ var ptable = [
             2070,
             3361
         ],
-        "cpk-hex": "c0c0c0"
+        "cpk-hex": "c0c0c0",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Cadmium",
@@ -2270,7 +2317,8 @@ var ptable = [
             1631.4,
             3616
         ],
-        "cpk-hex": "ffd98f"
+        "cpk-hex": "ffd98f",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Indium",
@@ -2310,7 +2358,8 @@ var ptable = [
             2704,
             5210
         ],
-        "cpk-hex": "a67573"
+        "cpk-hex": "a67573",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Tin",
@@ -2351,7 +2400,8 @@ var ptable = [
             3930.3,
             7456
         ],
-        "cpk-hex": "668080"
+        "cpk-hex": "668080",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Antimony",
@@ -2393,7 +2443,8 @@ var ptable = [
             5400,
             10400
         ],
-        "cpk-hex": "9e63b5"
+        "cpk-hex": "9e63b5",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Tellurium",
@@ -2436,7 +2487,8 @@ var ptable = [
             6820,
             13200
         ],
-        "cpk-hex": "d47a00"
+        "cpk-hex": "d47a00",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Iodine",
@@ -2475,7 +2527,8 @@ var ptable = [
             1845.9,
             3180
         ],
-        "cpk-hex": "940094"
+        "cpk-hex": "940094",
+        "rgb": "708090"
     },
     {
         "name": "Xenon",
@@ -2514,7 +2567,8 @@ var ptable = [
             2046.4,
             3099.4
         ],
-        "cpk-hex": "429eb0"
+        "cpk-hex": "429eb0",
+        "rgb": null
     },
     {
         "name": "Cesium",
@@ -2554,7 +2608,8 @@ var ptable = [
             2234.3,
             3400
         ],
-        "cpk-hex": "57178f"
+        "cpk-hex": "57178f",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Barium",
@@ -2594,7 +2649,8 @@ var ptable = [
             965.2,
             3600
         ],
-        "cpk-hex": "00c900"
+        "cpk-hex": "00c900",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Lanthanum",
@@ -2636,7 +2692,8 @@ var ptable = [
             4819,
             5940
         ],
-        "cpk-hex": "70d4ff"
+        "cpk-hex": "70d4ff",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Cerium",
@@ -2679,7 +2736,8 @@ var ptable = [
             6325,
             7490
         ],
-        "cpk-hex": "ffffc7"
+        "cpk-hex": "ffffc7",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Praseodymium",
@@ -2721,7 +2779,8 @@ var ptable = [
             3761,
             5551
         ],
-        "cpk-hex": "d9ffc7"
+        "cpk-hex": "d9ffc7",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Neodymium",
@@ -2762,7 +2821,8 @@ var ptable = [
             2130,
             3900
         ],
-        "cpk-hex": "c7ffc7"
+        "cpk-hex": "c7ffc7",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Promethium",
@@ -2803,7 +2863,8 @@ var ptable = [
             2150,
             3970
         ],
-        "cpk-hex": "a3ffc7"
+        "cpk-hex": "a3ffc7",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Samarium",
@@ -2844,7 +2905,8 @@ var ptable = [
             2260,
             3990
         ],
-        "cpk-hex": "8fffc7"
+        "cpk-hex": "8fffc7",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Europium",
@@ -2885,7 +2947,8 @@ var ptable = [
             2404,
             4120
         ],
-        "cpk-hex": "61ffc7"
+        "cpk-hex": "61ffc7",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Gadolinium",
@@ -2926,7 +2989,8 @@ var ptable = [
             1990,
             4250
         ],
-        "cpk-hex": "45ffc7"
+        "cpk-hex": "45ffc7",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Terbium",
@@ -2967,7 +3031,8 @@ var ptable = [
             2114,
             3839
         ],
-        "cpk-hex": "30ffc7"
+        "cpk-hex": "30ffc7",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Dysprosium",
@@ -3008,7 +3073,8 @@ var ptable = [
             2200,
             3990
         ],
-        "cpk-hex": "1fffc7"
+        "cpk-hex": "1fffc7",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Holmium",
@@ -3049,7 +3115,8 @@ var ptable = [
             2204,
             4100
         ],
-        "cpk-hex": "00ff9c"
+        "cpk-hex": "00ff9c",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Erbium",
@@ -3090,7 +3157,8 @@ var ptable = [
             2194,
             4120
         ],
-        "cpk-hex": "00e675"
+        "cpk-hex": "00e675",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Thulium",
@@ -3131,7 +3199,8 @@ var ptable = [
             2285,
             4120
         ],
-        "cpk-hex": "00d452"
+        "cpk-hex": "00d452",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Ytterbium",
@@ -3172,7 +3241,8 @@ var ptable = [
             2417,
             4203
         ],
-        "cpk-hex": "00bf38"
+        "cpk-hex": "00bf38",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Lutetium",
@@ -3214,7 +3284,8 @@ var ptable = [
             4370,
             6445
         ],
-        "cpk-hex": "00ab24"
+        "cpk-hex": "00ab24",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Hafnium",
@@ -3255,7 +3326,8 @@ var ptable = [
             2250,
             3216
         ],
-        "cpk-hex": "4dc2ff"
+        "cpk-hex": "4dc2ff",
+        "rgb": "808080"
     },
     {
         "name": "Tantalum",
@@ -3294,7 +3366,8 @@ var ptable = [
             761,
             1500
         ],
-        "cpk-hex": "4da6ff"
+        "cpk-hex": "4da6ff",
+        "rgb": "808080"
     },
     {
         "name": "Tungsten",
@@ -3333,7 +3406,8 @@ var ptable = [
             770,
             1700
         ],
-        "cpk-hex": "2194d6"
+        "cpk-hex": "2194d6",
+        "rgb": "808080"
     },
     {
         "name": "Rhenium",
@@ -3374,7 +3448,8 @@ var ptable = [
             2510,
             3640
         ],
-        "cpk-hex": "267dab"
+        "cpk-hex": "267dab",
+        "rgb": "808080"
     },
     {
         "name": "Osmium",
@@ -3413,7 +3488,8 @@ var ptable = [
             840,
             1600
         ],
-        "cpk-hex": "266696"
+        "cpk-hex": "266696",
+        "rgb": "708090"
     },
     {
         "name": "Iridium",
@@ -3452,7 +3528,8 @@ var ptable = [
             880,
             1600
         ],
-        "cpk-hex": "175487"
+        "cpk-hex": "175487",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Platinum",
@@ -3491,7 +3568,8 @@ var ptable = [
             870,
             1791
         ],
-        "cpk-hex": "d0d0e0"
+        "cpk-hex": "d0d0e0",
+        "rgb": "808080"
     },
     {
         "name": "Gold",
@@ -3530,7 +3608,8 @@ var ptable = [
             890.1,
             1980
         ],
-        "cpk-hex": "ffd123"
+        "cpk-hex": "ffd123",
+        "rgb": "FFD700"
     },
     {
         "name": "Mercury",
@@ -3570,7 +3649,8 @@ var ptable = [
             1810,
             3300
         ],
-        "cpk-hex": "b8b8d0"
+        "cpk-hex": "b8b8d0",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Thallium",
@@ -3610,7 +3690,8 @@ var ptable = [
             1971,
             2878
         ],
-        "cpk-hex": "a6544d"
+        "cpk-hex": "a6544d",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Lead",
@@ -3652,7 +3733,8 @@ var ptable = [
             4083,
             6640
         ],
-        "cpk-hex": "575961"
+        "cpk-hex": "575961",
+        "rgb": "708090"
     },
     {
         "name": "Bismuth",
@@ -3695,7 +3777,8 @@ var ptable = [
             5400,
             8520
         ],
-        "cpk-hex": "9e4fb5"
+        "cpk-hex": "9e4fb5",
+        "rgb": "808080"
     },
     {
         "name": "Polonium",
@@ -3733,7 +3816,8 @@ var ptable = [
         "ionization_energies": [
             812.1
         ],
-        "cpk-hex": "ab5c00"
+        "cpk-hex": "ab5c00",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Astatine",
@@ -3771,7 +3855,8 @@ var ptable = [
         "ionization_energies": [
             899.003
         ],
-        "cpk-hex": "754f45"
+        "cpk-hex": "754f45",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Radon",
@@ -3809,7 +3894,8 @@ var ptable = [
         "ionization_energies": [
             1037
         ],
-        "cpk-hex": "428296"
+        "cpk-hex": "428296",
+        "rgb": null
     },
     {
         "name": "Francium",
@@ -3848,7 +3934,8 @@ var ptable = [
         "ionization_energies": [
             380
         ],
-        "cpk-hex": "420066"
+        "cpk-hex": "420066",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Radium",
@@ -3888,7 +3975,8 @@ var ptable = [
             509.3,
             979
         ],
-        "cpk-hex": "007d00"
+        "cpk-hex": "007d00",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Actinium",
@@ -3928,7 +4016,8 @@ var ptable = [
             499,
             1170
         ],
-        "cpk-hex": "70abfa"
+        "cpk-hex": "70abfa",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Thorium",
@@ -3970,7 +4059,8 @@ var ptable = [
             1930,
             2780
         ],
-        "cpk-hex": "00baff"
+        "cpk-hex": "00baff",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Protactinium",
@@ -4009,7 +4099,8 @@ var ptable = [
         "ionization_energies": [
             568
         ],
-        "cpk-hex": "00a1ff"
+        "cpk-hex": "00a1ff",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Uranium",
@@ -4049,7 +4140,8 @@ var ptable = [
             597.6,
             1420
         ],
-        "cpk-hex": "008fff"
+        "cpk-hex": "008fff",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Neptunium",
@@ -4088,7 +4180,8 @@ var ptable = [
         "ionization_energies": [
             604.5
         ],
-        "cpk-hex": "0080ff"
+        "cpk-hex": "0080ff",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Plutonium",
@@ -4127,7 +4220,8 @@ var ptable = [
         "ionization_energies": [
             584.7
         ],
-        "cpk-hex": "006bff"
+        "cpk-hex": "006bff",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Americium",
@@ -4166,7 +4260,8 @@ var ptable = [
         "ionization_energies": [
             578
         ],
-        "cpk-hex": "545cf2"
+        "cpk-hex": "545cf2",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Curium",
@@ -4205,7 +4300,8 @@ var ptable = [
         "ionization_energies": [
             581
         ],
-        "cpk-hex": "785ce3"
+        "cpk-hex": "785ce3",
+        "rgb": "C0C0C0"
     },
     {
         "name": "Berkelium",
@@ -5078,3 +5174,22 @@ var ptable = [
 ];
 var ptable_symb_tree = { 'A': ['c', 'g', 'l', 'm', 'r', 's', 't', 'u'], 'B': ['', 'a', 'e', 'h', 'i', 'k', 'r'], 'C': ['', 'a', 'd', 'e', 'f', 'l', 'm', 'n', 'o', 'r', 's', 'u'], 'D': ['b', 's', 'y'], 'E': ['r', 's', 'u'], 'F': ['', 'e', 'l', 'm', 'r'], 'G': ['a', 'd', 'e'], 'H': ['', 'e', 'f', 'g', 'o', 's'], 'I': ['', 'n', 'r'], 'K': ['', 'r'], 'L': ['a', 'i', 'r', 'u', 'v'], 'M': ['c', 'd', 'g', 'n', 'o', 't'], 'N': ['', 'a', 'b', 'd', 'e', 'h', 'i', 'o', 'p'], 'O': ['', 'g', 's'], 'P': ['', 'a', 'b', 'd', 'm', 'o', 'r', 't', 'u'], 'R': ['a', 'b', 'e', 'f', 'g', 'h', 'n', 'u'], 'S': ['', 'b', 'c', 'e', 'g', 'i', 'm', 'n', 'r'], 'T': ['a', 'b', 'c', 'e', 'h', 'i', 'l', 'm', 's'], 'U': ['', 'ue'], 'V': [''], 'W': [''], 'X': ['e'], 'Y': ['', 'b'], 'Z': ['n', 'r'] };
 var ptable_symbs = ["", "H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar", "K", "Ca", "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br", "Kr", "Rb", "Sr", "Y", "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "Te", "I", "Xe", "Cs", "Ba", "La", "Ce", "Pr", "Nd", "Pm", "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb", "Lu", "Hf", "Ta", "W", "Re", "Os", "Ir", "Pt", "Au", "Hg", "Tl", "Pb", "Bi", "Po", "At", "Rn", "Fr", "Ra", "Ac", "Th", "Pa", "U", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr", "Rf", "Db", "Sg", "Bh", "Hs", "Mt", "Ds", "Rg", "Cn", "Nh", "Fl", "Mc", "Lv", "Ts", "Og", "Uue"];
+// colors from https://periodictable.com/Properties/A/Color.html
+// regex used: (.+?)\t(.+?)\t(.+?)\t(.+?)(\t(.+?)\t(.+?))?(\n|$) REPLACE $1: $2\n
+// ADD (.+?)\t(.+?)\t(.+?)\t(.+?)(\t(.+?)\t(.+?))?(\n|$) REPLACE $3: $4\n
+// ADD (.+?)\t(.+?)\t(.+?)\t(.+?)(\t(.+?)\t(.+?))?(\n|$) REPLACE $6: $7\n
+// Silver = #C0C0C0
+// SlateGray = #708090
+// Gray = #808080	
+// N/A = colorless = undefined
+// Black = #FFFFFF
+// Yellow = #FFC832
+// Red = #A52A2A (bromine)
+// Gold =  #FFD700
+// Copper = 
+/*
+for(let i=0;i<120;i++) {
+    ptable[i].rgb = ptable_colors[i];
+}
+*/
+// const ptable_colors = [undefined, null, null, 'C0C0C0', '708090', '000000', '000000', null, null, null, null, 'C0C0C0', 'C0C0C0', 'C0C0C0', '808080', null, 'FFC832', 'FFC832', null, 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', '808080', '808080', '808080', 'b87333', '708090', 'C0C0C0', '808080', 'C0C0C0', '808080', 'A52A2A', null, 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', '808080', '808080', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', '708090', null, 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', '808080', '808080', '808080', '808080', '708090', 'C0C0C0', '808080', 'FFD700', 'C0C0C0', 'C0C0C0', '708090', '808080', 'C0C0C0', 'C0C0C0', null, 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', 'C0C0C0', undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,];
