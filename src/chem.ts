@@ -1,4 +1,4 @@
-/// <reference path='phys/physold.ts'/>
+// <reference path='phys/physold.ts'/>
 
 
 class Constants {

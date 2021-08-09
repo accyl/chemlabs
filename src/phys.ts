@@ -35,10 +35,11 @@ function newPhysicsHook(arg1: Matter.Body | Vector, size: Vector, subst: Substan
     body['rect'] = body0;
     if(!subst || subst === SubstGroup.BOUNDS_ONLY) {
         // body['substs'] = SubstGroup.BOUNDS_ONLY;
-        body['substs'] = undefined;
+        // body['substs'] = undefined;
         body['collisionFilter'] = CollisionFilters.GASLIKE;
         body['ignoreGravity'] = true;
         body['label'] = 'Bound';
+        body['render']['opacity'] = 0.1;
 
     } else {
         body['substs'] = subst; //coerceToSystem(subst);
@@ -66,4 +67,41 @@ function newBounds(arg1: Matter.Body | Vector, size: Vector, addToGlobal=true) {
         Matter.Composite.add(universe.world, h);
     }
     return h;
+}
+
+function phys<S extends Substance | SubstGroup>(s: S, pos?: [num, num], size?: [num, num],): S {
+    if (!s.physhook) {
+        let vec;
+        if (pos) {
+            vec = { 'x': pos[0], 'y': pos[1] };
+        } else {
+            vec = { 'x': 100, 'y': 100 };
+        }
+        let vsize;
+        if (size) {
+            vsize = { 'x': size[0], 'y': size[1] };
+        } else {
+            vsize = { 'x': 100, 'y': 100 };
+        }
+        if (s instanceof Substance) {
+            // s.physhook = new PhysicsHook(pos, size);
+            s.physhook = newPhysicsHook(vec, vsize, s); //new PhysicsHookNew(vec, vsize);
+            Matter.Composite.add(universe.world, [s.physhook]); //.rect]);
+
+        } else if (s === SubstGroup.BOUNDS_ONLY) {
+            assert(false, "Use newBounds()!");
+        } else if (s instanceof SubstGroup) {
+            // s.physhook = new PhysicsHook(pos, size);
+
+            s.physhook = newPhysicsHook(vec, vsize, s); // new PhysicsHookNew(vec, vsize);
+
+            for (let subs of s.substances) {
+                phys(subs);
+            }
+
+
+        } else throw "Somehow passed arg was neither substance nor system? " + s;
+
+    }
+    return s;
 }

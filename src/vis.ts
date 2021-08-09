@@ -1,47 +1,8 @@
-/// <reference path='chem.ts'/>
-/// <reference path='color/colormodels.ts'/>
+// <reference path='chem.ts'/>
+// <reference path='color/colormodels.ts'/>
 // <reference path='../raw/tut.matter.js'/>
 
-// @ts-ignore
-// let universe = universe ? universe : 0 as any;
-
-
-function phys<S extends Substance | SubstGroup>(s: S, pos?: [num,num], size?:[num,num],): S {
-    if(!s.physhook) {
-        let vec;
-        if(pos) {
-            vec = {'x':pos[0], 'y':pos[1]};
-        } else {
-            vec = {'x': 100, 'y': 100};
-        }
-        let vsize;
-        if(size) {
-            vsize = { 'x': size[0], 'y': size[1] };
-        } else {
-            vsize = { 'x': 100, 'y': 100 };
-        }
-        if (s instanceof Substance) {
-            // s.physhook = new PhysicsHook(pos, size);
-            s.physhook = newPhysicsHook(vec, vsize, s); //new PhysicsHookNew(vec, vsize);
-            Matter.Composite.add(universe.world, [s.physhook]); //.rect]);
-
-        } else if (s === SubstGroup.BOUNDS_ONLY) {
-            assert(false, "Use newBounds()!");
-        } else if(s instanceof SubstGroup) {
-            // s.physhook = new PhysicsHook(pos, size);
-
-            s.physhook = newPhysicsHook(vec, vsize, s); // new PhysicsHookNew(vec, vsize);
-
-            for (let subs of s.substances) {
-                phys(subs);
-            }
-
-
-        } else throw "Somehow passed arg was neither substance nor system? "+ s;
-        
-    }
-    return s;
-}
+// import _ from "lodash";
 
 class Drawer {
     draw(ctx: CanvasRenderingContext2D, s: Substance | SubstGroup) {
@@ -51,13 +12,16 @@ class Drawer {
                 // ctx.stroke();
                 // ctx.fillStyle = "#" + s.color().join("");
                 let prevs = ctx.fillStyle;
-
+                // let preva = ctx.globalAlpha;
                 ctx.fillStyle = s.hexcolor();
                 if(!s.physhook) s = phys(s);
                 if(!s.physhook) throw "broke";
+                // ctx.globalAlpha = s.physhook.render.opacity ? s.physhook.render.opacity : 1;
                 this.drawB(ctx, s.physhook); //.rect);
                 // ctx.fillRect(s.physhook.pos.x, s.physhook.pos.y, s.physhook.size.x, s.physhook.size.y);
                 ctx.fillStyle = prevs;
+                // ctx.globalAlpha = preva;
+
 
                 return;
             // }
@@ -90,11 +54,18 @@ class Drawer {
     
     drawC(ctx: CanvasRenderingContext2D, cs: Matter.Composite) {
         // ctx.stroke();
+        let prev = ctx.strokeStyle;
         ctx.strokeStyle = '#888888';
+        let preva = ctx.globalAlpha;
         for(let b of Matter.Composite.allBodies(cs)) {
-            if('substs' in b) continue; // skip it to avoid duplicates
+            // @ts-ignore
+            if('substs' in b && b['substs']) continue; // skip it to avoid duplicates
+            if (b.render.opacity) ctx.globalAlpha = b.render.opacity; 
+
             this.drawB(ctx, b);
         }
+        ctx.strokeStyle = prev;
+        ctx.globalAlpha = preva;
     }
     drawB(ctx: CanvasRenderingContext2D, b: Matter.Body) {
 
@@ -138,7 +109,7 @@ class Global extends SubstGroup {
 }
 const glob = new Global();
 phys(glob, [0, 0], [canvas.width, canvas.height]);
-let b = newBounds({x:0, y:0}, {x:canvas.width/2, y:canvas.height/2});
+let b = newBounds({ x: canvas.width / 4, y: canvas.height / 4 }, { x: canvas.width / 2, y: canvas.height / 2 }); // canvas.width/2, y:canvas.height/2});
 
 function tang<S extends Substance | SubstGroup>(s: S, addToGlobal=true, pos?: [num, num, num], size?: [num, num, num],): S {
     let ret = phys(s);
