@@ -1,6 +1,6 @@
 "use strict";
-/// <reference path='chem.ts'/>
-/// <reference path='color/colormodels.ts'/>
+// <reference path='chem.ts'/>
+// <reference path='color/colormodels.ts'/>
 // <reference path='../raw/tut.matter.js'/>
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -17,45 +17,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-// @ts-ignore
-// let universe = universe ? universe : 0 as any;
-function phys(s, pos, size) {
-    if (!s.physhook) {
-        var vec = void 0;
-        if (pos) {
-            vec = { 'x': pos[0], 'y': pos[1] };
-        }
-        else {
-            vec = { 'x': 100, 'y': 100 };
-        }
-        var vsize = void 0;
-        if (size) {
-            vsize = { 'x': size[0], 'y': size[1] };
-        }
-        else {
-            vsize = { 'x': 100, 'y': 100 };
-        }
-        if (s instanceof Substance) {
-            // s.physhook = new PhysicsHook(pos, size);
-            s.physhook = newPhysicsHook(vec, vsize, s); //new PhysicsHookNew(vec, vsize);
-            Matter.Composite.add(universe.world, [s.physhook]); //.rect]);
-        }
-        else if (s === SubstGroup.BOUNDS_ONLY) {
-            assert(false, "Use newBounds()!");
-        }
-        else if (s instanceof SubstGroup) {
-            // s.physhook = new PhysicsHook(pos, size);
-            s.physhook = newPhysicsHook(vec, vsize, s); // new PhysicsHookNew(vec, vsize);
-            for (var _i = 0, _a = s.substances; _i < _a.length; _i++) {
-                var subs = _a[_i];
-                phys(subs);
-            }
-        }
-        else
-            throw "Somehow passed arg was neither substance nor system? " + s;
-    }
-    return s;
-}
+// import _ from "lodash";
 var Drawer = /** @class */ (function () {
     function Drawer() {
     }
@@ -66,14 +28,17 @@ var Drawer = /** @class */ (function () {
             // ctx.stroke();
             // ctx.fillStyle = "#" + s.color().join("");
             var prevs = ctx.fillStyle;
+            // let preva = ctx.globalAlpha;
             ctx.fillStyle = s.hexcolor();
             if (!s.physhook)
                 s = phys(s);
             if (!s.physhook)
                 throw "broke";
+            // ctx.globalAlpha = s.physhook.render.opacity ? s.physhook.render.opacity : 1;
             this.drawB(ctx, s.physhook); //.rect);
             // ctx.fillRect(s.physhook.pos.x, s.physhook.pos.y, s.physhook.size.x, s.physhook.size.y);
             ctx.fillStyle = prevs;
+            // ctx.globalAlpha = preva;
             return;
             // }
         }
@@ -106,13 +71,20 @@ var Drawer = /** @class */ (function () {
     };
     Drawer.prototype.drawC = function (ctx, cs) {
         // ctx.stroke();
+        var prev = ctx.strokeStyle;
         ctx.strokeStyle = '#888888';
+        var preva = ctx.globalAlpha;
         for (var _i = 0, _a = Matter.Composite.allBodies(cs); _i < _a.length; _i++) {
             var b_1 = _a[_i];
-            if ('substs' in b_1)
+            // @ts-ignore
+            if ('substs' in b_1 && b_1['substs'])
                 continue; // skip it to avoid duplicates
+            if (b_1.render.opacity)
+                ctx.globalAlpha = b_1.render.opacity;
             this.drawB(ctx, b_1);
         }
+        ctx.strokeStyle = prev;
+        ctx.globalAlpha = preva;
     };
     Drawer.prototype.drawB = function (ctx, b) {
         var vs = b.vertices;
@@ -163,7 +135,7 @@ var Global = /** @class */ (function (_super) {
 }(SubstGroup));
 var glob = new Global();
 phys(glob, [0, 0], [canvas.width, canvas.height]);
-var b = newBounds({ x: 0, y: 0 }, { x: canvas.width / 2, y: canvas.height / 2 });
+var b = newBounds({ x: canvas.width / 4, y: canvas.height / 4 }, { x: canvas.width / 2, y: canvas.height / 2 }); // canvas.width/2, y:canvas.height/2});
 function tang(s, addToGlobal, pos, size) {
     if (addToGlobal === void 0) { addToGlobal = true; }
     var ret = phys(s);
