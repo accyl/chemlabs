@@ -40,10 +40,10 @@ __ = function() {
     // create two boxes and a ground
     // var boxA = Bodies.rectangle(400, 200, 80, 80);
     // var boxB = Bodies.rectangle(450, 50, 80, 80);
-    var ground = Bodies.rectangle(500, 610, 1000, 60, { isStatic: true }); ground.label = 'ground';
-    var lwall = Bodies.rectangle(0, 0, 60, 1500, {isStatic:true}); lwall.label = 'lwall';
-    var rwall = Bodies.rectangle(canva.width, 0, 60, 2000, { isStatic: true }); rwall.label = 'rwall';
-    var ceil = Bodies.rectangle(500, 0, 1000, 60, { isStatic: true }); ceil.label = 'ceil';
+    var ground = Bodies.rectangle(500, 610, 1000, 60, { isStatic: true }); ground.label = 'ground'; ground.zIndex = -999;
+    var lwall = Bodies.rectangle(0, 0, 60, 1500, { isStatic: true }); lwall.label = 'lwall'; lwall.zIndex = -999;
+    var rwall = Bodies.rectangle(canva.width, 0, 60, 2000, { isStatic: true }); rwall.label = 'rwall'; rwall.zIndex = -999;
+    var ceil = Bodies.rectangle(500, 0, 1000, 60, { isStatic: true }); ceil.label = 'ceil'; ceil.zIndex = -999;
     ground.collisionFilter = lwall.collisionFilter = rwall.collisionFilter = ceil.collisionFilter = CollisionFilters.WALL;
     // add all of the bodies to the world
     Composite.add(engine.world, [/*boxA, boxB, */ground, lwall, rwall, ceil]);
