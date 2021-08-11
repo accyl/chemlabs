@@ -147,6 +147,14 @@ function redraw(t?: num) {
 function updateZIndex() {
     // basically, move gases towards the front of the so they're drawn behind solids
     // TODO: reorder universe.world according to glob
+    universe.world.bodies.sort((a, b) => {
+        // @ts-ignore
+        const zIndexA = typeof a.zIndex !== 'undefined' ? a.zIndex : 0;
+        // @ts-ignore
+        const zIndexB = typeof b.zIndex !== 'undefined' ? b.zIndex : 0;
+        return zIndexA - zIndexB;
+    });
+    // Matter.Composite.rebase(universe.world);
 }
 
 (function() {

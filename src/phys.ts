@@ -17,7 +17,7 @@ interface PhysicsHook extends Matter.Body{
     // area: num; 10 area = 1 mL
 }
 type WeakPhysHook = Matter.Body & { size: Vector, 
-rect: Matter.Body, substs: SubstGroup | undefined, ignoreGravity?:boolean };
+rect: Matter.Body, substs: SubstGroup | undefined, ignoreGravity?:boolean, zIndex:num };
 function newPhysicsHook(arg1: Matter.Body | Vector, size: Vector, subst: Substance | SubstGroup): PhysicsHook {
     let body0: Matter.Body;
     if ('x' in arg1 && 'y' in arg1) {
@@ -40,13 +40,18 @@ function newPhysicsHook(arg1: Matter.Body | Vector, size: Vector, subst: Substan
         body['ignoreGravity'] = true;
         body['label'] = 'Bound';
         body['render']['opacity'] = 0.1;
+        body['zIndex'] = -10;
 
     } else {
         body['substs'] = subst; //coerceToSystem(subst);
         if (subst.substances.length === 1 && subst.s[0].state === 'g') {
             body['collisionFilter'] = CollisionFilters.GASLIKE;
+            body['zIndex'] = -1;
+
         } else {
             body['collisionFilter'] = CollisionFilters.SOLID;
+            body['zIndex'] = 0;
+
         }
         body['label'] = "" + subst; //.substances[0].type.chemicalFormula;
 

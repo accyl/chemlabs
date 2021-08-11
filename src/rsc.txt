@@ -1,3 +1,25 @@
+// TODO: THREE (3) types of gases with different physics implementations (3 PHYSHOOKS.)
+1. "Free" gas. Gas is floating and is represented with a matter.js physics object with minimal to low to negative gravity. Later implementations 
+should make some reference of diffusion.
+2. "Beaker" gas. Gas is locked in a beaker which is like any other matter.js (solid) object. It is transparent.
+3. "Constrained" gas. Gas gets teleported into another object (like a Bounds) and gets "stuck". It is now NO LONGER matter.js object.
+It is now "trapped" in the bounds, and the Bounds is responsible for displaying the "constrained" gas. 
+This gas can be removed with a mouse, where it will at once turn into either "beaker" or "free" gas.
+4?. "Global Constrained" gas. This is actually a special case of "constrained" gas. The gas is trapped/contrained, this time in the global system/bound.
+With diffusion, eventually "free" gas should turn into "global constrained" gas - the gas "diffuses" into the global Bound. And if free gas happens
+to be in a Bound with a lower hierarchy, diffusion could also have that "free" gas turned into "constrained" gas of that Bound.
+
+SIMILARLY, WITH LIQUIDS:
+1. "Free" liquid. Object should feel liquid-y, but still be easily manipulated by a mouse. It is still a matter.js physics obejct.
+2. "Beaker" liquid. Liquid is locked in a beaker which is like any other matter.js (solid) object. It is transparent.
+3. "Constrained" liquid. Liquid takes the place of its container (Bound), and sloshes around and gets "stuck". It's now "trapped" in the bounds
+and the Bounds is responsible for displaying the "constrained" liquid. "Constrained" liquid is NO LONGER a matter.js object -
+it is a display residue that is completely the responsibility of the Bound (container) to keep track of.
+This liquid can be removed with a mouse, where it will at once turn into either "beaker" or "free" liquid.
+4?. "Global Constrained" liquid. This is actually a special case of "constrained" liquid. The gas is trapped/contrained, this time in the global system/bound.
+With diffusion, eventually "free" gas should turn into "global constrained" gas - the gas "diffuses" into the global Bound. And if free gas happens
+to be in a Bound with a lower hierarchy, diffusion could also have that "free" gas turned into "constrained" gas of that Bound.
+
 https://jcheminf.biomedcentral.com/articles/10.1186/s13321-021-00512-4
 
 - SMILES to IUPAC using machine learning

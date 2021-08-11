@@ -22,14 +22,17 @@ function newPhysicsHook(arg1, size, subst) {
         body['ignoreGravity'] = true;
         body['label'] = 'Bound';
         body['render']['opacity'] = 0.1;
+        body['zIndex'] = -10;
     }
     else {
         body['substs'] = subst; //coerceToSystem(subst);
         if (subst.substances.length === 1 && subst.s[0].state === 'g') {
             body['collisionFilter'] = CollisionFilters.GASLIKE;
+            body['zIndex'] = -1;
         }
         else {
             body['collisionFilter'] = CollisionFilters.SOLID;
+            body['zIndex'] = 0;
         }
         body['label'] = "" + subst; //.substances[0].type.chemicalFormula;
     }
