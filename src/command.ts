@@ -526,6 +526,7 @@ class QtyBuilder {
         }
         
     }
+
     
 }
 const gqul = new QtyUnitList();
@@ -603,21 +604,24 @@ function w(inp: string, display=true) {
         protos = chemicals.getNew(chem);
         console.log(`formula ${formula} not found in list of chemicals. autogenerating...`);
     }
-
     if (protos) {
         // let pargs = protos.args();
         // let qbuild = qty.toBuilder();
         subst = protos.amt(qty, chem.state);
+        
     } else {
         throw protos;
     }
     // } else {
-        
+
     if(display) {
         tang(subst);
+        updateZIndex();
         redraw();
         return subst;
-    } else return subst;
+    } else {
+        return subst;
+    }
     // TODO: with a greedy algorithm, we can
     // actually attempt to process formulas that
     // are 'lazily' in all lower case. for

@@ -24,27 +24,12 @@ class SubstanceType {
 class ProtoSubstance extends SubstanceType{
     static NONE = new ProtoSubstance();
 
-    args(): ProtoSubstanceWithArgs {
-        // I would have prefered the function name mitosis(), but unfortunately there's no easy verb form for mitosis
-        let retn = new ProtoSubstanceWithArgs(this);
-        return retn;
-    }
     amt(qty: QtyUnitList | QtyBuilder, state?: string) {
-        let qbdr;
-        if(qty instanceof QtyUnitList) {
-            qbdr = qty.toBuilder();
-        } else qbdr = qty;
-
-        let ret = new ProtoSubstanceWithArgs(this);
-        if(state) ret.setState(state);
-        ret.mass = qbdr.mass;
-        ret.mol = qbdr.mol;
-        if(qbdr.volume) ret.volmL = qbdr.volume * 1000;
-        else ret.volmL = qbdr.volume;
-        return ret.form();
-        // return ret;
+        let args = new PSArgs(this, qty);
+        if(state) args.state = state;
+        return args.form();
     }
-    _getProtoSubstanceWithArgsOf(args: ProtoSubstanceWithArgs): ProtoSubstance {
+    _getWithArgs(args: PSArgs): ProtoSubstance {
         return this; // doesn't work right now
     }
     constructor() {
@@ -59,7 +44,7 @@ class ProtoSubstance extends SubstanceType{
     }
 }
 
-class ProtoSubstanceWithArgs {
+class PSArgs {
     // Yeah I know it's messy but
     // there needs to be a way to construct substances with different states (of matter)
     // but which are otherwise completely identical
@@ -67,69 +52,33 @@ class ProtoSubstanceWithArgs {
     // I hope using a factory pattern will be somewhat better?
     ps: ProtoSubstance;
     state?: string; // state of matter
-    constructor(ps: ProtoSubstance) {
-        this.ps = ps;
+    mol?: number;
+    mass?: number;
+    volmL?: number;
+    constructor(ps: ProtoSubstance, qty?: QtyUnitList | QtyBuilder, state?: string) {
+        this.ps = ps;        
+        let qbdr;
+        if(qty instanceof QtyUnitList) {
+            qbdr = qty.toBuilder();
+            if(!(qbdr.mass||qbdr.mol||qbdr.volume)) qbdr.mol = 1; // set a default
+        } else qbdr = qty;
+        if(qbdr) {
+            this.mass = qbdr.mass;
+            this.mol = qbdr.mol;
+            if (qbdr.volume) this.volmL = qbdr.volume * 1000;
+            else this.volmL = qbdr.volume;
+        }
     }
-    gettype(): ProtoSubstance {
-        let _ps = this.ps._getProtoSubstanceWithArgsOf(this);
-        // let retn = Object.create(_ps);
-        // Object.freeze(retn); // make it immutable
-        return _ps;
+    getProto(): ProtoSubstance {
+        return this.ps._getWithArgs(this);
     }
     form(): Substance {
-        let ret = this.gettype().form();
+        let ret = this.getProto().form();
         if(this.mass) ret.mass = this.mass;
         if(this.mol && ret instanceof MolecularSubstance) ret.mol = this.mol;
         if(this.volmL) ret.volume = this.volmL / 1000;
         return ret;
     }
-    
-    setState(stateOfMatter: string): ProtoSubstanceWithArgs {
-        this.state = stateOfMatter;
-        return this;
-    }
-    mol?: number;
-    mass?: number;
-    volmL?: number;
-    /**
-     * @deprecated
-     * @param amt 
-     * @returns 
-     */
-    amt(amt: number | string): ProtoSubstanceWithArgs {
-        if(typeof amt == 'number') {
-            // assume mol
-            this.mol = amt;
-
-        } else if(typeof amt == 'string'){
-            amt = amt as string;
-            let cut = undefined;
-            if (amt.slice(-3) == 'mol') {
-                amt = amt.slice(0, -3);
-                if (amt.slice(-1) == ' ') amt = amt.slice(0, -1); // remove space
-                this.mol = parseInt(amt);
-
-            } else if ((cut = amt.slice(-2)) == 'mL' || cut == 'ml') {
-                amt = amt.slice(0, -2);
-                if (amt.slice(-1) == ' ') amt = amt.slice(0, -1); // remove space
-                this.volmL = parseInt(amt);
-
-            } else if ((cut = amt.slice(-1)) == 'g') {
-                amt = amt.slice(0, -1);
-                if (amt.slice(-1) == ' ') amt = amt.slice(0, -1); // remove space
-                this.mass = parseInt(amt);
-
-            } else if(cut == 'L' || cut == 'l') {
-                amt = amt.slice(0, -2);
-                if (amt.slice(-1) == ' ') amt = amt.slice(0, -1); // remove space
-                this.volmL = parseInt(amt) * 1000;
-
-            } 
-
-        } else throw "amt isn't a str nor num";
-        return this;
-    }
-
 }
 
 /**
@@ -236,7 +185,19 @@ class Substance extends SubstGroup {
     }
 
 }
-
+function makeMolecular(s: Substance) {
+    let molec = s as Substance & {molarMass: any, mol: any};
+    Object.defineProperty(molec, 'molarMass', {
+        get: function () { return molec.type.molarMass },
+        set: function (x) { molec.type.molarMass = x }
+    });
+    molec['mol'] = 1;
+    Object.defineProperty(molec, 'molarMass', {
+        get: function () { return molec.mol * molec.molarMass },
+        set: function (mass) { molec.mol = mass / molec!.molarMass }
+    });
+    return molec as MolecularSubstance;
+}
 class MolecularSubstance extends Substance {
     // molarMass = 1;
     // type2: MolecularSubstanceType;
@@ -259,7 +220,16 @@ class MolecularSubstance extends Substance {
         this.mol = mass / this!.molarMass;
     }
 }
-
+function makeGaseous(x: MolecularSubstance) {
+    assert('mol' in x, `${x} is somehow not a molecular substance?`);
+        // how
+    let gas = x as any;
+    Object.defineProperty(gas, 'pressure', {
+        get: function () { return this.mol * Constants.Ratm * this.temperature / this.volume }
+        // set: function (x) { molec.type.molarMass = x }
+    });
+    gas.kValue = function() {return gas.pressure};
+}
 class GaseousSubstance extends MolecularSubstance{
     // PV=nRT
     // P = nRT/V

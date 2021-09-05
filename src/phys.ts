@@ -1,20 +1,21 @@
 // <reference path='../../raw/matter.min.js'/>
 
-// import { Vector } from "matter-js";
 type Vector = Matter.Vector;
-// 
-// import Matter  = require("../../raw/matter.min.js");
-
 // Bridge between matter.js and the rest of my code
 // 
 
 interface PhysicsHook extends Matter.Body{
     // rect: Matter.Body;
     size: Vector;
-    pos: Vector;
-    vel: Vector;
+    // pos: Vector;
+    // vel: Vector;
     substs?: SubstGroup;
+    ignoreGravity?: boolean;
+    zIndex: num
     // area: num; 10 area = 1 mL
+}
+enum PhysicsHookBehavior {
+    FREE, BEAKER, CONSTRAINED
 }
 type WeakPhysHook = Matter.Body & { size: Vector, 
 rect: Matter.Body, substs: SubstGroup | undefined, ignoreGravity?:boolean, zIndex:num };
@@ -46,7 +47,7 @@ function newPhysicsHook(arg1: Matter.Body | Vector, size: Vector, subst: Substan
         body['substs'] = subst; //coerceToSystem(subst);
         if (subst.substances.length === 1 && subst.s[0].state === 'g') {
             body['collisionFilter'] = CollisionFilters.GASLIKE;
-            body['zIndex'] = -1;
+            body['zIndex'] = -2;
 
         } else {
             body['collisionFilter'] = CollisionFilters.SOLID;
@@ -56,14 +57,14 @@ function newPhysicsHook(arg1: Matter.Body | Vector, size: Vector, subst: Substan
         body['label'] = "" + subst; //.substances[0].type.chemicalFormula;
 
     }
-    Object.defineProperty(body, 'pos', {
-        get: function () { return body.position },
-        set: function (x) { body.position = x }
-    });
-    Object.defineProperty(body, 'vel', {
-        get: function () { return body.velocity },
-        set: function (x) { body.velocity = x }
-    });
+    // Object.defineProperty(body, 'pos', {
+    //     get: function () { return body.position },
+    //     set: function (x) { body.position = x }
+    // });
+    // Object.defineProperty(body, 'vel', {
+    //     get: function () { return body.velocity },
+    //     set: function (x) { body.velocity = x }
+    // });
     return body as any;
 }
 function newBounds(arg1: Matter.Body | Vector, size: Vector, addToGlobal=true) {
@@ -109,4 +110,28 @@ function phys<S extends Substance | SubstGroup>(s: S, pos?: [num, num], size?: [
 
     }
     return s;
+}
+
+function changePhyshookBehavior(x: PhysicsHook, b: PhysicsHookBehavior){
+    let subst = assert(x.substs, "PhysicsHook must contain a substs in order to change that substance's behavior!");
+    if(b === PhysicsHookBehavior.BEAKER) {
+        x['collisionFilter'] = CollisionFilters.SOLID;
+        x['ignoreGravity'] = undefined;
+        // x['label'] = 'Bound';
+        // x['render']['opacity'] = 0.1;
+        x['zIndex'] = -1;
+    } else if(b === PhysicsHookBehavior.FREE) {
+        if (subst.substances.length === 1 && subst.s[0].state === 'g') {
+            x['collisionFilter'] = CollisionFilters.GASLIKE;
+            x['zIndex'] = -2;
+            x['ignoreGravity'] = true;
+
+        } else {
+            x['collisionFilter'] = CollisionFilters.SOLID;
+            x['zIndex'] = 0;
+            x['ignoreGravity'] = false;
+
+
+        }
+    }
 }

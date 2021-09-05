@@ -66,18 +66,13 @@ function graph(f, start, end) {
     if (!f)
         f = f_daylight;
     // if (!f) f = spectra_kmno4_f;
-    var canvas = document.getElementById("canvas");
-    if (canvas && canvas instanceof HTMLCanvasElement) {
-        var ctxt = canvas.getContext("2d");
-        if (ctxt === null)
-            throw "Context is null?";
-        // let m = irgb_from_xyz(xyz_from_spectrum(x => f_fluor_white(x)));
-        for (var i = start; i < end; i++) {
-            ctxt.beginPath();
-            ctxt.fillStyle = '#FF0000';
-            ctxt.fillRect(0.6 * (i - start), 130 * (1 - f(i)) + 10, 0.6, 1);
-            ctxt.stroke();
-        }
+    var ctx = getCanvasContext();
+    // let m = irgb_from_xyz(xyz_from_spectrum(x => f_fluor_white(x)));
+    for (var i = start; i < end; i++) {
+        ctx.beginPath();
+        ctx.fillStyle = '#FF0000';
+        ctx.fillRect(0.6 * (i - start), 130 * (1 - f(i)) + 10, 0.6, 1);
+        ctx.stroke();
     }
 }
 function onCommandButton() {
@@ -124,3 +119,78 @@ function debugBody(body) {
 //     h.addEventListener("keypress", submitOnEnter);
 // }();
 addDefault();
+/**
+ *
+ * @param pause Pass undefined or no argument to toggle.
+ */
+function pauseUnpauseGame(pause) {
+    if (pause === undefined) {
+        // toggle is default behavior
+        pause = universe.runner.enabled;
+        // universe.runner.enabled = !universe.runner.enabled
+    }
+    if (pause) {
+        universe.runner.enabled = false;
+        universe.paused = true;
+        var canv = getCanvas();
+        var ctx_2 = getCanvasContext(canv);
+        ctx_2.globalAlpha = 0.75;
+        // ctx.filter = 'blur(2px)';
+        redraw();
+        ctx_2.fillStyle = '#FFFFFF';
+        ctx_2.fillRect(0, 0, canv.width, canv.height);
+        ctx_2.globalAlpha = 1;
+        ctx_2.fillStyle = '#000000';
+        ctx_2.font = '50px sans-serif';
+        ctx_2.textAlign = 'center';
+        ctx_2.fillText('paused', canv.width / 2, canv.height / 2);
+    }
+    else { // unpause
+        universe.runner.enabled = true;
+        universe.paused = false;
+        var ctx_3 = getCanvasContext();
+        ctx_3.globalAlpha = 1;
+        // ctx.filter = 'none';
+        // redraw();
+    }
+}
+(function () {
+    var canvas = getCanvas();
+    var ctx = getCanvasContext(canvas);
+    //The rectangle should have x,y,width,height properties
+    var rect = {
+        x: 250,
+        y: 350,
+        width: 200,
+        height: 100
+    };
+    //Function to check whether a point is inside a rectangle
+    function isInside(pos, rect) {
+        return pos.x > rect.x && pos.x < rect.x + rect.width && pos.y < rect.y + rect.height && pos.y > rect.y;
+    }
+    //Binding the click event on the canvas
+    canvas.addEventListener('click', function (evt) {
+        // var mousePos = getMousePos(canvas, evt);
+        var rect = canvas.getBoundingClientRect();
+        var mousepos = {
+            x: evt.clientX - rect.left,
+            y: evt.clientY - rect.top
+        };
+        if (isInside(mousepos, rect)) {
+            console.log('clicked inside rect');
+        }
+        else {
+            console.log('clicked outside rect');
+        }
+    }, false);
+    window.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            // Escape key
+            // universe.runner.isRunning = false;
+            // Matter.Runner.stop(universe.runner);
+            // universe.runner.enabled = !universe.runner.enabled;
+            pauseUnpauseGame();
+        }
+        console.log(e.key); // debug
+    }, false);
+})();

@@ -29,6 +29,7 @@ function assert(condition, message) {
     if (!condition) {
         throw new Error(message || "Assertion failed");
     }
+    return condition;
 }
 var CollisionFilters = /** @class */ (function () {
     // all 0b111...1101 except category 2
@@ -49,3 +50,22 @@ var CollisionFilters = /** @class */ (function () {
     return CollisionFilters;
 }());
 var universe = {};
+universe.paused = false;
+function getCanvas() {
+    var canvas = document.getElementById("canvas");
+    if (canvas && canvas instanceof HTMLCanvasElement) {
+        return canvas;
+    }
+    else {
+        throw new TypeError("Canvas doesn't exist?");
+    }
+}
+function getCanvasContext(canvas) {
+    if (!canvas) {
+        canvas = getCanvas();
+    }
+    var ctxt = canvas.getContext("2d");
+    if (ctxt === null)
+        throw new TypeError("Context is null?");
+    return ctxt;
+}

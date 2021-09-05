@@ -4,6 +4,8 @@
 
 // import _ from "lodash";
 
+
+
 class Drawer {
     draw(ctx: CanvasRenderingContext2D, s: Substance | SubstGroup) {
         if (s instanceof Substance) {
@@ -129,20 +131,14 @@ function tang<S extends Substance | SubstGroup>(s: S, addToGlobal=true, pos?: [n
 var drawer = new Drawer(); // the principal drawer
 
 function redraw(t?: num) {
-    let canvas = document.getElementById("canvas");
 
-    if(canvas && canvas instanceof HTMLCanvasElement) {
+    let ctx = getCanvasContext();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        let ctxt = canvas.getContext("2d");
-        if(ctxt === null) throw "Context is null?";
-        ctxt.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#000000';
+    drawer.drawC(ctx, universe.world);
+    drawer.draw(ctx, glob);
 
-        ctxt.fillStyle = '#000000';
-        drawer.drawC(ctxt, universe.world);
-        drawer.draw(ctxt, glob);
-    } else {
-        throw "Canvas doesn't exist?";
-    }
 }
 function updateZIndex() {
     // basically, move gases towards the front of the so they're drawn behind solids
@@ -159,14 +155,13 @@ function updateZIndex() {
 
 (function() {
     let func = () => {
-        redraw();
+        if(!universe.paused) redraw();
         requestAnimationFrame(func);
     }
     window.requestAnimationFrame(func);
 })();
 
 
-
-
-
-
+class ButtonManager {
+    
+}

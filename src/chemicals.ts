@@ -17,7 +17,7 @@ const H2O = function() {
     g.chemicalFormula = l.chemicalFormula = s.chemicalFormula = "H2O";
     g.molarMass = l.molarMass = s.molarMass = 18.01528; // g/mol;
 
-    g._getProtoSubstanceWithArgsOf = function(args: ProtoSubstanceWithArgs): ProtoSubstance {
+    g._getWithArgs = function(args: PSArgs): ProtoSubstance {
         if(args.state === "s") return s;
         if (args.state === "l") return l;
         if (args.state === "g") return g;
@@ -40,7 +40,10 @@ const KMnO4 = function() {
     aq.molar_absorptivity = [2042.60286, 3341.11468, 1167.20163];
     // aq.molar_absorptivity = [3160.68,6913.98751,1777.8825];
     aq.form = function() {
-        let x = new AqueousSubstance(this, H2O.args().setState("l").amt("1 L").form());
+        let args = new PSArgs(H2O);
+        args.state = 'l';
+        args.volmL = 1000;
+        let x = new AqueousSubstance(this, args.form());
         // x.maxConcentration = 0.405; // 6.4 g/100mL = 0.04049761443739955 mol / 0.1 L = 0.405 M
         return x;
     };
@@ -57,7 +60,7 @@ const KMnO4 = function() {
 // old method above
 // new method below
 
-const chemicals = new Map() as Map<string, ProtoSubstance> & {getNew: any};
+const chemicals = new Map() as Map<string, ProtoSubstance> & { getNew: (chem: ChemicalBuilder) => ProtoSubstance };
 chemicals.set('H2O', function(){
     let g = new ProtoSubstance();
     g.state = "g";
@@ -77,7 +80,7 @@ chemicals.set('H2O', function(){
     g.chemicalFormula = l.chemicalFormula = s.chemicalFormula = "H2O";
     g.molarMass = l.molarMass = s.molarMass = 18.01528; // g/mol;
 
-    l._getProtoSubstanceWithArgsOf = function (args: ProtoSubstanceWithArgs): ProtoSubstance {
+    l._getWithArgs = function (args: PSArgs): ProtoSubstance {
         if (args.state === "s") return s;
         if (args.state === "l") return l;
         if (args.state === "g") return g;
@@ -112,7 +115,7 @@ chemicals.set('KMnO4', function(){
     s.state = 's';
     s.rgb = [0x9F,0x00,0xFF];
     s.density = 2700;
-    aq._getProtoSubstanceWithArgsOf = function (args: ProtoSubstanceWithArgs): ProtoSubstance {
+    aq._getWithArgs = function (args: PSArgs): ProtoSubstance {
         if (args.state === "aq") return aq;
         if (args.state === "s") return s;
         return aq; // default condition, for if a state is omitted
@@ -148,7 +151,7 @@ function chemicalFromJSON(all: any, defaul: JsonChemical, altStates?: JsonChemic
     for(let sub of subs) {
         main.stateMap.set(sub.state, sub);
     }
-    main._getProtoSubstanceWithArgsOf = function(x) {
+    main._getWithArgs = function(x) {
         let o = main.stateMap.get(x);
         return o === undefined ? main : o;
     }

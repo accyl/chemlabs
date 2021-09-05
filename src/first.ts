@@ -1,5 +1,6 @@
 // import { Vector } from "matter-js";
 
+
 let __ = undefined;
 
 let gvar = {} as any;
@@ -33,6 +34,7 @@ function assert(condition: any, message?: any) {
     if (!condition) {
         throw new Error(message || "Assertion failed");
     }
+    return condition;
 }
 
 class CollisionFilters {
@@ -53,4 +55,23 @@ class CollisionFilters {
 
 }
 
-let universe = {} as { engine: Matter.Engine, world: Matter.World };
+let universe = {} as { engine: Matter.Engine, world: Matter.World, runner: Matter.Runner, paused: Boolean };
+universe.paused = false;
+
+function getCanvas(): HTMLCanvasElement {
+    let canvas = document.getElementById("canvas");
+
+    if (canvas && canvas instanceof HTMLCanvasElement) {
+        return canvas;
+    } else {
+        throw new TypeError("Canvas doesn't exist?");
+    }
+}
+function getCanvasContext(canvas?: HTMLCanvasElement): CanvasRenderingContext2D {
+    if(!canvas) {
+        canvas = getCanvas();
+    }
+    let ctxt = canvas.getContext("2d");
+    if (ctxt === null) throw new TypeError("Context is null?");
+    return ctxt;
+}
