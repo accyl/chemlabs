@@ -14,7 +14,7 @@ var H2O = function () {
     s.specificHeatCapacity = 2.05;
     g.chemicalFormula = l.chemicalFormula = s.chemicalFormula = "H2O";
     g.molarMass = l.molarMass = s.molarMass = 18.01528; // g/mol;
-    g._getProtoSubstanceWithArgsOf = function (args) {
+    g._getWithArgs = function (args) {
         if (args.state === "s")
             return s;
         if (args.state === "l")
@@ -37,7 +37,10 @@ var KMnO4 = function () {
     aq.molar_absorptivity = [2042.60286, 3341.11468, 1167.20163];
     // aq.molar_absorptivity = [3160.68,6913.98751,1777.8825];
     aq.form = function () {
-        var x = new AqueousSubstance(this, H2O.args().setState("l").amt("1 L").form());
+        var args = new PSArgs(H2O);
+        args.state = 'l';
+        args.volmL = 1000;
+        var x = new AqueousSubstance(this, args.form());
         // x.maxConcentration = 0.405; // 6.4 g/100mL = 0.04049761443739955 mol / 0.1 L = 0.405 M
         return x;
     };
@@ -64,7 +67,7 @@ chemicals.set('H2O', function () {
     s.specificHeatCapacity = 2.05;
     g.chemicalFormula = l.chemicalFormula = s.chemicalFormula = "H2O";
     g.molarMass = l.molarMass = s.molarMass = 18.01528; // g/mol;
-    l._getProtoSubstanceWithArgsOf = function (args) {
+    l._getWithArgs = function (args) {
         if (args.state === "s")
             return s;
         if (args.state === "l")
@@ -98,7 +101,7 @@ chemicals.set('KMnO4', function () {
     s.state = 's';
     s.rgb = [0x9F, 0x00, 0xFF];
     s.density = 2700;
-    aq._getProtoSubstanceWithArgsOf = function (args) {
+    aq._getWithArgs = function (args) {
         if (args.state === "aq")
             return aq;
         if (args.state === "s")
@@ -134,7 +137,7 @@ function chemicalFromJSON(all, defaul, altStates, freeze) {
         var sub = subs_1[_a];
         main.stateMap.set(sub.state, sub);
     }
-    main._getProtoSubstanceWithArgsOf = function (x) {
+    main._getWithArgs = function (x) {
         var o = main.stateMap.get(x);
         return o === undefined ? main : o;
     };

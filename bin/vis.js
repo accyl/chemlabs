@@ -154,19 +154,11 @@ function tang(s, addToGlobal, pos, size) {
 }
 var drawer = new Drawer(); // the principal drawer
 function redraw(t) {
-    var canvas = document.getElementById("canvas");
-    if (canvas && canvas instanceof HTMLCanvasElement) {
-        var ctxt = canvas.getContext("2d");
-        if (ctxt === null)
-            throw "Context is null?";
-        ctxt.clearRect(0, 0, canvas.width, canvas.height);
-        ctxt.fillStyle = '#000000';
-        drawer.drawC(ctxt, universe.world);
-        drawer.draw(ctxt, glob);
-    }
-    else {
-        throw "Canvas doesn't exist?";
-    }
+    var ctx = getCanvasContext();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#000000';
+    drawer.drawC(ctx, universe.world);
+    drawer.draw(ctx, glob);
 }
 function updateZIndex() {
     // basically, move gases towards the front of the so they're drawn behind solids
@@ -182,8 +174,14 @@ function updateZIndex() {
 }
 (function () {
     var func = function () {
-        redraw();
+        if (!universe.paused)
+            redraw();
         requestAnimationFrame(func);
     };
     window.requestAnimationFrame(func);
 })();
+var ButtonManager = /** @class */ (function () {
+    function ButtonManager() {
+    }
+    return ButtonManager;
+}());

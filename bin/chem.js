@@ -44,31 +44,13 @@ var ProtoSubstance = /** @class */ (function (_super) {
     function ProtoSubstance() {
         return _super.call(this) || this;
     }
-    ProtoSubstance.prototype.args = function () {
-        // I would have prefered the function name mitosis(), but unfortunately there's no easy verb form for mitosis
-        var retn = new ProtoSubstanceWithArgs(this);
-        return retn;
-    };
     ProtoSubstance.prototype.amt = function (qty, state) {
-        var qbdr;
-        if (qty instanceof QtyUnitList) {
-            qbdr = qty.toBuilder();
-        }
-        else
-            qbdr = qty;
-        var ret = new ProtoSubstanceWithArgs(this);
+        var args = new PSArgs(this, qty);
         if (state)
-            ret.setState(state);
-        ret.mass = qbdr.mass;
-        ret.mol = qbdr.mol;
-        if (qbdr.volume)
-            ret.volmL = qbdr.volume * 1000;
-        else
-            ret.volmL = qbdr.volume;
-        return ret.form();
-        // return ret;
+            args.state = state;
+        return args.form();
     };
-    ProtoSubstance.prototype._getProtoSubstanceWithArgsOf = function (args) {
+    ProtoSubstance.prototype._getWithArgs = function (args) {
         return this; // doesn't work right now
     };
     /**
@@ -81,18 +63,31 @@ var ProtoSubstance = /** @class */ (function (_super) {
     ProtoSubstance.NONE = new ProtoSubstance();
     return ProtoSubstance;
 }(SubstanceType));
-var ProtoSubstanceWithArgs = /** @class */ (function () {
-    function ProtoSubstanceWithArgs(ps) {
+var PSArgs = /** @class */ (function () {
+    function PSArgs(ps, qty, state) {
         this.ps = ps;
+        var qbdr;
+        if (qty instanceof QtyUnitList) {
+            qbdr = qty.toBuilder();
+            if (!(qbdr.mass || qbdr.mol || qbdr.volume))
+                qbdr.mol = 1; // set a default
+        }
+        else
+            qbdr = qty;
+        if (qbdr) {
+            this.mass = qbdr.mass;
+            this.mol = qbdr.mol;
+            if (qbdr.volume)
+                this.volmL = qbdr.volume * 1000;
+            else
+                this.volmL = qbdr.volume;
+        }
     }
-    ProtoSubstanceWithArgs.prototype.gettype = function () {
-        var _ps = this.ps._getProtoSubstanceWithArgsOf(this);
-        // let retn = Object.create(_ps);
-        // Object.freeze(retn); // make it immutable
-        return _ps;
+    PSArgs.prototype.getProto = function () {
+        return this.ps._getWithArgs(this);
     };
-    ProtoSubstanceWithArgs.prototype.form = function () {
-        var ret = this.gettype().form();
+    PSArgs.prototype.form = function () {
+        var ret = this.getProto().form();
         if (this.mass)
             ret.mass = this.mass;
         if (this.mol && ret instanceof MolecularSubstance)
@@ -101,53 +96,7 @@ var ProtoSubstanceWithArgs = /** @class */ (function () {
             ret.volume = this.volmL / 1000;
         return ret;
     };
-    ProtoSubstanceWithArgs.prototype.setState = function (stateOfMatter) {
-        this.state = stateOfMatter;
-        return this;
-    };
-    /**
-     * @deprecated
-     * @param amt
-     * @returns
-     */
-    ProtoSubstanceWithArgs.prototype.amt = function (amt) {
-        if (typeof amt == 'number') {
-            // assume mol
-            this.mol = amt;
-        }
-        else if (typeof amt == 'string') {
-            amt = amt;
-            var cut = undefined;
-            if (amt.slice(-3) == 'mol') {
-                amt = amt.slice(0, -3);
-                if (amt.slice(-1) == ' ')
-                    amt = amt.slice(0, -1); // remove space
-                this.mol = parseInt(amt);
-            }
-            else if ((cut = amt.slice(-2)) == 'mL' || cut == 'ml') {
-                amt = amt.slice(0, -2);
-                if (amt.slice(-1) == ' ')
-                    amt = amt.slice(0, -1); // remove space
-                this.volmL = parseInt(amt);
-            }
-            else if ((cut = amt.slice(-1)) == 'g') {
-                amt = amt.slice(0, -1);
-                if (amt.slice(-1) == ' ')
-                    amt = amt.slice(0, -1); // remove space
-                this.mass = parseInt(amt);
-            }
-            else if (cut == 'L' || cut == 'l') {
-                amt = amt.slice(0, -2);
-                if (amt.slice(-1) == ' ')
-                    amt = amt.slice(0, -1); // remove space
-                this.volmL = parseInt(amt) * 1000;
-            }
-        }
-        else
-            throw "amt isn't a str nor num";
-        return this;
-    };
-    return ProtoSubstanceWithArgs;
+    return PSArgs;
 }());
 /**
  * Coerce a substance into basically being a unit system
@@ -270,6 +219,19 @@ var Substance = /** @class */ (function (_super) {
     };
     return Substance;
 }(SubstGroup));
+function makeMolecular(s) {
+    var molec = s;
+    Object.defineProperty(molec, 'molarMass', {
+        get: function () { return molec.type.molarMass; },
+        set: function (x) { molec.type.molarMass = x; }
+    });
+    molec['mol'] = 1;
+    Object.defineProperty(molec, 'molarMass', {
+        get: function () { return molec.mol * molec.molarMass; },
+        set: function (mass) { molec.mol = mass / molec.molarMass; }
+    });
+    return molec;
+}
 var MolecularSubstance = /** @class */ (function (_super) {
     __extends(MolecularSubstance, _super);
     // molarMass = 1;
@@ -303,6 +265,16 @@ var MolecularSubstance = /** @class */ (function (_super) {
     });
     return MolecularSubstance;
 }(Substance));
+function makeGaseous(x) {
+    assert('mol' in x, x + " is somehow not a molecular substance?");
+    // how
+    var gas = x;
+    Object.defineProperty(gas, 'pressure', {
+        get: function () { return this.mol * Constants.Ratm * this.temperature / this.volume; }
+        // set: function (x) { molec.type.molarMass = x }
+    });
+    gas.kValue = function () { return gas.pressure; };
+}
 var GaseousSubstance = /** @class */ (function (_super) {
     __extends(GaseousSubstance, _super);
     function GaseousSubstance() {

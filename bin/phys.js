@@ -1,5 +1,11 @@
 "use strict";
 // <reference path='../../raw/matter.min.js'/>
+var PhysicsHookBehavior;
+(function (PhysicsHookBehavior) {
+    PhysicsHookBehavior[PhysicsHookBehavior["FREE"] = 0] = "FREE";
+    PhysicsHookBehavior[PhysicsHookBehavior["BEAKER"] = 1] = "BEAKER";
+    PhysicsHookBehavior[PhysicsHookBehavior["CONSTRAINED"] = 2] = "CONSTRAINED";
+})(PhysicsHookBehavior || (PhysicsHookBehavior = {}));
 function newPhysicsHook(arg1, size, subst) {
     var body0;
     if ('x' in arg1 && 'y' in arg1) {
@@ -28,7 +34,7 @@ function newPhysicsHook(arg1, size, subst) {
         body['substs'] = subst; //coerceToSystem(subst);
         if (subst.substances.length === 1 && subst.s[0].state === 'g') {
             body['collisionFilter'] = CollisionFilters.GASLIKE;
-            body['zIndex'] = -1;
+            body['zIndex'] = -2;
         }
         else {
             body['collisionFilter'] = CollisionFilters.SOLID;
@@ -36,14 +42,14 @@ function newPhysicsHook(arg1, size, subst) {
         }
         body['label'] = "" + subst; //.substances[0].type.chemicalFormula;
     }
-    Object.defineProperty(body, 'pos', {
-        get: function () { return body.position; },
-        set: function (x) { body.position = x; }
-    });
-    Object.defineProperty(body, 'vel', {
-        get: function () { return body.velocity; },
-        set: function (x) { body.velocity = x; }
-    });
+    // Object.defineProperty(body, 'pos', {
+    //     get: function () { return body.position },
+    //     set: function (x) { body.position = x }
+    // });
+    // Object.defineProperty(body, 'vel', {
+    //     get: function () { return body.velocity },
+    //     set: function (x) { body.velocity = x }
+    // });
     return body;
 }
 function newBounds(arg1, size, addToGlobal) {
@@ -90,4 +96,26 @@ function phys(s, pos, size) {
             throw "Somehow passed arg was neither substance nor system? " + s;
     }
     return s;
+}
+function changePhyshookBehavior(x, b) {
+    var subst = assert(x.substs, "PhysicsHook must contain a substs in order to change that substance's behavior!");
+    if (b === PhysicsHookBehavior.BEAKER) {
+        x['collisionFilter'] = CollisionFilters.SOLID;
+        x['ignoreGravity'] = undefined;
+        // x['label'] = 'Bound';
+        // x['render']['opacity'] = 0.1;
+        x['zIndex'] = -1;
+    }
+    else if (b === PhysicsHookBehavior.FREE) {
+        if (subst.substances.length === 1 && subst.s[0].state === 'g') {
+            x['collisionFilter'] = CollisionFilters.GASLIKE;
+            x['zIndex'] = -2;
+            x['ignoreGravity'] = true;
+        }
+        else {
+            x['collisionFilter'] = CollisionFilters.SOLID;
+            x['zIndex'] = 0;
+            x['ignoreGravity'] = false;
+        }
+    }
 }

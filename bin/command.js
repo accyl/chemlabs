@@ -666,11 +666,13 @@ function w(inp, display) {
     // } else {
     if (display) {
         tang(subst);
+        updateZIndex();
         redraw();
         return subst;
     }
-    else
+    else {
         return subst;
+    }
     // TODO: with a greedy algorithm, we can
     // actually attempt to process formulas that
     // are 'lazily' in all lower case. for

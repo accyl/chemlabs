@@ -69,8 +69,9 @@ __ = function() {
     // TODO mouse.pixelRatio
     // create runner
     var runner = Runner.create();
+    universe.runner = runner;
 
-        var mouseConstraint = Matter.MouseConstraint.create(engine, { //Create Constraint
+    var mouseConstraint = Matter.MouseConstraint.create(engine, { //Create Constraint
         canvas: canva,
         mouse: mouse,
         constraint: {
