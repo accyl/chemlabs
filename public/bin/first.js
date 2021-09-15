@@ -49,6 +49,12 @@ var CollisionFilters = /** @class */ (function () {
     CollisionFilters.GASLIKE = new CollisionFilters(8, 2 + 4); // only collide with walls and the mouse constraint
     return CollisionFilters;
 }());
+var ScreenState;
+(function (ScreenState) {
+    ScreenState[ScreenState["PAUSED"] = 0] = "PAUSED";
+    ScreenState[ScreenState["RUNNING"] = 1] = "RUNNING";
+    ScreenState[ScreenState["CREDITS"] = 2] = "CREDITS";
+})(ScreenState || (ScreenState = {}));
 var universe = {};
 universe.paused = false;
 function getCanvas() {

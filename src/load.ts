@@ -124,8 +124,117 @@ function debugBody(body: Matter.Body) {
 //     h.addEventListener("keypress", submitOnEnter);
 // }();
 addDefault();
+class CanvasButton {
+    x=100;
+    y = 100;
+    width = 100;
+    height=100;
+    text = 'button';
+    fill = '#00000044';
+    drawSelf() {
+        let ctx = getCanvasContext();
+        ctx.fillStyle = this.fill;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = '40px sans-serif';
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.fillStyle = '#000000';
+        ctx.fillText(this.text, this.x + this.width / 2, this.y + this.height / 2, this.width);
+    }
+    /**
+     * @param rectMode Uses a string equal to https://processing.org/reference/rectMode_.html
+     */
+    constructor(x: num, y: num, width: num, height: num, text: string, rectMode ='CORNER') {
+        this.width = width; this.height = height; this.text = text;
 
+        if(rectMode === 'CENTER') {
+            this.x = x - width / 2;
+            this.y = y - height / 2;
+        } else {
+            this.x = x; this.y = y; 
+        }
+    }
+}
+class ButtonManager {
+    _isInside(pos: any, rect: any) {
+        return rect.x < pos.x && pos.x < rect.x + rect.width && pos.y < rect.y + rect.height && rect.y< pos.y;
+    }
+    buttons: CanvasButton[] = [];
+    onButtonClicked(idx: num, b: CanvasButton) {
+        if (idx === this.buttons.length - 1) {
+            // resume
+            pauseUnpauseGame(false);
+            return;
+        }
+    };
+    onclick(e: MouseEvent) {
+        // var mousePos = getMousePos(canvas, evt);
+        var rect = canvas.getBoundingClientRect();
+        var mousepos = {
+            x: (e.clientX - rect.left) / (rect.right - rect.left) * canvas.width, // https://stackoverflow.com/questions/17130395/real-mouse-position-in-canvas
+            y: (e.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height
+        };
+        for(let i=0;i<this.buttons.length;i++) {
+            if (this._isInside(mousepos, this.buttons[i])) {
+                this.onButtonClicked(i, this.buttons[i]);
+            }
+        }
+        // console.log(mousepos);
+    };
+}
+let pauseButtons = new ButtonManager();
+pauseButtons.buttons = (function () {
+    let can = getCanvas();
+    let b = [];
+    b.push(new CanvasButton(can.width / 2, can.height * 2 / 6, 400, 80, 'Credits', 'CENTER')); // can.width, can.height);
+    b.push(new CanvasButton(can.width / 2, can.height * 3 / 6, 400, 80, 'Resume', 'CENTER')); // can.width, can.height);
+    return b;
+}());
+(function() {
+    pauseButtons.onButtonClicked = function(i: num, x: CanvasButton) {
+        if(i === 0) { // Credits. Yeah ik it's hardcoded. Oh well indices are fast.
+            transitionScreenTo(ScreenState.CREDITS);
+        } else if (i === this.buttons.length - 1) {
+            // resume
+            pauseUnpauseGame(false);
+            return;
+        }
+    }
+}());
 
+let creditsButtons = new ButtonManager();
+creditsButtons.buttons = (function () {
+    let can = getCanvas();
+    let b = [];
+    b.push(new CanvasButton(can.width / 2, can.height * 2 / 6, 400, 80, 'Back', 'CENTER')); // can.width, can.height);
+    return b;
+}());
+creditsButtons.onButtonClicked = function(i: num, x: CanvasButton) {
+    transitionScreenTo(ScreenState.PAUSED);
+}
+
+function transitionScreenTo(state: ScreenState) {
+    if(state === ScreenState.CREDITS) {
+        if(!universe.paused) pauseUnpauseGame(true);
+        universe.screenstate = ScreenState.CREDITS;
+        let can = getCanvas();
+        let ctx = getCanvasContext(can);
+        ctx.fillStyle = '#DDDDDD';
+        ctx.fillRect(0, 0, can.width, can.height);
+        ctx.font = '50px sans-serif';
+        ctx.fillStyle = '#000000';
+        ctx.fillText('Inspired by: \n Powder Game by Dan-Ball \n Elemental 3 by carykh \n Elemental Community by davecaruso?', can.width / 2, can.height / 2, can.width);
+        for(let b of creditsButtons.buttons) b.drawSelf();
+    } else if(state === ScreenState.PAUSED) {
+        pauseUnpauseGame(true);
+        universe.screenstate = ScreenState.PAUSED;
+
+    } else if(state === ScreenState.RUNNING) {
+        pauseUnpauseGame(false);
+        universe.screenstate = ScreenState.RUNNING;
+
+    }
+}
 
 /**
  * 
@@ -140,6 +249,7 @@ function pauseUnpauseGame(pause?: Boolean) {
     if(pause) {
         universe.runner.enabled = false;
         universe.paused = true;
+        universe.screenstate = ScreenState.PAUSED;
         let canv = getCanvas();
         let ctx = getCanvasContext(canv);
         ctx.globalAlpha = 0.75;
@@ -152,10 +262,12 @@ function pauseUnpauseGame(pause?: Boolean) {
         ctx.fillStyle = '#000000';
         ctx.font = '50px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('paused', canv.width/2, canv.height/2);
+        ctx.fillText('PAUSED', canv.width/2, canv.height/6);
+        for(let b of pauseButtons.buttons) b.drawSelf();
     } else { // unpause
         universe.runner.enabled = true;
         universe.paused = false;
+        universe.screenstate = ScreenState.RUNNING;
         let ctx = getCanvasContext();
         ctx.globalAlpha = 1;
         // ctx.filter = 'none';
@@ -168,30 +280,13 @@ function pauseUnpauseGame(pause?: Boolean) {
     var canvas = getCanvas();
     var ctx = getCanvasContext(canvas);
     //The rectangle should have x,y,width,height properties
-    var rect = {
-        x: 250,
-        y: 350,
-        width: 200,
-        height: 100
-    };
+
     //Function to check whether a point is inside a rectangle
-    function isInside(pos: any, rect: any) {
-        return pos.x > rect.x && pos.x < rect.x + rect.width && pos.y < rect.y + rect.height && pos.y > rect.y
-    }
+
     //Binding the click event on the canvas
     canvas.addEventListener('click', function (evt) {
-        // var mousePos = getMousePos(canvas, evt);
-        var rect = canvas.getBoundingClientRect();
-        var mousepos = {
-            x: evt.clientX - rect.left,
-            y: evt.clientY - rect.top
-        };
-
-        if (isInside(mousepos, rect)) {
-            console.log('clicked inside rect');
-        } else {
-            console.log('clicked outside rect');
-        }
+        if(universe.screenstate === ScreenState.PAUSED) pauseButtons.onclick(evt);
+        else if(universe.screenstate === ScreenState.CREDITS) creditsButtons.onclick(evt);
     }, false);
     window.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {

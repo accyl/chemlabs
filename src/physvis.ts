@@ -162,6 +162,3 @@ function updateZIndex() {
 })();
 
 
-class ButtonManager {
-    
-}

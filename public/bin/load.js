@@ -119,6 +119,130 @@ function debugBody(body) {
 //     h.addEventListener("keypress", submitOnEnter);
 // }();
 addDefault();
+var CanvasButton = /** @class */ (function () {
+    /**
+     * @param rectMode Uses a string equal to https://processing.org/reference/rectMode_.html
+     */
+    function CanvasButton(x, y, width, height, text, rectMode) {
+        if (rectMode === void 0) { rectMode = 'CORNER'; }
+        this.x = 100;
+        this.y = 100;
+        this.width = 100;
+        this.height = 100;
+        this.text = 'button';
+        this.fill = '#00000044';
+        this.width = width;
+        this.height = height;
+        this.text = text;
+        if (rectMode === 'CENTER') {
+            this.x = x - width / 2;
+            this.y = y - height / 2;
+        }
+        else {
+            this.x = x;
+            this.y = y;
+        }
+    }
+    CanvasButton.prototype.drawSelf = function () {
+        var ctx = getCanvasContext();
+        ctx.fillStyle = this.fill;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = '40px sans-serif';
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.fillStyle = '#000000';
+        ctx.fillText(this.text, this.x + this.width / 2, this.y + this.height / 2, this.width);
+    };
+    return CanvasButton;
+}());
+var ButtonManager = /** @class */ (function () {
+    function ButtonManager() {
+        this.buttons = [];
+    }
+    ButtonManager.prototype._isInside = function (pos, rect) {
+        return rect.x < pos.x && pos.x < rect.x + rect.width && pos.y < rect.y + rect.height && rect.y < pos.y;
+    };
+    ButtonManager.prototype.onButtonClicked = function (idx, b) {
+        if (idx === this.buttons.length - 1) {
+            // resume
+            pauseUnpauseGame(false);
+            return;
+        }
+    };
+    ;
+    ButtonManager.prototype.onclick = function (e) {
+        // var mousePos = getMousePos(canvas, evt);
+        var rect = canvas.getBoundingClientRect();
+        var mousepos = {
+            x: (e.clientX - rect.left) / (rect.right - rect.left) * canvas.width,
+            y: (e.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height
+        };
+        for (var i = 0; i < this.buttons.length; i++) {
+            if (this._isInside(mousepos, this.buttons[i])) {
+                this.onButtonClicked(i, this.buttons[i]);
+            }
+        }
+        // console.log(mousepos);
+    };
+    ;
+    return ButtonManager;
+}());
+var pauseButtons = new ButtonManager();
+pauseButtons.buttons = (function () {
+    var can = getCanvas();
+    var b = [];
+    b.push(new CanvasButton(can.width / 2, can.height * 2 / 6, 400, 80, 'Credits', 'CENTER')); // can.width, can.height);
+    b.push(new CanvasButton(can.width / 2, can.height * 3 / 6, 400, 80, 'Resume', 'CENTER')); // can.width, can.height);
+    return b;
+}());
+(function () {
+    pauseButtons.onButtonClicked = function (i, x) {
+        if (i === 0) { // Credits. Yeah ik it's hardcoded. Oh well indices are fast.
+            transitionScreenTo(ScreenState.CREDITS);
+        }
+        else if (i === this.buttons.length - 1) {
+            // resume
+            pauseUnpauseGame(false);
+            return;
+        }
+    };
+}());
+var creditsButtons = new ButtonManager();
+creditsButtons.buttons = (function () {
+    var can = getCanvas();
+    var b = [];
+    b.push(new CanvasButton(can.width / 2, can.height * 2 / 6, 400, 80, 'Back', 'CENTER')); // can.width, can.height);
+    return b;
+}());
+creditsButtons.onButtonClicked = function (i, x) {
+    transitionScreenTo(ScreenState.PAUSED);
+};
+function transitionScreenTo(state) {
+    if (state === ScreenState.CREDITS) {
+        if (!universe.paused)
+            pauseUnpauseGame(true);
+        universe.screenstate = ScreenState.CREDITS;
+        var can = getCanvas();
+        var ctx_2 = getCanvasContext(can);
+        ctx_2.fillStyle = '#DDDDDD';
+        ctx_2.fillRect(0, 0, can.width, can.height);
+        ctx_2.font = '50px sans-serif';
+        ctx_2.fillStyle = '#000000';
+        ctx_2.fillText('Inspired by: \n Powder Game by Dan-Ball \n Elemental 3 by carykh \n Elemental Community by davecaruso?', can.width / 2, can.height / 2, can.width);
+        for (var _i = 0, _a = creditsButtons.buttons; _i < _a.length; _i++) {
+            var b_1 = _a[_i];
+            b_1.drawSelf();
+        }
+    }
+    else if (state === ScreenState.PAUSED) {
+        pauseUnpauseGame(true);
+        universe.screenstate = ScreenState.PAUSED;
+    }
+    else if (state === ScreenState.RUNNING) {
+        pauseUnpauseGame(false);
+        universe.screenstate = ScreenState.RUNNING;
+    }
+}
 /**
  *
  * @param pause Pass undefined or no argument to toggle.
@@ -132,24 +256,30 @@ function pauseUnpauseGame(pause) {
     if (pause) {
         universe.runner.enabled = false;
         universe.paused = true;
+        universe.screenstate = ScreenState.PAUSED;
         var canv = getCanvas();
-        var ctx_2 = getCanvasContext(canv);
-        ctx_2.globalAlpha = 0.75;
+        var ctx_3 = getCanvasContext(canv);
+        ctx_3.globalAlpha = 0.75;
         // ctx.filter = 'blur(2px)';
         redraw();
-        ctx_2.fillStyle = '#FFFFFF';
-        ctx_2.fillRect(0, 0, canv.width, canv.height);
-        ctx_2.globalAlpha = 1;
-        ctx_2.fillStyle = '#000000';
-        ctx_2.font = '50px sans-serif';
-        ctx_2.textAlign = 'center';
-        ctx_2.fillText('paused', canv.width / 2, canv.height / 2);
+        ctx_3.fillStyle = '#FFFFFF';
+        ctx_3.fillRect(0, 0, canv.width, canv.height);
+        ctx_3.globalAlpha = 1;
+        ctx_3.fillStyle = '#000000';
+        ctx_3.font = '50px sans-serif';
+        ctx_3.textAlign = 'center';
+        ctx_3.fillText('PAUSED', canv.width / 2, canv.height / 6);
+        for (var _i = 0, _a = pauseButtons.buttons; _i < _a.length; _i++) {
+            var b_2 = _a[_i];
+            b_2.drawSelf();
+        }
     }
     else { // unpause
         universe.runner.enabled = true;
         universe.paused = false;
-        var ctx_3 = getCanvasContext();
-        ctx_3.globalAlpha = 1;
+        universe.screenstate = ScreenState.RUNNING;
+        var ctx_4 = getCanvasContext();
+        ctx_4.globalAlpha = 1;
         // ctx.filter = 'none';
         // redraw();
     }
@@ -158,30 +288,13 @@ function pauseUnpauseGame(pause) {
     var canvas = getCanvas();
     var ctx = getCanvasContext(canvas);
     //The rectangle should have x,y,width,height properties
-    var rect = {
-        x: 250,
-        y: 350,
-        width: 200,
-        height: 100
-    };
     //Function to check whether a point is inside a rectangle
-    function isInside(pos, rect) {
-        return pos.x > rect.x && pos.x < rect.x + rect.width && pos.y < rect.y + rect.height && pos.y > rect.y;
-    }
     //Binding the click event on the canvas
     canvas.addEventListener('click', function (evt) {
-        // var mousePos = getMousePos(canvas, evt);
-        var rect = canvas.getBoundingClientRect();
-        var mousepos = {
-            x: evt.clientX - rect.left,
-            y: evt.clientY - rect.top
-        };
-        if (isInside(mousepos, rect)) {
-            console.log('clicked inside rect');
-        }
-        else {
-            console.log('clicked outside rect');
-        }
+        if (universe.screenstate === ScreenState.PAUSED)
+            pauseButtons.onclick(evt);
+        else if (universe.screenstate === ScreenState.CREDITS)
+            creditsButtons.onclick(evt);
     }, false);
     window.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {

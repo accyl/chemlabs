@@ -54,8 +54,10 @@ class CollisionFilters {
     
 
 }
-
-let universe = {} as { engine: Matter.Engine, world: Matter.World, runner: Matter.Runner, paused: Boolean };
+enum ScreenState {
+    PAUSED, RUNNING, CREDITS
+}
+let universe = {} as { engine: Matter.Engine, world: Matter.World, runner: Matter.Runner, paused: Boolean, screenstate: ScreenState };
 universe.paused = false;
 
 function getCanvas(): HTMLCanvasElement {
