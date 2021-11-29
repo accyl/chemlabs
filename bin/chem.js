@@ -36,6 +36,10 @@ var SubstanceType = /** @class */ (function () {
         this.state = "g";
         this.molarMass = -1;
     }
+    SubstanceType.prototype.equals = function (x) {
+        console.warn("unimplemented equals in chemm.ts SubstanceType!");
+        return this == x;
+    };
     SubstanceType.NONE = new SubstanceType();
     return SubstanceType;
 }());
@@ -120,7 +124,6 @@ function coerceToSystem(x) {
 var SubstGroup = /** @class */ (function () {
     function SubstGroup() {
         this.substances = [];
-        this.equilibria = [];
         this.subsystems = [];
     }
     Object.defineProperty(SubstGroup.prototype, "s", {
@@ -159,7 +162,6 @@ var Substance = /** @class */ (function (_super) {
     function Substance(type) {
         var _this = _super.call(this) || this;
         _this.subsystems = [];
-        _this.equilibria = [];
         _this._v = 1;
         _this._T = 273.15;
         _this.type = type ? type : SubstanceType.NONE;
@@ -201,10 +203,6 @@ var Substance = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
-    Substance.prototype.kValue = function () {
-        return 1; // returns the value used in the equilibrium expression. setting it to 1 will ignore it.
-        // this is usually the molarity
-    };
     Substance.prototype.color = function (background) {
         if (background === void 0) { background = [255, 255, 255]; }
         return this.type.rgb;
@@ -273,7 +271,6 @@ function makeGaseous(x) {
         get: function () { return this.mol * Constants.Ratm * this.temperature / this.volume; }
         // set: function (x) { molec.type.molarMass = x }
     });
-    gas.kValue = function () { return gas.pressure; };
 }
 var GaseousSubstance = /** @class */ (function (_super) {
     __extends(GaseousSubstance, _super);
@@ -289,9 +286,6 @@ var GaseousSubstance = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
-    GaseousSubstance.prototype.kValue = function () {
-        return this.pressure;
-    };
     return GaseousSubstance;
 }(MolecularSubstance));
 var AqueousSubstance = /** @class */ (function (_super) {
@@ -334,9 +328,6 @@ var AqueousSubstance = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
-    AqueousSubstance.prototype.kValue = function () {
-        return this.concentration;
-    };
     AqueousSubstance.prototype.absorbance = function (length_traveled) {
         var _this = this;
         if (length_traveled === void 0) { length_traveled = 1; }
@@ -379,60 +370,3 @@ var SpectralAqueousSubstance = /** @class */ (function (_super) {
     };
     return SpectralAqueousSubstance;
 }(AqueousSubstance));
-var BalancedRxn = /** @class */ (function () {
-    function BalancedRxn() {
-        this.reactants = [];
-        this.products = [];
-        // constructor(reactants: SubstanceType[], products: SubstanceType[]) {
-        //     this.reactants = reactants;
-        //     this.products = products;
-        // }
-    }
-    return BalancedRxn;
-}());
-var EqbReaction = /** @class */ (function (_super) {
-    __extends(EqbReaction, _super);
-    function EqbReaction(K) {
-        var _this = 
-        // TODO
-        _super.call(this) || this;
-        _this.K = 1;
-        _this.K = K;
-        return _this;
-    }
-    return EqbReaction;
-}(BalancedRxn));
-var SystemEquilibrium = /** @class */ (function () {
-    function SystemEquilibrium(sys, eqb) {
-        this.reactants = [];
-        this.products = [];
-        this.sys = sys;
-        for (var _i = 0, _a = sys.substances; _i < _a.length; _i++) {
-            var spec = _a[_i];
-            if (eqb.reactants.indexOf(spec.type) >= 0) { // if the equilibrium has the species as a reactant
-                this.reactants.push(spec);
-            }
-            else if (eqb.products.indexOf(spec.type) >= 0) {
-                this.products.push(spec);
-            }
-        }
-    }
-    Object.defineProperty(SystemEquilibrium.prototype, "Q", {
-        get: function () {
-            var Rs = 1;
-            for (var _i = 0, _a = this.reactants; _i < _a.length; _i++) {
-                var rxt = _a[_i];
-                Rs *= rxt.kValue();
-            }
-            var Ps = 1;
-            for (var _b = 0, _c = this.products; _b < _c.length; _b++) {
-                var px = _c[_b];
-                Ps *= px.kValue();
-            }
-            return Rs / Ps;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    return SystemEquilibrium;
-}());

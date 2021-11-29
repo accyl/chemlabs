@@ -1,57 +1,83 @@
 "use strict";
 /// <reference path='chem.ts'/>
-var H2O = function () {
-    var g = new ProtoSubstance();
-    g.state = "g";
-    g.specificHeatCapacity = 2.080;
-    var l = new ProtoSubstance();
-    l.state = "l";
-    l.density = 0.9998395;
-    l.specificHeatCapacity = 4.184;
-    var s = new ProtoSubstance();
-    s.state = "s";
-    s.density = 0.9168; // ice
-    s.specificHeatCapacity = 2.05;
-    g.chemicalFormula = l.chemicalFormula = s.chemicalFormula = "H2O";
-    g.molarMass = l.molarMass = s.molarMass = 18.01528; // g/mol;
-    g._getWithArgs = function (args) {
-        if (args.state === "s")
-            return s;
-        if (args.state === "l")
-            return l;
-        if (args.state === "g")
-            return g;
-        return ProtoSubstance.NONE;
-    };
-    Object.freeze(g);
-    Object.freeze(l);
-    Object.freeze(s);
-    return g;
-}();
-var KMnO4 = function () {
-    // molar mass: 158.033949
-    var aq = new ProtoSubstance();
-    // me.stateOfMatter = "s"; // TODO this feels dumb
-    aq.state = "aq";
-    aq.molar_absorptivity = [0.8, 1.75, 0.45];
-    aq.molar_absorptivity = [2042.60286, 3341.11468, 1167.20163];
-    // aq.molar_absorptivity = [3160.68,6913.98751,1777.8825];
-    aq.form = function () {
-        var args = new PSArgs(H2O);
-        args.state = 'l';
-        args.volmL = 1000;
-        var x = new AqueousSubstance(this, args.form());
-        // x.maxConcentration = 0.405; // 6.4 g/100mL = 0.04049761443739955 mol / 0.1 L = 0.405 M
-        return x;
-    };
-    aq.chemicalFormula = "KMnO4";
-    aq.molarMass = 158.034; // g/mol
-    Object.freeze(aq); // lock 
-    return aq;
-}();
-// old method above
-// new method below
 var chemicals = new Map();
+/**
+ * dynamically creates a new chemical entry with the specified ChemicalBuilder chemical and which
+ * exposes the ProtoSubstance with which you can create massed substances
+ * @param chem ChemicalBuilder that the chemical composition of the new substance
+ * @returns the ProtoSubstance, which can at any time be accessed through $c(key: string)
+ */
+chemicals.saveCustom = function (chem) {
+    var formula = chem.formula;
+    var atomt = chem.atomt;
+    var all = {
+        chemicalFormula: formula,
+        molarMass: atomt.molarMass(),
+        rgb: [250, 250, 250]
+    };
+    var phase = chem.state;
+    if (!phase && atomt._atoms.length == 1) {
+        // a substance comprised of a single atom
+        var anum = atomt._atomicNums[0];
+        switch (ptable[anum].phase) {
+            case 'Solid':
+                phase = 's';
+                break;
+            case 'Liquid':
+                phase = 'l';
+                break;
+            case 'Gas':
+                phase = 'g';
+                break;
+        }
+        var rgb = ptable[anum].rgb;
+        if (rgb) {
+            // all.rgb = 
+            all.rgb = _rgb(rgb);
+        }
+    }
+    var state = { state: phase };
+    var proto = chemicalFromJSON(all, state);
+    chemicals.set(formula, proto);
+    return proto;
+};
+function chemicalFromJSON(all, defaul, altStates, freeze) {
+    if (freeze === void 0) { freeze = true; }
+    // TODO
+    // any such function that constructs from JSON must be able to customize the constructor
+    // For example using a spectralA
+    // maybe make that itself as a json option flag?
+    // THen we need to pass arguments into the constructor.
+    // Again we might just have arguments under '0', '1' pipe into 
+    // the constructor and set default readings to be equivalent
+    // if(constructed && constructed.length == 0) constructed = undefined;
+    altStates = altStates ? altStates : [];
+    // if(constructed) assert(constructed.length === 1 + altStates.length);
+    var main = Object.assign(new ProtoSubstance(), defaul, all);
+    main.stateMap = new Map();
+    var subs = [];
+    subs.push(main);
+    for (var _i = 0, altStates_1 = altStates; _i < altStates_1.length; _i++) {
+        var alt = altStates_1[_i];
+        var sub = Object.assign(new ProtoSubstance(), alt, all);
+        subs.push(sub);
+    }
+    for (var _a = 0, subs_1 = subs; _a < subs_1.length; _a++) {
+        var sub = subs_1[_a];
+        main.stateMap.set(sub.state, sub);
+    }
+    main._getWithArgs = function (x) {
+        var o = main.stateMap.get(x);
+        return o === undefined ? main : o;
+    };
+    if (freeze) {
+        for (var _b = 0, subs_2 = subs; _b < subs_2.length; _b++) {
+            var x = subs_2[_b];
+            Object.freeze(x);
+        }
+    }
+    return main;
+}
 chemicals.set('H2O', function () {
     var g = new ProtoSubstance();
     g.state = "g";
@@ -112,68 +138,6 @@ chemicals.set('KMnO4', function () {
     Object.freeze(aq); // lock 
     return aq;
 }());
-function chemicalFromJSON(all, defaul, altStates, freeze) {
-    if (freeze === void 0) { freeze = true; }
-    // TODO
-    // any such function that constructs from JSON must be able to customize the constructor
-    // For example using a spectralA
-    // maybe make that itself as a json option flag?
-    // THen we need to pass arguments into the constructor.
-    // Again we might just have arguments under '0', '1' pipe into 
-    // the constructor and set default readings to be equivalent
-    // if(constructed && constructed.length == 0) constructed = undefined;
-    altStates = altStates ? altStates : [];
-    // if(constructed) assert(constructed.length === 1 + altStates.length);
-    var main = Object.assign(new ProtoSubstance(), defaul, all);
-    main.stateMap = new Map();
-    var subs = [];
-    subs.push(main);
-    for (var _i = 0, altStates_1 = altStates; _i < altStates_1.length; _i++) {
-        var alt = altStates_1[_i];
-        var sub = Object.assign(new ProtoSubstance(), alt, all);
-        subs.push(sub);
-    }
-    for (var _a = 0, subs_1 = subs; _a < subs_1.length; _a++) {
-        var sub = subs_1[_a];
-        main.stateMap.set(sub.state, sub);
-    }
-    main._getWithArgs = function (x) {
-        var o = main.stateMap.get(x);
-        return o === undefined ? main : o;
-    };
-    if (freeze) {
-        for (var _b = 0, subs_2 = subs; _b < subs_2.length; _b++) {
-            var x = subs_2[_b];
-            Object.freeze(x);
-        }
-    }
-    return main;
-    /*
-    let s = sObj ? Object.assign(constructed ? constructed[0] : new ProtoSubstance(), sObj, all) : undefined;
-    let l = lObj ? Object.assign(constructed ? constructed[1] : new ProtoSubstance(), lObj, all) : undefined;
-    let g = gObj ? Object.assign(constructed ? constructed[2] : new ProtoSubstance(), gObj, all) : undefined;
-    let aq = aqObj ? Object.assign(constructed ? constructed[3] : new ProtoSubstance(), aqObj, all) : undefined;
-    let ndef: (ProtoSubstance & {}|undefined);
-    if(defObj === sObj) ndef = s;
-    else if(defObj === lObj) ndef = l;
-    else if(defObj === gObj) ndef = g;
-    else if(defObj === aqObj) ndef = aq;
-    if(!ndef) ndef = s ? s : (g ? g : (l ? l : (aq ? aq : undefined)));
-    if(!ndef) throw "Nothing provided?"; // pick solid as a default
-    let def = ndef as ProtoSubstance;
-    def._getProtoSubstanceWithArgsOf = function (args: ProtoSubstanceWithArgs): ProtoSubstance {
-        if (args.state === "s") return s ? s : def;
-        if (args.state === "l") return l ? l : def;
-        if (args.state === "g") return g ? g : def;
-        if (args.state === 'aq') return aq ? aq : def;
-        return def;
-    }
-        if(s) Object.freeze(s);
-    if(l) Object.freeze(l);
-    if(g) Object.freeze(g);
-    if(aq) Object.freeze(aq);
-    */
-}
 chemicals.set('H2', function () {
     var g = { state: "g" };
     var l = { state: "l",
@@ -186,37 +150,77 @@ chemicals.set('H2', function () {
     // g.molarMass = l.molarMass = s.molarMass = 18.01528; // g/mol;
     return chemicalFromJSON(all, g, [l]);
 }());
-chemicals.getNew = function (chem) {
-    var formula = chem.formula;
-    var atomt = chem.atomt;
-    var all = {
-        chemicalFormula: formula,
-        molarMass: atomt.molarMass(),
-        rgb: [250, 250, 250]
-    };
-    var phase = chem.state;
-    if (!phase && atomt._atoms.length == 1) {
-        // a substance comprised of a single atom
-        var anum = atomt._atomicNums[0];
-        switch (ptable[anum].phase) {
-            case 'Solid':
-                phase = 's';
-                break;
-            case 'Liquid':
-                phase = 'l';
-                break;
-            case 'Gas':
-                phase = 'g';
-                break;
-        }
-        var rgb = ptable[anum].rgb;
-        if (rgb) {
-            // all.rgb = 
-            all.rgb = _rgb(rgb);
-        }
-    }
-    var state = { state: phase };
-    var proto = chemicalFromJSON(all, state);
-    chemicals.set(formula, proto);
-    return proto;
-};
+// new method above
+// old method below
+// const H2O = function() {
+//     let g = new ProtoSubstance();
+//     g.state = "g";
+//     g.specificHeatCapacity = 2.080;
+//     let l = new ProtoSubstance();
+//     l.state = "l";
+//     l.density = 0.9998395;
+//     l.specificHeatCapacity = 4.184;
+//     let s = new ProtoSubstance();
+//     s.state = "s";
+//     s.density = 0.9168; // ice
+//     s.specificHeatCapacity = 2.05;
+//     g.chemicalFormula = l.chemicalFormula = s.chemicalFormula = "H2O";
+//     g.molarMass = l.molarMass = s.molarMass = 18.01528; // g/mol;
+//     g._getWithArgs = function(args: PSArgs): ProtoSubstance {
+//         if(args.state === "s") return s;
+//         if (args.state === "l") return l;
+//         if (args.state === "g") return g;
+//         return ProtoSubstance.NONE;
+//     }
+//     Object.freeze(g);
+//     Object.freeze(l);
+//     Object.freeze(s);
+//     return g;
+// }();
+// const KMnO4 = function() {
+//     // molar mass: 158.033949
+//     let aq = new ProtoSubstance();
+//     // me.stateOfMatter = "s"; // TODO this feels dumb
+//     aq.state = "aq";
+//     aq.molar_absorptivity = [0.8, 1.75, 0.45];
+//     aq.molar_absorptivity = [2042.60286, 3341.11468, 1167.20163];
+//     // aq.molar_absorptivity = [3160.68,6913.98751,1777.8825];
+//     aq.form = function() {
+//         let args = new PSArgs(H2O);
+//         args.state = 'l';
+//         args.volmL = 1000;
+//         let x = new AqueousSubstance(this, args.form());
+//         // x.maxConcentration = 0.405; // 6.4 g/100mL = 0.04049761443739955 mol / 0.1 L = 0.405 M
+//         return x;
+//     };
+//     aq.chemicalFormula = "KMnO4";
+//     aq.molarMass = 158.034; // g/mol
+//     Object.freeze(aq); // lock 
+//     return aq;
+// }();
+// old method above
+/*
+let s = sObj ? Object.assign(constructed ? constructed[0] : new ProtoSubstance(), sObj, all) : undefined;
+let l = lObj ? Object.assign(constructed ? constructed[1] : new ProtoSubstance(), lObj, all) : undefined;
+let g = gObj ? Object.assign(constructed ? constructed[2] : new ProtoSubstance(), gObj, all) : undefined;
+let aq = aqObj ? Object.assign(constructed ? constructed[3] : new ProtoSubstance(), aqObj, all) : undefined;
+let ndef: (ProtoSubstance & {}|undefined);
+if(defObj === sObj) ndef = s;
+else if(defObj === lObj) ndef = l;
+else if(defObj === gObj) ndef = g;
+else if(defObj === aqObj) ndef = aq;
+if(!ndef) ndef = s ? s : (g ? g : (l ? l : (aq ? aq : undefined)));
+if(!ndef) throw "Nothing provided?"; // pick solid as a default
+let def = ndef as ProtoSubstance;
+def._getProtoSubstanceWithArgsOf = function (args: ProtoSubstanceWithArgs): ProtoSubstance {
+    if (args.state === "s") return s ? s : def;
+    if (args.state === "l") return l ? l : def;
+    if (args.state === "g") return g ? g : def;
+    if (args.state === 'aq') return aq ? aq : def;
+    return def;
+}
+    if(s) Object.freeze(s);
+if(l) Object.freeze(l);
+if(g) Object.freeze(g);
+if(aq) Object.freeze(aq);
+*/
