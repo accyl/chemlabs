@@ -1,5 +1,5 @@
 function addDefault() {
-    let sub = KMnO4.form();
+    let sub = $c('KMnO4')!.form();
     tang(sub);
 
     let sub2 = w('KMnO4');
@@ -181,6 +181,19 @@ class ButtonManager {
         }
         // console.log(mousepos);
     };
+    onhover(e: MouseEvent, callback: (e: MouseEvent, i: num) => void) {
+        var rect = canvas.getBoundingClientRect();
+        var mousepos = {
+            x: (e.clientX - rect.left) / (rect.right - rect.left) * canvas.width, // https://stackoverflow.com/questions/17130395/real-mouse-position-in-canvas
+            y: (e.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height
+        };
+        for (let i = 0; i < this.buttons.length; i++) {
+            if (this._isInside(mousepos, this.buttons[i])) {
+                this.onButtonClicked(i, this.buttons[i]);
+                callback(e, i);
+            }
+        }
+    }
 }
 let pauseButtons = new ButtonManager();
 pauseButtons.buttons = (function () {
@@ -206,24 +219,31 @@ let creditsButtons = new ButtonManager();
 creditsButtons.buttons = (function () {
     let can = getCanvas();
     let b = [];
-    b.push(new CanvasButton(can.width / 2, can.height * 2 / 6, 400, 80, 'Back', 'CENTER')); // can.width, can.height);
+    b.push(new CanvasButton(can.width / 2, can.height * 5 / 6, 400, 80, 'Back', 'CENTER')); // can.width, can.height);
     return b;
 }());
 creditsButtons.onButtonClicked = function(i: num, x: CanvasButton) {
     transitionScreenTo(ScreenState.PAUSED);
 }
-
+function fillText(ctx: CanvasRenderingContext2D, txt: string, x:num, y:num, txtheight=50) {
+    let idx = 0;
+    for(let part of txt.split('\n')) {
+        idx++;
+        ctx.fillText(part, x, y+idx*txtheight, ctx.canvas.width);
+    }
+}
 function transitionScreenTo(state: ScreenState) {
     if(state === ScreenState.CREDITS) {
         if(!universe.paused) pauseUnpauseGame(true);
         universe.screenstate = ScreenState.CREDITS;
         let can = getCanvas();
         let ctx = getCanvasContext(can);
-        ctx.fillStyle = '#DDDDDD';
+        redraw();
+        ctx.fillStyle = '#DDDDDDEE';
         ctx.fillRect(0, 0, can.width, can.height);
         ctx.font = '50px sans-serif';
         ctx.fillStyle = '#000000';
-        ctx.fillText('Inspired by: \n Powder Game by Dan-Ball \n Elemental 3 by carykh \n Elemental Community by davecaruso?', can.width / 2, can.height / 2, can.width);
+        fillText(ctx, 'Creator: github.com/accyl\n\nInspired by: \nPowder Game by Dan-Ball \nElemental 3 by carykh \nElemental Community by davecaruso', can.width / 2, can.height / 8);
         for(let b of creditsButtons.buttons) b.drawSelf();
     } else if(state === ScreenState.PAUSED) {
         pauseUnpauseGame(true);
@@ -288,6 +308,9 @@ function pauseUnpauseGame(pause?: Boolean) {
         if(universe.screenstate === ScreenState.PAUSED) pauseButtons.onclick(evt);
         else if(universe.screenstate === ScreenState.CREDITS) creditsButtons.onclick(evt);
     }, false);
+    canvas.addEventListener('hover', function (evt) {
+        
+    });
     window.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             // Escape key

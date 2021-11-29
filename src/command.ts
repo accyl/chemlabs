@@ -601,7 +601,7 @@ function w(inp: string, display=true) {
     if(chemicals.has(formula)) {
         protos = chemicals.get(formula);
     } else {
-        protos = chemicals.getNew(chem);
+        protos = chemicals.saveCustom(chem);
         console.log(`formula ${formula} not found in list of chemicals. autogenerating...`);
     }
     if (protos) {

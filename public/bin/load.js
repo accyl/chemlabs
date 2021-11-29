@@ -1,6 +1,6 @@
 "use strict";
 function addDefault() {
-    var sub = KMnO4.form();
+    var sub = $c('KMnO4').form();
     tang(sub);
     var sub2 = w('KMnO4');
     // sub2.physhook!.pos = {x:10, y:0};
@@ -185,6 +185,19 @@ var ButtonManager = /** @class */ (function () {
         // console.log(mousepos);
     };
     ;
+    ButtonManager.prototype.onhover = function (e, callback) {
+        var rect = canvas.getBoundingClientRect();
+        var mousepos = {
+            x: (e.clientX - rect.left) / (rect.right - rect.left) * canvas.width,
+            y: (e.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height
+        };
+        for (var i = 0; i < this.buttons.length; i++) {
+            if (this._isInside(mousepos, this.buttons[i])) {
+                this.onButtonClicked(i, this.buttons[i]);
+                callback(e, i);
+            }
+        }
+    };
     return ButtonManager;
 }());
 var pauseButtons = new ButtonManager();
@@ -211,12 +224,21 @@ var creditsButtons = new ButtonManager();
 creditsButtons.buttons = (function () {
     var can = getCanvas();
     var b = [];
-    b.push(new CanvasButton(can.width / 2, can.height * 2 / 6, 400, 80, 'Back', 'CENTER')); // can.width, can.height);
+    b.push(new CanvasButton(can.width / 2, can.height * 5 / 6, 400, 80, 'Back', 'CENTER')); // can.width, can.height);
     return b;
 }());
 creditsButtons.onButtonClicked = function (i, x) {
     transitionScreenTo(ScreenState.PAUSED);
 };
+function fillText(ctx, txt, x, y, txtheight) {
+    if (txtheight === void 0) { txtheight = 50; }
+    var idx = 0;
+    for (var _i = 0, _a = txt.split('\n'); _i < _a.length; _i++) {
+        var part = _a[_i];
+        idx++;
+        ctx.fillText(part, x, y + idx * txtheight, ctx.canvas.width);
+    }
+}
 function transitionScreenTo(state) {
     if (state === ScreenState.CREDITS) {
         if (!universe.paused)
@@ -224,11 +246,12 @@ function transitionScreenTo(state) {
         universe.screenstate = ScreenState.CREDITS;
         var can = getCanvas();
         var ctx_2 = getCanvasContext(can);
-        ctx_2.fillStyle = '#DDDDDD';
+        redraw();
+        ctx_2.fillStyle = '#DDDDDDEE';
         ctx_2.fillRect(0, 0, can.width, can.height);
         ctx_2.font = '50px sans-serif';
         ctx_2.fillStyle = '#000000';
-        ctx_2.fillText('Inspired by: \n Powder Game by Dan-Ball \n Elemental 3 by carykh \n Elemental Community by davecaruso?', can.width / 2, can.height / 2, can.width);
+        fillText(ctx_2, 'Creator: github.com/accyl\n\nInspired by: \nPowder Game by Dan-Ball \nElemental 3 by carykh \nElemental Community by davecaruso', can.width / 2, can.height / 8);
         for (var _i = 0, _a = creditsButtons.buttons; _i < _a.length; _i++) {
             var b_1 = _a[_i];
             b_1.drawSelf();
@@ -296,6 +319,8 @@ function pauseUnpauseGame(pause) {
         else if (universe.screenstate === ScreenState.CREDITS)
             creditsButtons.onclick(evt);
     }, false);
+    canvas.addEventListener('hover', function (evt) {
+    });
     window.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             // Escape key

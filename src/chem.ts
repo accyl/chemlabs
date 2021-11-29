@@ -19,6 +19,10 @@ class SubstanceType {
     state = "g";
     static NONE = new SubstanceType();
     molarMass: number = -1;
+    equals(x: any) {
+        console.warn("unimplemented equals in chemm.ts SubstanceType!");
+        return this == x;
+    }
 }
 
 class ProtoSubstance extends SubstanceType{
@@ -41,6 +45,43 @@ class ProtoSubstance extends SubstanceType{
      */
     form(): Substance {
         return new Substance(this);
+    }
+
+    static fromJson(all: any, defaul: JsonChemical, altStates?: JsonChemical[], freeze = true): ProtoSubstance { //sObj?: any, lObj?: any, gObj?: any, aqObj?: any){
+        // TODO
+        // any such function that constructs from JSON must be able to customize the constructor
+        // For example using a spectralA
+        // maybe make that itself as a json option flag?
+        // THen we need to pass arguments into the constructor.
+        // Again we might just have arguments under '0', '1' pipe into 
+        // the constructor and set default readings to be equivalent
+        // if(constructed && constructed.length == 0) constructed = undefined;
+        altStates = altStates ? altStates : [] as JsonChemical[];
+        // if(constructed) assert(constructed.length === 1 + altStates.length);
+
+        let main = Object.assign(new ProtoSubstance(), defaul, all) as ProtoSubstance & JsonChemical & { stateMap: any };
+        main.stateMap = new Map() as Map<string, ProtoSubstance>;
+
+        let subs = [];
+        subs.push(main);
+
+        for (let alt of altStates) {
+            let sub = Object.assign(new ProtoSubstance(), alt, all);
+            subs.push(sub);
+        }
+        for (let sub of subs) {
+            main.stateMap.set(sub.state, sub);
+        }
+        main._getWithArgs = function (x) {
+            let o = main.stateMap.get(x);
+            return o === undefined ? main : o;
+        }
+        if (freeze) {
+            for (let x of subs) {
+                Object.freeze(x);
+            }
+        }
+        return main;
     }
 }
 
@@ -104,7 +145,6 @@ class SubstGroup {
     physhook?: PhysicsHook;
 
     substances: Substance[] = [];
-    equilibria: EqbReaction[] = [];
     subsystems: SubstGroup[] = [];
     get s() { return this.substances; }
     getSubstance(key = 0) {
@@ -136,7 +176,6 @@ class Substance extends SubstGroup {
     // add some stuff to coerce it into technically being a system with only 1 thing in it
     readonly substances: Substance[];
     readonly subsystems: SubstGroup[] = [];
-    readonly equilibria: EqbReaction[] = [];
     getSubstance(key: number) {return this;}
     // mol = 0; 
     get mass() {
@@ -161,10 +200,6 @@ class Substance extends SubstGroup {
     }
     type: SubstanceType;
     state?: string; // State of Matter
-    kValue(): number {
-        return 1; // returns the value used in the equilibrium expression. setting it to 1 will ignore it.
-        // this is usually the molarity
-    }
     constructor(type?: SubstanceType) {
         super();
         this.type = type ? type : SubstanceType.NONE;
@@ -228,16 +263,12 @@ function makeGaseous(x: MolecularSubstance) {
         get: function () { return this.mol * Constants.Ratm * this.temperature / this.volume }
         // set: function (x) { molec.type.molarMass = x }
     });
-    gas.kValue = function() {return gas.pressure};
 }
 class GaseousSubstance extends MolecularSubstance{
     // PV=nRT
     // P = nRT/V
     get pressure() { // in atm
         return this.mol * Constants.Ratm * this.temperature / this.volume; 
-    }
-    kValue(): number {
-        return this.pressure;
     }
 }
 
@@ -272,9 +303,6 @@ class AqueousSubstance extends MolecularSubstance {
     get volume() {
         return this.solvent.volume;
     }
-    kValue() {
-        return this.concentration;
-    }
     absorbance(length_traveled: num=1): tup {
         // A = ε * l * ç
         // ε = molar absorptivity
@@ -306,54 +334,4 @@ class SpectralAqueousSubstance extends AqueousSubstance {
     color(background: tup = [255, 255, 255], l: num = 1) {
         return rgb_from_spectrum(x => f_daylight(x) * transmittance(this.spectra_f(x), this.concentration));
     }
-}
-
-class BalancedRxn {
-    reactants: SubstanceType[] = [];
-    products: SubstanceType[] = [];
-    // constructor(reactants: SubstanceType[], products: SubstanceType[]) {
-    //     this.reactants = reactants;
-    //     this.products = products;
-    // }
-}
-
-class EqbReaction extends BalancedRxn {
-    constructor(K: number) {
-        // TODO
-        super();
-        this.K = K;
-    }
-    K = 1;
-}
-
-class SystemEquilibrium {
-    sys: SubstGroup;
-    reactants: Substance[] = [];
-    products: Substance[] = [];
-    constructor(sys: SubstGroup, eqb: EqbReaction) {
-        this.sys = sys;
-        for(let spec of sys.substances) {
-            if(eqb.reactants.indexOf(spec.type) >= 0) { // if the equilibrium has the species as a reactant
-                this.reactants.push(spec);
-            } else if (eqb.products.indexOf(spec.type) >= 0) {
-                this.products.push(spec);
-            }
-        }
-    }
-    get Q() {
-        let Rs = 1;
-        for(let rxt of this.reactants) {
-            Rs *= rxt.kValue();
-        }
-        let Ps = 1;
-        for(let px of this.products) {
-            Ps *= px.kValue();
-        }
-        return Rs/Ps;
-    }
-
-    // ΔG = ΔG° + RTlnQ
-    // ΔG° = -RTlnK
-    // K = exp(-RT/ΔG°)
-    
 }
