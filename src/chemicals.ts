@@ -1,6 +1,6 @@
 /// <reference path='chem.ts'/>
 
-const chemicals = new Map() as Map<string, ProtoChemical> & { saveCustom: (chem: ChemicalBuilder) => ProtoChemical };
+const chemicals = new Map() as Map<string, ProtoSubstance> & { saveCustom: (chem: ChemicalBuilder) => ProtoSubstance };
 
 /**
  * dynamically creates a new chemical entry with the specified ChemicalBuilder chemical and which
@@ -45,22 +45,22 @@ chemicals.saveCustom = function (chem: ChemicalBuilder) {
 // new method below
 
 type JsonChemical = { state: string };
-function chemicalFromJson(all: any, defaul: JsonChemical, altStates?: JsonChemical[], freeze = true): ProtoChemical { //sObj?: any, lObj?: any, gObj?: any, aqObj?: any){
-    return ProtoChemical.fromJson(all, defaul, altStates, freeze);
+function chemicalFromJson(all: any, defaul: JsonChemical, altStates?: JsonChemical[], freeze = true): ProtoSubstance { //sObj?: any, lObj?: any, gObj?: any, aqObj?: any){
+    return ProtoSubstance.fromJson(all, defaul, altStates, freeze);
 }
 
 chemicals.set('H2O', function(){
-    let g = new ProtoChemical();
+    let g = new ProtoSubstance();
     g.state = "g";
     g.specificHeatCapacity = 2.080;
 
-    let l = new ProtoChemical();
+    let l = new ProtoSubstance();
     l.state = "l";
     l.density = 999.8395;
     l.specificHeatCapacity = 4.184;
     l.rgb = [0xF0, 0xF0, 0xFF];
 
-    let s = new ProtoChemical();
+    let s = new ProtoSubstance();
     s.state = "s";
     s.density = 916.8; // ice
     s.specificHeatCapacity = 2.05;
@@ -68,7 +68,7 @@ chemicals.set('H2O', function(){
     g.chemicalFormula = l.chemicalFormula = s.chemicalFormula = "H2O";
     g.molarMass = l.molarMass = s.molarMass = 18.01528; // g/mol;
 
-    l._getWithArgs = function (args: PSArgs): ProtoChemical {
+    l._getWithArgs = function (args: PSArgs): ProtoSubstance {
         if (args.state === "s") return s;
         if (args.state === "l") return l;
         if (args.state === "g") return g;
@@ -83,7 +83,7 @@ chemicals.set('H2O', function(){
 }());
 chemicals.set('KMnO4', function(){
     // molar mass: 158.033949
-    let aq = new ProtoChemical();
+    let aq = new ProtoSubstance();
     // me.stateOfMatter = "s"; // TODO this feels dumb
     aq.state = "aq";
     // aq.molar_absorptivity = [0.8, 1.75, 0.45];
@@ -99,11 +99,11 @@ chemicals.set('KMnO4', function(){
     aq.chemicalFormula = "KMnO4";
     aq.molarMass = 158.034; // g/mol
 
-    let s = new ProtoChemical();
+    let s = new ProtoSubstance();
     s.state = 's';
     s.rgb = [0x9F,0x00,0xFF];
     s.density = 2700;
-    aq._getWithArgs = function (args: PSArgs): ProtoChemical {
+    aq._getWithArgs = function (args: PSArgs): ProtoSubstance {
         if (args.state === "aq") return aq;
         if (args.state === "s") return s;
         return aq; // default condition, for if a state is omitted
@@ -117,18 +117,16 @@ chemicals.set('KMnO4', function(){
 chemicals.set('H2', function () {
     let g = {state: "g"};
 
-    let l = {state:"l",
-    density: 70.85}; // g/L
+    let l = {state: "l", density: 70.85}; // g/L
 
     let all = {
         chemicalFormula: 'H2',
         molarMass: 2.016,
         rgb: [250, 250, 255]
-
     };
     // g.molarMass = l.molarMass = s.molarMass = 18.01528; // g/mol;
 
-    return chemicalFromJson(all, g, [l]);
+    return ProtoSubstance.fromJson(all, g, [l]);
 }());
 
 // new method above

@@ -25,15 +25,15 @@ class ChemicalType {
     }
 }
 
-class ProtoChemical extends ChemicalType{
-    static NONE = new ProtoChemical();
+class ProtoSubstance extends ChemicalType{
+    static NONE = new ProtoSubstance();
 
     amt(qty: QtyUnitList | QtyBuilder, state?: string) {
         let args = new PSArgs(this, qty);
         if(state) args.state = state;
         return args.form();
     }
-    _getWithArgs(args: PSArgs): ProtoChemical {
+    _getWithArgs(args: PSArgs): ProtoSubstance {
         return this; // doesn't work right now
     }
     constructor() {
@@ -47,7 +47,7 @@ class ProtoChemical extends ChemicalType{
         return new Substance(this);
     }
 
-    static fromJson(all: any, defaul: JsonChemical, altStates?: JsonChemical[], freeze = true): ProtoChemical { //sObj?: any, lObj?: any, gObj?: any, aqObj?: any){
+    static fromJson(all: any, defaul: JsonChemical, altStates?: JsonChemical[], freeze = true): ProtoSubstance { //sObj?: any, lObj?: any, gObj?: any, aqObj?: any){
         // TODO
         // any such function that constructs from JSON must be able to customize the constructor
         // For example using a spectralA
@@ -59,14 +59,14 @@ class ProtoChemical extends ChemicalType{
         altStates = altStates ? altStates : [] as JsonChemical[];
         // if(constructed) assert(constructed.length === 1 + altStates.length);
 
-        let main = Object.assign(new ProtoChemical(), defaul, all) as ProtoChemical & JsonChemical & { stateMap: any };
-        main.stateMap = new Map() as Map<string, ProtoChemical>;
+        let main = Object.assign(new ProtoSubstance(), defaul, all) as ProtoSubstance & JsonChemical & { stateMap: any };
+        main.stateMap = new Map() as Map<string, ProtoSubstance>;
 
         let subs = [];
         subs.push(main);
 
         for (let alt of altStates) {
-            let sub = Object.assign(new ProtoChemical(), alt, all);
+            let sub = Object.assign(new ProtoSubstance(), alt, all);
             subs.push(sub);
         }
         for (let sub of subs) {
@@ -91,12 +91,12 @@ class PSArgs {
     // but which are otherwise completely identical
     // without triplicating of quadruplicating or septuplicating or whatever( ie. for ice)
     // I hope using a factory pattern will be somewhat better?
-    ps: ProtoChemical;
+    ps: ProtoSubstance;
     state?: string; // state of matter
     mol?: number;
     mass?: number;
     volmL?: number;
-    constructor(ps: ProtoChemical, qty?: QtyUnitList | QtyBuilder, state?: string) {
+    constructor(ps: ProtoSubstance, qty?: QtyUnitList | QtyBuilder, state?: string) {
         this.ps = ps;        
         let qbdr;
         if(qty instanceof QtyUnitList) {
@@ -110,7 +110,7 @@ class PSArgs {
             else this.volmL = qbdr.volume;
         }
     }
-    getProto(): ProtoChemical {
+    getProto(): ProtoSubstance {
         return this.ps._getWithArgs(this);
     }
     form(): Substance {
