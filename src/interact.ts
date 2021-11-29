@@ -7,11 +7,11 @@ function kValue(subst: Substance) {
     return 1; // ignore
 }
 class BalancedRxn {
-    reactants: SubstanceType[] = [];
-    products: SubstanceType[] = [];
+    reactants: ChemicalType[] = [];
+    products: ChemicalType[] = [];
 }
 class RateExpression {
-    reactants: SubstanceType[] = [];
+    reactants: ChemicalType[] = [];
     powers: num[] = [];
     k: num = 1;
     R(orderedReactants: Substance[]) {
@@ -39,7 +39,7 @@ class Equilibrium extends BalancedRxn {
     // ΔG° = -RTlnK
     // K = exp(-RT/ΔG°)
     K = 1;
-    constructor(K:num,rxt:SubstanceType[],px:SubstanceType[]) {
+    constructor(K:num,rxt:ChemicalType[],px:ChemicalType[]) {
         super();
         this.K = K;
         this.reactants = rxt;
@@ -48,7 +48,7 @@ class Equilibrium extends BalancedRxn {
     toJson() {
         return {'K': this.K, 'rx': this.reactants, 'px': this.products};
     }
-    fromJson(x: {K:num,rx:SubstanceType[],px:SubstanceType[]}) {
+    fromJson(x: {K:num,rx:ChemicalType[],px:ChemicalType[]}) {
         this.K = x.K;
         this.reactants = x.rx;
         this.products = x.px;
@@ -120,8 +120,8 @@ class InteractionGroup {
 
 // class SystemEquilibrium {
 
-    // reactants: ProtoSubstance[] = [];
-    // products: ProtoSubstance[] = [];
+    // reactants: ProtoChemical[] = [];
+    // products: ProtoChemical[] = [];
     // K: num = 1;
     // sys: SubstGroup;
     // reactants: Substance[] = [];

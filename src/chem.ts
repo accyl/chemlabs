@@ -6,7 +6,7 @@ class Constants {
     static Ratm = 0.082057366080960; // (L-atm)/(K-mol)
 }
 
-class SubstanceType {
+class ChemicalType {
     // intrinsic, intensive properties go here like density
     density: number = 1; // g/mL
     specificHeatCapacity: number = 0; // J/(g-K)
@@ -17,23 +17,23 @@ class SubstanceType {
     molar_absorptivity = [1, 1, 1]; 
     rgb: tup = [255, 255, 255];
     state = "g";
-    static NONE = new SubstanceType();
+    static NONE = new ChemicalType();
     molarMass: number = -1;
     equals(x: any) {
-        console.warn("unimplemented equals in chemm.ts SubstanceType!");
+        console.warn("unimplemented equals in chem.ts ChemicalType!");
         return this == x;
     }
 }
 
-class ProtoSubstance extends SubstanceType{
-    static NONE = new ProtoSubstance();
+class ProtoChemical extends ChemicalType{
+    static NONE = new ProtoChemical();
 
     amt(qty: QtyUnitList | QtyBuilder, state?: string) {
         let args = new PSArgs(this, qty);
         if(state) args.state = state;
         return args.form();
     }
-    _getWithArgs(args: PSArgs): ProtoSubstance {
+    _getWithArgs(args: PSArgs): ProtoChemical {
         return this; // doesn't work right now
     }
     constructor() {
@@ -47,7 +47,7 @@ class ProtoSubstance extends SubstanceType{
         return new Substance(this);
     }
 
-    static fromJson(all: any, defaul: JsonChemical, altStates?: JsonChemical[], freeze = true): ProtoSubstance { //sObj?: any, lObj?: any, gObj?: any, aqObj?: any){
+    static fromJson(all: any, defaul: JsonChemical, altStates?: JsonChemical[], freeze = true): ProtoChemical { //sObj?: any, lObj?: any, gObj?: any, aqObj?: any){
         // TODO
         // any such function that constructs from JSON must be able to customize the constructor
         // For example using a spectralA
@@ -59,14 +59,14 @@ class ProtoSubstance extends SubstanceType{
         altStates = altStates ? altStates : [] as JsonChemical[];
         // if(constructed) assert(constructed.length === 1 + altStates.length);
 
-        let main = Object.assign(new ProtoSubstance(), defaul, all) as ProtoSubstance & JsonChemical & { stateMap: any };
-        main.stateMap = new Map() as Map<string, ProtoSubstance>;
+        let main = Object.assign(new ProtoChemical(), defaul, all) as ProtoChemical & JsonChemical & { stateMap: any };
+        main.stateMap = new Map() as Map<string, ProtoChemical>;
 
         let subs = [];
         subs.push(main);
 
         for (let alt of altStates) {
-            let sub = Object.assign(new ProtoSubstance(), alt, all);
+            let sub = Object.assign(new ProtoChemical(), alt, all);
             subs.push(sub);
         }
         for (let sub of subs) {
@@ -91,12 +91,12 @@ class PSArgs {
     // but which are otherwise completely identical
     // without triplicating of quadruplicating or septuplicating or whatever( ie. for ice)
     // I hope using a factory pattern will be somewhat better?
-    ps: ProtoSubstance;
+    ps: ProtoChemical;
     state?: string; // state of matter
     mol?: number;
     mass?: number;
     volmL?: number;
-    constructor(ps: ProtoSubstance, qty?: QtyUnitList | QtyBuilder, state?: string) {
+    constructor(ps: ProtoChemical, qty?: QtyUnitList | QtyBuilder, state?: string) {
         this.ps = ps;        
         let qbdr;
         if(qty instanceof QtyUnitList) {
@@ -110,7 +110,7 @@ class PSArgs {
             else this.volmL = qbdr.volume;
         }
     }
-    getProto(): ProtoSubstance {
+    getProto(): ProtoChemical {
         return this.ps._getWithArgs(this);
     }
     form(): Substance {
@@ -198,11 +198,11 @@ class Substance extends SubstGroup {
     set temperature(T) {
         this._T = T;
     }
-    type: SubstanceType;
+    type: ChemicalType;
     state?: string; // State of Matter
-    constructor(type?: SubstanceType) {
+    constructor(type?: ChemicalType) {
         super();
-        this.type = type ? type : SubstanceType.NONE;
+        this.type = type ? type : ChemicalType.NONE;
         this.state = type ? type.state : "";
         let a = [];
         a.push(this);
@@ -236,7 +236,7 @@ function makeMolecular(s: Substance) {
 class MolecularSubstance extends Substance {
     // molarMass = 1;
     // type2: MolecularSubstanceType;
-    constructor(type: SubstanceType) {//MolecularSubstanceType) {
+    constructor(type: ChemicalType) {//MolecularSubstanceType) {
         super(type);
         // TODO Hacky dumb solution. THeoretically solvable by generics but I have to refactor a constructor & it's a headache
         // this.type2 = type;
@@ -275,7 +275,7 @@ class GaseousSubstance extends MolecularSubstance{
 class AqueousSubstance extends MolecularSubstance {
     solvent: Substance;
     maxConcentration: num = Number.POSITIVE_INFINITY; // Also called the maximum solubility
-    constructor(solutetype: SubstanceType, solvent: Substance) {
+    constructor(solutetype: ChemicalType, solvent: Substance) {
         super(solutetype);
         this.solvent = solvent;
     }
@@ -323,7 +323,7 @@ class AqueousSubstance extends MolecularSubstance {
 
 class SpectralAqueousSubstance extends AqueousSubstance {
     spectra_f;
-    constructor(solute: SubstanceType, solvent: Substance, spectra_f: (wl: num)=>num) {
+    constructor(solute: ChemicalType, solvent: Substance, spectra_f: (wl: num)=>num) {
         super(solute, solvent);
         this.spectra_f = spectra_f;
 
