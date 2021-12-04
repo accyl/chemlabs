@@ -25,15 +25,15 @@ class ChemicalType {
     }
 }
 
-class ProtoSubstance extends ChemicalType{
-    static NONE = new ProtoSubstance();
+class ProtoChemical extends ChemicalType{
+    static NONE = new ProtoChemical();
 
     amt(qty: QtyUnitList | QtyBuilder, state?: string) {
         let args = new PSArgs(this, qty);
         if(state) args.state = state;
         return args.form();
     }
-    _getWithArgs(args: PSArgs): ProtoSubstance {
+    _getWithArgs(args: PSArgs): ProtoChemical {
         return this; // doesn't work right now
     }
     constructor() {
@@ -47,7 +47,7 @@ class ProtoSubstance extends ChemicalType{
         return new Substance(this);
     }
 
-    static fromJson(all: any, defaul: JsonChemical, altStates?: JsonChemical[], freeze = true): ProtoSubstance { //sObj?: any, lObj?: any, gObj?: any, aqObj?: any){
+    static fromJson(all: any, defaul: JsonChemical, altStates?: JsonChemical[], freeze = true): ProtoChemical { //sObj?: any, lObj?: any, gObj?: any, aqObj?: any){
         // TODO
         // any such function that constructs from JSON must be able to customize the constructor
         // For example using a spectralA
@@ -59,14 +59,14 @@ class ProtoSubstance extends ChemicalType{
         altStates = altStates ? altStates : [] as JsonChemical[];
         // if(constructed) assert(constructed.length === 1 + altStates.length);
 
-        let main = Object.assign(new ProtoSubstance(), defaul, all) as ProtoSubstance & JsonChemical & { stateMap: any };
-        main.stateMap = new Map() as Map<string, ProtoSubstance>;
+        let main = Object.assign(new ProtoChemical(), defaul, all) as ProtoChemical & JsonChemical & { stateMap: any };
+        main.stateMap = new Map() as Map<string, ProtoChemical>;
 
         let subs = [];
         subs.push(main);
 
         for (let alt of altStates) {
-            let sub = Object.assign(new ProtoSubstance(), alt, all);
+            let sub = Object.assign(new ProtoChemical(), alt, all);
             subs.push(sub);
         }
         for (let sub of subs) {
@@ -91,12 +91,12 @@ class PSArgs {
     // but which are otherwise completely identical
     // without triplicating of quadruplicating or septuplicating or whatever( ie. for ice)
     // I hope using a factory pattern will be somewhat better?
-    ps: ProtoSubstance;
+    ps: ProtoChemical;
     state?: string; // state of matter
     mol?: number;
     mass?: number;
     volmL?: number;
-    constructor(ps: ProtoSubstance, qty?: QtyUnitList | QtyBuilder, state?: string) {
+    constructor(ps: ProtoChemical, qty?: QtyUnitList | QtyBuilder, state?: string) {
         this.ps = ps;        
         let qbdr;
         if(qty instanceof QtyUnitList) {
@@ -110,7 +110,7 @@ class PSArgs {
             else this.volmL = qbdr.volume;
         }
     }
-    getProto(): ProtoSubstance {
+    getProto(): ProtoChemical {
         return this.ps._getWithArgs(this);
     }
     form(): Substance {
@@ -218,7 +218,24 @@ class Substance extends SubstGroup {
     toString() {
         return `${this.type.chemicalFormula} ${this.mass}g`;
     }
-
+    isChemicalType(test: ChemicalType) {
+        return this.type === test;
+    }
+    get kValue() { 
+        // the REAL word for this is Thermodynamic activity: https://en.wikipedia.org/wiki/Thermodynamic_activity
+        // See https://www.quora.com/In-an-equilibrium-with-both-gases-and-aqueous-solution-do-I-use-concentration-or-partial-pressure-of-the-gases-when-writing-the-expression-for-the-equilibrium-constant
+        // https://chemistry.stackexchange.com/questions/133353/equilibrium-involving-both-gas-phase-and-aqueous-phase?
+        // what this means that in many cases, concentration/pressure is only an estimate
+        if ('kValue' in this) return (this as any).kValue;
+        if ('pressure' in this) return (this as any).pressure; // a more accurate descriptor is FUGACITY
+        if ('concentration' in this) return (this as any).concentration;
+        return 1; // ignore
+    }
+    set kValue(kval: num) {
+        if ('kValue' in this) (this as any).kValue = kval;
+        if ('pressure' in this) (this as any).pressure = kval;
+        if ('concentration' in this) (this as any).concentration = kval;
+    }
 }
 function makeMolecular(s: Substance) {
     let molec = s as Substance & {molarMass: any, mol: any};
