@@ -1,10 +1,7 @@
 // <reference path='phys/physold.ts'/>
 
 
-class Constants {
-    static R = 8.31446261815324; // (J)/(K-mol) = 
-    static Ratm = 0.082057366080960; // (L-atm)/(K-mol)
-}
+
 
 class ChemicalType {
     // intrinsic, intensive properties go here like density
@@ -12,9 +9,10 @@ class ChemicalType {
     specificHeatCapacity: number = 0; // J/(g-K)
     chemicalFormula = "";
     /** 
-     * @deprecated I was wrong. You can't use spectral data for only 3 specific wavelengths to predict rgb
+     * I was wrong. You can't use spectral data for only 3 specific wavelengths to predict rgb
      * */
-    molar_absorptivity = [1, 1, 1]; 
+    /*
+    molar_absorptivity = [1, 1, 1]; */
     rgb: tup = [255, 255, 255];
     state = "g";
     static NONE = new ChemicalType();
@@ -28,12 +26,13 @@ class ChemicalType {
 class ProtoChemical extends ChemicalType{
     static NONE = new ProtoChemical();
 
-    amt(qty: QtyUnitList | QtyBuilder, state?: string) {
-        let args = new PSArgs(this, qty);
-        if(state) args.state = state;
-        return args.form();
+    amt(qty: ComputedSubstQty, state?: string) {
+        // let args = new PSArgs(this, qty);
+        // if(state) args.state = state;
+        if(state) qty.state = state;
+        return qty.formFrom(this);
     }
-    _getWithArgs(args: PSArgs): ProtoChemical {
+    _getWithArgs(args: ComputedSubstQty): ProtoChemical {
         return this; // doesn't work right now
     }
     constructor() {
@@ -84,7 +83,7 @@ class ProtoChemical extends ChemicalType{
         return main;
     }
 }
-
+/*
 class PSArgs {
     // Yeah I know it's messy but
     // there needs to be a way to construct substances with different states (of matter)
@@ -96,19 +95,26 @@ class PSArgs {
     mol?: number;
     mass?: number;
     volmL?: number;
-    constructor(ps: ProtoChemical, qty?: QtyUnitList | QtyBuilder, state?: string) {
+    molarity?: number;
+    qul: QtyUnitList;
+    constructor(ps: ProtoChemical, qty: QtyUnitList | QtyComputed) {
         this.ps = ps;        
-        let qbdr;
+        let computed;
         if(qty instanceof QtyUnitList) {
-            qbdr = qty.toBuilder();
-            if(!(qbdr.mass||qbdr.mol||qbdr.volume)) qbdr.mol = 1; // set a default
-        } else qbdr = qty;
-        if(qbdr) {
-            this.mass = qbdr.mass;
-            this.mol = qbdr.mol;
-            if (qbdr.volume) this.volmL = qbdr.volume * 1000;
-            else this.volmL = qbdr.volume;
+            computed = qty.computed();
+            if(!(computed.mass||computed.mol||computed.vol)) computed.mol = 1; // set a default
+        } else {
+            computed = qty;
         }
+        this.qul = computed.qul;
+        if(computed) {
+            this.mass = computed.mass; // mass, mol, and vol are the most vital stats.
+            this.mol = computed.mol;
+            if (computed.vol) this.volmL = computed.vol * 1000;
+            else this.volmL = computed.vol;            
+        }
+        // magic inferral happens here
+        if(this.state === undefined && this.molarity !== undefined) this.state = 'aq'; // ifwe get a Molarity reading (ie. 5M), assume aqueous
     }
     getProto(): ProtoChemical {
         return this.ps._getWithArgs(this);
@@ -120,7 +126,7 @@ class PSArgs {
         if(this.volmL) ret.volume = this.volmL / 1000;
         return ret;
     }
-}
+}*/
 
 /**
  * Coerce a substance into basically being a unit system
@@ -319,7 +325,7 @@ class AqueousSubstance extends MolecularSubstance {
     }
     get volume() {
         return this.solvent.volume;
-    }
+    }/*
     absorbance(length_traveled: num=1): tup {
         // A = ε * l * ç
         // ε = molar absorptivity
@@ -335,7 +341,7 @@ class AqueousSubstance extends MolecularSubstance {
     }
     color(background: tup = [255, 255, 255], l: num = 1) {
         return this.transmittance(l).map((x, i) => x * background[i]); // we assume that we're plotting it against a white
-    }
+    }*/
 }
 
 class SpectralAqueousSubstance extends AqueousSubstance {

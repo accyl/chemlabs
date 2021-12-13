@@ -374,13 +374,13 @@ function unitTknr(inp:string, startidx:num=0,
         // we don't have a prefix, it's just the regular base unit
         i2 = startidx;
     }
-    let max = i2+3 > inp.length ? inp.length : i2+3;
+    let max = Math.min(i2+3, inp.length);
     s2 = inp.slice(i2, max); // max length of base_units = 3
 
     for(let base of base_units) {
         if(s2.startsWith(base)) {
             // first check for a closing condition - no letters behind
-            let nextidx = startidx+1+base.length;
+            let nextidx = i2+base.length; // immediately after the base unit
             if(nextidx < inp.length) {
                 // if there's more characters, we need to check that
                 // there aren't any additional letters
@@ -441,29 +441,36 @@ class QtyUnitList {
         }
         return str;
     }
-    toBuilder() {
-        let b = new QtyBuilder();
-        for(let i=0;i<this.qtys.length;i++) {
-            let qty = this.qtys[i];
-            let pref = this.si_prefixes[i];
-            let unit = this.units[i];
-            b.push(qty, pref, unit);
-        }
-        return b;
+    computed() {
+        return new ComputedSubstQty(this);
+        // for(let i=0;i<this.qtys.length;i++) {
+            // let qty = this.qtys[i];
+            // let pref = this.si_prefixes[i];
+            // let unit = this.units[i];
+            // b.push(qty, pref, unit);
+        // }
     }
-}
-class QtyBuilder {
-    _tolPct:num;
-    constructor(tolerancePercent=0.0001) { // use percents, because of sigfigs
-        // because otherwise small numbers like 5 mm would have ridiculously small tolerance
-        this._tolPct = tolerancePercent; // use tolerance=-1 to disable
+    /**
+     * Gets the corresponding value based on the unit.
+     * If the unit has not been specified, undefined is returned
+     * @param base_unit For example, if `HCl 5mL 6mol` has been tokenized, the base unit would be `L` or `mol`
+     */
+    get(base_unit: string) {
+        let idx = this.units.indexOf(base_unit);
+        if(idx === -1) return undefined;
+        return this.qtys[idx] * QtyUnitList.prefixToMultiplier(this.si_prefixes[idx]);
     }
-    mass?: num;
-    volume?: num;
-    mol?: num;
+    /**
+     * This version of get() returns the unit prefix instead of multiplying.
+     */
+    getPrefixial(base_unit: string): [num, string] | undefined {
+        let idx = this.units.indexOf(base_unit);
+        if (idx === -1) return undefined;
+        return [this.qtys[idx], this.si_prefixes[idx]];
+    }
     static prefixToMultiplier(si_pref: string) {
-        let si_prefixes = ['n', 'µ', 'm', 'c', 'd', '', 'k'];
-        let mults = [1e-9, 1e-6, 1e-3, 1e-2, 1e-1, 1, 1e3]
+        let si_prefixes = Constants.SIprefs;
+        let mults = Constants.SIprefscoeffs;
         let idx = si_prefixes.indexOf(si_pref);
         if (idx >= 0) {
             return mults[idx];
@@ -471,33 +478,50 @@ class QtyBuilder {
             throw ReferenceError(`prefix ${si_pref} not recognized!`);;
         }
     }
-    private isOutsideTolerance(orig:num|undefined, tent:num, throwme=true) {
+}
+/**
+ * Deprecated for this reason: the order of quantities should NOT matter unless it's a last resort.
+ * For instance, we want `5M 5mol and 5mol 5M` to be consistent 100% of the time.
+ *
+class QtyBuilder {
+    
+    _tolPct:num;
+    qul: QtyUnitList;
+    constructor(qtys: QtyUnitList, tolerancePercent=0.0001) { // use percents, because of sigfigs
+        // because otherwise small numbers like 5 mm would have ridiculously small tolerance
+        this._tolPct = tolerancePercent; // use tolerance=-1 to disable
+        this.qul = qtys;
+    }
+    mass?: num;
+    volume?: num;
+    mol?: num;
+
+    private isOutsideTolerance(orig:num|undefined, tent:num) {
         // orig: undefined -> false
         //       0         -> tolerance is checked
         //       17        -> tolerance is checked
         // tent: undefined -> not permitted
         //       0         -> tolerance is checked
         //       17        -> tolerance is checked
-        let b = (orig !== undefined) && Math.abs(tent - orig) <= this._tolPct * orig;
-        if(b && throwme) throw `outside tolerance ${orig} ${tent}`;
-        return b;
+        return (orig !== undefined) && Math.abs(tent - orig) <= this._tolPct * orig;
     }
     push(qty:num, prefix:string, unit:string, check=true) {
-        let mult = QtyBuilder.prefixToMultiplier(prefix);
+        let mult = QtyUnitList.prefixToMultiplier(prefix);
         let tent = qty * mult;// tentative
-        switch(unit) { // TODO: checking breaks when there are zeroes
+        switch(unit) { 
+            // TODO: checking breaks when there are zeroes
             // so there might be some wacky stuff like infinite volume,
             // infinite molarity / mass
             case 'L':
-                if(check) this.isOutsideTolerance(this.volume, tent);
+                if (check && this.isOutsideTolerance(this.volume, tent)) throw `Volume outside tolerance ${this.volume} ${tent}`;
                 this.volume = tent;
                 break;
             case 'g':
-                if (check) this.isOutsideTolerance(this.mass, tent);
+                if (check && this.isOutsideTolerance(this.mass, tent)) throw `Mass outside tolerance ${this.mass} ${tent}`;
                 this.mass = tent;
                 break;
             case 'mol':
-                if (check) this.isOutsideTolerance(this.mol, tent);
+                if (check && this.isOutsideTolerance(this.mol, tent)) throw `Mol outside tolerance ${this.mol} ${tent}`;
                 this.mol = tent
                 break;
             case 'M':
@@ -528,9 +552,51 @@ class QtyBuilder {
     }
 
     
+}*/
+
+/**
+ * Contains all quantitative properties of a substance (plus the state),
+ * such that given a valid protosubstance we will be able to construct a substance from this.
+ */
+class ComputedSubstQty {
+    qul: QtyUnitList;
+    mass?:num;
+    mol?:num;
+    vol?:num;
+    state?:string;
+    constructor(qul: QtyUnitList) {
+        this.qul = qul;
+        this.mass = qul.get('g'); // mass, mol, and vol are the most vital stats.
+        this.mol = qul.get('mol');
+        this.vol = qul.get('L');
+        
+        let M = qul.get('M');
+        // magic inferral happens here
+        if (this.state === undefined && M !== undefined) this.state = 'aq'; // ifwe get a Molarity reading (ie. 5M), assume aqueous
+        if(M) {
+            if(this.vol !== undefined && this.mol === undefined) {
+                this.mol = M * this.vol;
+            } else if(this.vol === undefined && this.mol !== undefined) {
+                this.vol = M / this.mol;
+            } else if(this.mol === undefined && this.mass === undefined && this.vol === undefined) {
+                this.vol = 1;
+                this.mol = this.vol * M;
+            }
+        }
+    }
+    pcFrom(pc: ProtoChemical): ProtoChemical {
+        return pc._getWithArgs(this);
+    }
+    formFrom(pc: ProtoChemical): Substance {
+        let ret = this.pcFrom(pc).form();
+        if (this.mass) ret.mass = this.mass;
+        if (this.mol && ret instanceof MolecularSubstance) ret.mol = this.mol;
+        if (this.vol) ret.volume = this.vol;
+        return ret;
+    }
 }
 const gqul = new QtyUnitList();
-function qtyTknr(inp: string, startidx: num = 0, qul: QtyUnitList = gqul): [string, num] {
+function quantityTknr(inp: string, startidx: num = 0, qul: QtyUnitList = gqul): [string, num] {
     // notice that "mL L g aq kg mol mmol" all can't be formed by chemical symbols
     // However Mg can, but not mg 
     // return ['', 0]; // TODO
@@ -563,21 +629,21 @@ function qtyTknr(inp: string, startidx: num = 0, qul: QtyUnitList = gqul): [stri
         // throw "quantity tokenizer didn't find a ";
     }
 }
-function qtysTknr(inp: string, startidx = 0, qbdr: QtyUnitList = gqul): [string, num] {
-    let [qtystr, idx] = qtyTknr(inp, startidx, qbdr);
+function quantitiesTknr(inp: string, startidx = 0, qbdr: QtyUnitList = gqul): [string, num] {
+    let [qtystr, idx] = quantityTknr(inp, startidx, qbdr);
     let __ = '';
     while(qtystr && idx < inp.length) {
         // [__, idx] = whitespaceTknr(inp, idx); qtytknr removes whitespace from the beginning
-        [qtystr, idx] = qtyTknr(inp, idx, qbdr);
+        [qtystr, idx] = quantityTknr(inp, idx, qbdr);
     }
     return [inp.slice(startidx, idx), idx];
 }
 
-function grandUnifiedTknr(inp:string, startidx=0): [ChemicalBuilder, QtyUnitList] {
+function WStringTknr(inp:string, startidx=0): [ChemicalBuilder, QtyUnitList] {
     if(startidx >= inp.length) throw ReferenceError("bruh"); // really?
     if(_isNumeric(inp[startidx])) {
         let qbdr = new QtyUnitList();
-        let [qty, idx] = qtysTknr(inp, startidx, qbdr);
+        let [qty, idx] = quantitiesTknr(inp, startidx, qbdr);
         let [__, idx2] = whitespaceTknr(inp, idx);
         let fbdr = new ChemicalBuilder();
         let [formula, idx3] = formulaTknr(inp, idx2, fbdr);
@@ -587,14 +653,14 @@ function grandUnifiedTknr(inp:string, startidx=0): [ChemicalBuilder, QtyUnitList
         let fbdr = new ChemicalBuilder();
         let [formula, idx] = formulaTknr(inp, startidx, fbdr);
         let qbdr = new QtyUnitList();
-        let [qty, idx2] = qtysTknr(inp, idx, qbdr);
+        let [qty, idx2] = quantitiesTknr(inp, idx, qbdr);
         let [__, idx3] = whitespaceTknr(inp, idx2);
         return [fbdr, qbdr];
     }
 }
-function w(inp: string, display=true) {
+let W = function(inp: string, display=true): Substance {
     let subst;
-    let [chem, qty] = grandUnifiedTknr(inp);
+    let [chem, qty] = WStringTknr(inp);
     // form.formula
     let formula = chem.formula;
     let protos = undefined;
@@ -607,7 +673,7 @@ function w(inp: string, display=true) {
     if (protos) {
         // let pargs = protos.args();
         // let qbuild = qty.toBuilder();
-        subst = protos.amt(qty, chem.state);
+        subst = protos.amt(qty.computed(), chem.state);
         
     } else {
         throw protos;
@@ -628,4 +694,4 @@ function w(inp: string, display=true) {
     // example kmno4. 
     // although by definition it won't always work - see no
     // or hga - HGa
-}
+} as {(inp: string, display?: boolean): Substance; c: (inp: string) => ProtoChemical | undefined};

@@ -1,8 +1,8 @@
 function addDefault() {
-    let sub = $c('KMnO4')!.form();
+    let sub = W.c('KMnO4')!.form();
     tang(sub);
 
-    let sub2 = w('KMnO4');
+    let sub2 = W('KMnO4');
     // sub2.physhook!.pos = {x:10, y:0};
     redraw();
 }
@@ -90,7 +90,7 @@ function onCommandButton() {
     // let [formula, quantity] = grandUnifiedTknr(txt);
     // console.log(formula);
     // console.log(quantity);
-    let s = w(txt);
+    let s = W(txt);
     console.log(s);
     return s;
 }
@@ -319,7 +319,7 @@ function pauseUnpauseGame(pause?: Boolean) {
             // universe.runner.enabled = !universe.runner.enabled;
             pauseUnpauseGame();
         }
-        console.log(e.key); // debug
+        // console.log(e.key); // debug
     }, false);
 
 })();

@@ -1,11 +1,6 @@
 "use strict";
 // SOURCE: https://github.com/markkness/ColorPy/blob/f2dad2c268895d4b046b767f3aa884f2889b84cb/colorpy/colormodels.py#L469
 // PORTED to ts
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
-};
 // Transcrypt'ed from Python, 2021-06-22 09:56:35
 // import {AssertionError, AttributeError, BaseException, DeprecationWarning, Exception, IndexError, IterableError, KeyError, NotImplementedError, RuntimeWarning, StopIteration, UserWarning, ValueError, Warning, __JsIterator__, __PyIterator__, __Terminal__, __add__, __and__, __call__, __class__, __envir__, __eq__, __floordiv__, __ge__, __get__, __getcm__, __getitem__, __getslice__, __getsm__, __gt__, __i__, __iadd__, __iand__, __idiv__, __ijsmod__, __ilshift__, __imatmul__, __imod__, __imul__, __in__, __init__, __ior__, __ipow__, __irshift__, __isub__, __ixor__, __jsUsePyNext__, __jsmod__, __k__, __kwargtrans__, __le__, __lshift__, __lt__, __matmul__, __mergefields__, __mergekwargtrans__, __mod__, __mul__, __ne__, __neg__, __nest__, __or__, __pow__, __pragma__, __pyUseJsNext__, __rshift__, __setitem__, __setproperty__, __setslice__, __sort__, __specialattrib__, __sub__, __super__, __t__, __terminal__, __truediv__, __withblock__, __xor__, abs, all, any, assert, bool, bytearray, bytes, callable, chr, copy, deepcopy, delattr, dict, dir, divmod, enumerate, filter, float, getattr, hasattr, input, int, isinstance, issubclass, len, list, map, max, min, object, ord, pow, print, property, py_TypeError, py_iter, py_metatype, py_next, py_reversed, py_typeof, range, repr, round, set, setattr, sorted, str, sum, tuple, zip} from './org.transcrypt.__runtime__.js';
 // import {max, min, float} from './org.transcrypt.__runtime__.js';
@@ -14,9 +9,9 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from) {
 // import * as _ from 'lodash';
 // import _ from 'lodash';
 // var [irgb_from_xyz, rgb_from_xyz, xyz_color] = 
-var irgb_from_xyz;
-var rgb_from_xyz;
-var xyz_color;
+let irgb_from_xyz;
+let rgb_from_xyz;
+let xyz_color;
 __ = function () {
     // selected python polyfill from org.transcrypt.__runtime__.js
     /**/ function int(number) {
@@ -24,22 +19,14 @@ __ = function () {
             ? Math.floor(number)
             : Math.ceil(number);
     }
-    /**/ function max() {
-        var nums = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            nums[_i] = arguments[_i];
-        }
+    /**/ function max(...nums) {
         // return arguments.length == 1 ? Math.max(...nrOrSeq) : Math.max(...arguments);
-        return Math.max.apply(Math, nums);
+        return Math.max(...nums);
     }
     ;
-    /**/ function min() {
-        var nums = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            nums[_i] = arguments[_i];
-        }
+    /**/ function min(...nums) {
         // return arguments.length == 1 ? Math.min(...nrOrSeq) : Math.min(...arguments);
-        return Math.min.apply(Math, nums);
+        return Math.min(...nums);
     }
     ;
     /**/ function round(num) {
@@ -148,18 +135,14 @@ __ = function () {
     /**/ var PhosphorWhite;
     /**/ var rgb_from_xyz_matrix;
     /**/ var xyz_from_rgb_matrix;
-    /**/ var init = function (phosphor_red, phosphor_green, phosphor_blue, white_point) {
-        if (phosphor_red === void 0) { phosphor_red = SRGB_Red; }
-        if (phosphor_green === void 0) { phosphor_green = SRGB_Green; }
-        if (phosphor_blue === void 0) { phosphor_blue = SRGB_Blue; }
-        if (white_point === void 0) { white_point = SRGB_White; }
+    /**/ var init = function (phosphor_red = SRGB_Red, phosphor_green = SRGB_Green, phosphor_blue = SRGB_Blue, white_point = SRGB_White) {
         PhosphorRed = phosphor_red;
         PhosphorGreen = phosphor_green;
         PhosphorBlue = phosphor_blue;
         PhosphorWhite = white_point;
         // var phosphor_matrix = numpy.column_stack (tuple ([phosphor_red, phosphor_green, phosphor_blue]));
         // var phosphor_matrix = _.zip(phosphor_red, phosphor_green, phosphor_blue) // get the transpose
-        var normalized_white = __spreadArray([], white_point);
+        var normalized_white = [...white_point];
         xyz_normalize_Y1(normalized_white);
         // var intensities = numpy.linalg.solve (phosphor_matrix, normalized_white);
         // intensities = intensities as number[];
@@ -180,7 +163,7 @@ __ = function () {
         init_clipping();
     };
     function mult(mtx, vec) {
-        return mtx.map(function (arr) { return arr.reduce(function (accum, val, j) { return accum + val * vec[j]; }, 0); });
+        return mtx.map((arr) => arr.reduce((accum, val, j) => accum + val * vec[j], 0));
     }
     /**/ rgb_from_xyz = function (xyz) {
         return mult(rgb_from_xyz_matrix, xyz);
@@ -188,13 +171,12 @@ __ = function () {
     /**/ var xyz_from_rgb = function (rgb) {
         return mult(xyz_from_rgb_matrix, rgb);
     };
-    /**/ var brightest_rgb_from_xyz = function (xyz, max_component) {
-        if (max_component === void 0) { max_component = 1; }
+    /**/ var brightest_rgb_from_xyz = function (xyz, max_component = 1) {
         var rgb = rgb_from_xyz(xyz);
         var max_rgb = Math.max.apply(null, rgb);
         if (max_rgb != 0.0) {
             var scale = max_component / max_rgb;
-            rgb = rgb.map(function (x) { return x * scale; }); // TODO investigate for each
+            rgb = rgb.map(x => x * scale); // TODO investigate for each
         }
         return rgb;
     };
@@ -202,7 +184,7 @@ __ = function () {
     /**/ var _reference_u_prime;
     /**/ var _reference_v_prime;
     /**/ var init_Luv_Lab_white_point = function (white_point) {
-        _reference_white = __spreadArray([], white_point);
+        _reference_white = [...white_point];
         xyz_normalize_Y1(_reference_white);
         var __left0__ = uv_primes(_reference_white);
         _reference_u_prime = __left0__[0];
@@ -379,10 +361,7 @@ __ = function () {
         }
         return rtn;
     };
-    /**/ var init_gamma_correction = function (display_from_linear_function, linear_from_display_function, gamma) {
-        if (display_from_linear_function === void 0) { display_from_linear_function = srgb_gamma_invert; }
-        if (linear_from_display_function === void 0) { linear_from_display_function = srgb_gamma_correct; }
-        if (gamma === void 0) { gamma = STANDARD_GAMMA; }
+    /**/ var init_gamma_correction = function (display_from_linear_function = srgb_gamma_invert, linear_from_display_function = srgb_gamma_correct, gamma = STANDARD_GAMMA) {
         display_from_linear_component = display_from_linear_function;
         linear_from_display_component = linear_from_display_function;
         gamma_exponent = gamma;
@@ -390,14 +369,13 @@ __ = function () {
     /**/ var _clip_method;
     /**/ var CLIP_CLAMP_TO_ZERO = 0;
     /**/ var CLIP_ADD_WHITE = 1;
-    /**/ var init_clipping = function (clip_method) {
-        if (clip_method === void 0) { clip_method = CLIP_ADD_WHITE; }
+    /**/ var init_clipping = function (clip_method = CLIP_ADD_WHITE) {
         _clip_method = clip_method;
     };
     /**/ var clip_rgb_color = function (rgb_color) {
         var clipped_chromaticity = false;
         var clipped_intensity = false;
-        var rgb = __spreadArray([], rgb_color);
+        var rgb = [...rgb_color];
         if (_clip_method == CLIP_CLAMP_TO_ZERO) {
             if (rgb[0] < 0.0) {
                 rgb[0] = 0.0;
@@ -413,8 +391,8 @@ __ = function () {
             }
         }
         else if (_clip_method == CLIP_ADD_WHITE) {
-            var rgb_min = min(0.0, min.apply(void 0, rgb));
-            var rgb_max = max.apply(void 0, rgb);
+            var rgb_min = min(0.0, min(...rgb));
+            var rgb_max = max(...rgb);
             var scaling = 1.0;
             if (rgb_max > 0.0) {
                 var scaling = rgb_max / (rgb_max - rgb_min);
@@ -427,15 +405,15 @@ __ = function () {
             }
         }
         else {
-            throw " ValueError (__mod__ ('Invalid color clipping method " + _clip_method + "', ))";
+            throw ` ValueError (__mod__ ('Invalid color clipping method ${_clip_method}', ))`;
             // __except0__.__cause__ = null;
             // throw __except0__;
         }
-        var rgb_max = max.apply(void 0, rgb);
+        var rgb_max = max(...rgb);
         var intensity_cutoff = 1.0 + 0.5 / 255.0;
         if (rgb_max > intensity_cutoff) {
             var scaling = intensity_cutoff / rgb_max;
-            rgb = rgb.map(function (x) { return x * scaling; });
+            rgb = rgb.map(x => x * scaling);
             var clipped_intensity = true;
         }
         for (var index = 0; index < 3; index++) {
@@ -452,7 +430,7 @@ __ = function () {
         return [irgb, [clipped_chromaticity, clipped_intensity]];
     };
     /**/ function _twoplaces(n) {
-        var c = '' + n;
+        let c = '' + n;
         if (c.length == 1) {
             return '0' + c;
         }
@@ -462,7 +440,7 @@ __ = function () {
         for (var index = 0; index < 3; index++) {
             irgb[index] = min(255, max(0, irgb[index]));
         }
-        var irgb_string = "#" + _twoplaces(irgb[0]) + _twoplaces(irgb[1]) + _twoplaces(irgb[2]);
+        var irgb_string = `#${_twoplaces(irgb[0])}${_twoplaces(irgb[1])}${_twoplaces(irgb[2])}`;
         // __mod__ ('#%02X%02X%02X', tuple ([irgb [0], irgb [1], irgb [2]]));
         return irgb_string;
     };

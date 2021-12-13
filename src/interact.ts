@@ -153,6 +153,7 @@ class BoundEqb {
         this.bindProducts(...px);
     }
     get Q() {
+        // todo CACHE
         return this.eqb.Q(this.brx, this.bpx);
     }
     effectiveRate = 0; // this rate is the forwardRate - backwardRate
@@ -165,10 +166,11 @@ class BoundEqb {
      * This is because we must ensure exactr * coeff > LR, and that we will not deplete (or turn negative) the LR.
      *     
      * @param forward
+     * @returns size of step taken
      */
-    step(fractionMin = 0.5, exactr = undefined, forward?:boolean) {
+    step(fractionMin = 0.5, exactr?:num, forward?:boolean): number {
         if(forward === undefined) {
-            if (this.Q === this.K) return; // don't step if we're already at eqb
+            if (this.Q === this.K) return 0; // don't step if we're already at eqb
             forward = this.Q < this.K;
         }
         // let deduct = forward ? this.brx : this.bpx; // if it's forward, then deduct from reactants. otherwise, deduct from products
@@ -190,8 +192,7 @@ class BoundEqb {
         }
         if(numr === Number.POSITIVE_INFINITY) {
             // then there IS NO LR so any numr should be fine
-            numr = 0;
-            // we set it to 0 just to be safe
+            numr = 0; // we set it to 0 just to be safe
         }
         if(forward) {
             this.forEachReactant((chem, coeff) => chem.kValue -= numr! * coeff); // deduct reactants
@@ -200,12 +201,56 @@ class BoundEqb {
             this.forEachProduct((chem, coeff) => chem.kValue -= numr! * coeff); // deduct products
             this.forEachReactant((chem, coeff) => chem.kValue += numr! * coeff); // add to reactants
         }
+        return numr;
+    }
+    autoeqb(maxerror=0.1, maxtries=100) { // error squared
+        let prevdir = this.Q < this.K;
+        let dir = prevdir;
+        let stepsize = this.step(0.5, undefined, dir); // initial step is half of minstep
         
+        let error = Math.abs(this.Q - this.K);
+        let tries = 0;
+        dir = this.Q < this.K;
+        while (error > maxerror) {
+            if (stepsize == 0 || tries > maxtries) {
+                console.warn(`Preventatively aborting out of infinite loop? stepsize: ${stepsize} tries: ${tries} system: ${this}`)
+                break; // try to prevent infinite loops
+            }
+            this.step(undefined, stepsize, dir);
+            let Q = this.Q; // cache the computationally expensive Q
+            prevdir = dir;
+            dir = Q < this.K; // update direction
+
+            error = Math.abs(Q - this.K);
+            if(prevdir !== dir) {
+                // if there's a direction change, then we reduce step. this is like a binary search
+                stepsize /= 2;
+            }
+            // another method we could try is newton's method. but that involves knowing the derivative
+
+            tries++;
+        }
+    }
+    gradDescent() {
+        // TODO I guess eqbs could be better if you use gradient descent and calculate derivatives
+        // loss = (Q - K)**2 (mean squared error loss)
+        // dloss/dx = 2 * (Q-K) * dQ/dx
+        // Q = (products) / (reactants)
+        // for all x, dQ/dx = (calculate reaction quotient, excluding x)
+        // if x is product, dQ/dx = Q/x
+        // if x is reactant, dQ/dx = Qx 
+
+        // loss = (Q - K)**2
+        // loss = (II(products)/II(reactants) - K) ** 2
+        // using partial derivative
+        // Q_step = II(product_i + step * coeff_i)/II(reactants - step * coeff_i)
+        // loss = (Q_step - K) ** 2// where step can be negative
+        // dloss/dstep = 2(Q_step - K) * dQ_step/dstep
+        // dQ_step/dstep = A TOTAL MESS
     }
     forEach(callback: (chem: Substance, coeff: num) => void) {
         this.forEachReactant(callback);
         this.forEachProduct(callback);
-
     }
     forEachReactant(callback: (chem: Substance, coeff: num) => void) {
         let i = 0;
@@ -230,6 +275,9 @@ class InteractionGroup {
             beqb.bind(substs);
             this.beqbs.push(beqb);
         }
+    }
+    equilibriateAll() {
+        
     }
     step() {
         for(let eqb of this.beqbs) {

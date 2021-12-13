@@ -77,3 +77,10 @@ function getCanvasContext(canvas?: HTMLCanvasElement): CanvasRenderingContext2D 
     if (ctxt === null) throw new TypeError("Context is null?");
     return ctxt;
 }
+
+class Constants {
+    static R = 8.31446261815324; // (J)/(K-mol) = 
+    static Ratm = 0.082057366080960; // (L-atm)/(K-mol)
+    static SIprefs = ['n', 'µ', 'm', 'c', 'd', '', 'k'];
+    static SIprefscoeffs = [1e-9, 1e-6, 1e-3, 1e-2, 1e-1, 1, 1e3];
+}
