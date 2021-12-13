@@ -1,15 +1,14 @@
 "use strict";
 function addDefault() {
-    var sub = $c('KMnO4').form();
+    let sub = W.c('KMnO4').form();
     tang(sub);
-    var sub2 = w('KMnO4');
+    let sub2 = W('KMnO4');
     // sub2.physhook!.pos = {x:10, y:0};
     redraw();
 }
 function slider() {
-    var h = document.querySelector("#slider");
-    for (var _i = 0, _a = glob.substances; _i < _a.length; _i++) {
-        var s = _a[_i];
+    let h = document.querySelector("#slider");
+    for (let s of glob.substances) {
         if (s instanceof AqueousSubstance) {
             // s.concentration = h.value / 10000000;
             // s.concentration = h.value / 10;
@@ -18,23 +17,23 @@ function slider() {
             redraw();
         }
     }
-    var canvas = document.getElementById("canvas");
-    var hud = document.getElementById("hud");
+    let canvas = document.getElementById("canvas");
+    let hud = document.getElementById("hud");
     if (hud && hud instanceof HTMLCanvasElement) {
-        var ctx_1 = hud.getContext("2d");
-        if (ctx_1 === null)
+        let ctx = hud.getContext("2d");
+        if (ctx === null)
             throw "Context is null?";
         // gvar.ctxt = ctxt;
         // let m = irgb_from_xyz(xyz_from_spectrum(x => f_daylight(x) * transmittance(spectra_kmno4_f(x), h.value / 1000)));
         // let m = rgb_from_spectrum(f_daylight);
-        var m = rgb_from_spectrum(function (x) { return transmittance(spectra_kmno4_f(x), h.value / 2500); }); // / 10));
+        let m = rgb_from_spectrum(x => transmittance(spectra_kmno4_f(x), h.value / 2500)); // / 10));
         // ctxt.beginPath();
-        makeRect(0, 10, 10, 10, m, ctx_1);
-        var n = rgb_from_spectrum_concen(spectra_kmno4_f, h.value / 2500); // / 10);
-        makeRect(0, 20, 10, 10, n, ctx_1);
+        makeRect(0, 10, 10, 10, m, ctx);
+        let n = rgb_from_spectrum_concen(spectra_kmno4_f, h.value / 2500); // / 10);
+        makeRect(0, 20, 10, 10, n, ctx);
         //  / 46 / (149 * 10 ^ -6)
-        var p = rgb_from_spectrum(function (x) { return f_daylight(x) * transmittance(spectra_kmno4_f(x), h.value / 2500); }); // 10));
-        makeRect(0, 30, 10, 10, p, ctx_1);
+        let p = rgb_from_spectrum(x => f_daylight(x) * transmittance(spectra_kmno4_f(x), h.value / 2500)); // 10));
+        makeRect(0, 30, 10, 10, p, ctx);
         // let kmno4_base_xyz = [148.40102601907597, 113.28932147129379, 170.4166480460002];
         // let q = rgb_from_base_xyz(kmno4_base_xyz, h.value / 10);
         // ctxt.fillStyle = _hex(q[0], q[1], q[2]);
@@ -47,8 +46,8 @@ function makeRect(x, y, width, height, col, ctxt) {
     // ctxt = gvar.ctxt;
     // }
     if (!ctxt) {
-        var h = document.getElementsByTagName('canvas')[0];
-        var c = undefined;
+        let h = document.getElementsByTagName('canvas')[0];
+        let c = undefined;
         if (h)
             c = h.getContext('2d');
         if (c) {
@@ -60,15 +59,13 @@ function makeRect(x, y, width, height, col, ctxt) {
     ctxt.fillStyle = _hex(col[0], col[1], col[2]);
     ctxt.fillRect(x, y, width, height);
 }
-function graph(f, start, end) {
-    if (start === void 0) { start = 360; }
-    if (end === void 0) { end = 830; }
+function graph(f, start = 360, end = 830) {
     if (!f)
         f = f_daylight;
     // if (!f) f = spectra_kmno4_f;
-    var ctx = getCanvasContext();
+    let ctx = getCanvasContext();
     // let m = irgb_from_xyz(xyz_from_spectrum(x => f_fluor_white(x)));
-    for (var i = start; i < end; i++) {
+    for (let i = start; i < end; i++) {
         ctx.beginPath();
         ctx.fillStyle = '#FF0000';
         ctx.fillRect(0.6 * (i - start), 130 * (1 - f(i)) + 10, 0.6, 1);
@@ -76,29 +73,28 @@ function graph(f, start, end) {
     }
 }
 function onCommandButton() {
-    var h = document.getElementById("cmdbox");
-    var h2 = h;
-    var txt = h2.value;
+    let h = document.getElementById("cmdbox");
+    let h2 = h;
+    let txt = h2.value;
     // console.log(typeof h);
     // let [formula, quantity] = grandUnifiedTknr(txt);
     // console.log(formula);
     // console.log(quantity);
-    var s = w(txt);
+    let s = W(txt);
     console.log(s);
     return s;
 }
 function debugBody(body) {
-    var paste = document.getElementsByClassName('db-vw-paste')[0];
+    let paste = document.getElementsByClassName('db-vw-paste')[0];
     if ('substs' in body) {
-        var ph = body;
-        var ret = '';
+        let ph = body;
+        let ret = '';
         if (!(ph.substs instanceof SubstGroup))
             throw "substs field isn't a system?";
-        var ss = ph.substs;
+        let ss = ph.substs;
         lastClickedObject = ss;
-        for (var _i = 0, _a = ss.substances; _i < _a.length; _i++) {
-            var s = _a[_i];
-            ret += s.type.chemicalFormula + " (" + s.state + ") " + s.mass + "g " + s.volume + "L " + s.temperature + "K \n";
+        for (let s of ss.substances) {
+            ret += `${s.type.chemicalFormula} (${s.state}) ${s.mass}g ${s.volume}L ${s.temperature}K \n`;
         }
         paste.textContent = ret;
     }
@@ -119,12 +115,11 @@ function debugBody(body) {
 //     h.addEventListener("keypress", submitOnEnter);
 // }();
 addDefault();
-var CanvasButton = /** @class */ (function () {
+class CanvasButton {
     /**
      * @param rectMode Uses a string equal to https://processing.org/reference/rectMode_.html
      */
-    function CanvasButton(x, y, width, height, text, rectMode) {
-        if (rectMode === void 0) { rectMode = 'CORNER'; }
+    constructor(x, y, width, height, text, rectMode = 'CORNER') {
         this.x = 100;
         this.y = 100;
         this.width = 100;
@@ -143,8 +138,8 @@ var CanvasButton = /** @class */ (function () {
             this.y = y;
         }
     }
-    CanvasButton.prototype.drawSelf = function () {
-        var ctx = getCanvasContext();
+    drawSelf() {
+        let ctx = getCanvasContext();
         ctx.fillStyle = this.fill;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -152,58 +147,56 @@ var CanvasButton = /** @class */ (function () {
         ctx.fillRect(this.x, this.y, this.width, this.height);
         ctx.fillStyle = '#000000';
         ctx.fillText(this.text, this.x + this.width / 2, this.y + this.height / 2, this.width);
-    };
-    return CanvasButton;
-}());
-var ButtonManager = /** @class */ (function () {
-    function ButtonManager() {
+    }
+}
+class ButtonManager {
+    constructor() {
         this.buttons = [];
     }
-    ButtonManager.prototype._isInside = function (pos, rect) {
+    _isInside(pos, rect) {
         return rect.x < pos.x && pos.x < rect.x + rect.width && pos.y < rect.y + rect.height && rect.y < pos.y;
-    };
-    ButtonManager.prototype.onButtonClicked = function (idx, b) {
+    }
+    onButtonClicked(idx, b) {
         if (idx === this.buttons.length - 1) {
             // resume
             pauseUnpauseGame(false);
             return;
         }
-    };
+    }
     ;
-    ButtonManager.prototype.onclick = function (e) {
+    onclick(e) {
         // var mousePos = getMousePos(canvas, evt);
         var rect = canvas.getBoundingClientRect();
         var mousepos = {
             x: (e.clientX - rect.left) / (rect.right - rect.left) * canvas.width,
             y: (e.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height
         };
-        for (var i = 0; i < this.buttons.length; i++) {
+        for (let i = 0; i < this.buttons.length; i++) {
             if (this._isInside(mousepos, this.buttons[i])) {
                 this.onButtonClicked(i, this.buttons[i]);
             }
         }
         // console.log(mousepos);
-    };
+    }
     ;
-    ButtonManager.prototype.onhover = function (e, callback) {
+    onhover(e, callback) {
         var rect = canvas.getBoundingClientRect();
         var mousepos = {
             x: (e.clientX - rect.left) / (rect.right - rect.left) * canvas.width,
             y: (e.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height
         };
-        for (var i = 0; i < this.buttons.length; i++) {
+        for (let i = 0; i < this.buttons.length; i++) {
             if (this._isInside(mousepos, this.buttons[i])) {
                 this.onButtonClicked(i, this.buttons[i]);
                 callback(e, i);
             }
         }
-    };
-    return ButtonManager;
-}());
-var pauseButtons = new ButtonManager();
+    }
+}
+let pauseButtons = new ButtonManager();
 pauseButtons.buttons = (function () {
-    var can = getCanvas();
-    var b = [];
+    let can = getCanvas();
+    let b = [];
     b.push(new CanvasButton(can.width / 2, can.height * 2 / 6, 400, 80, 'Credits', 'CENTER')); // can.width, can.height);
     b.push(new CanvasButton(can.width / 2, can.height * 3 / 6, 400, 80, 'Resume', 'CENTER')); // can.width, can.height);
     return b;
@@ -220,21 +213,19 @@ pauseButtons.buttons = (function () {
         }
     };
 }());
-var creditsButtons = new ButtonManager();
+let creditsButtons = new ButtonManager();
 creditsButtons.buttons = (function () {
-    var can = getCanvas();
-    var b = [];
+    let can = getCanvas();
+    let b = [];
     b.push(new CanvasButton(can.width / 2, can.height * 5 / 6, 400, 80, 'Back', 'CENTER')); // can.width, can.height);
     return b;
 }());
 creditsButtons.onButtonClicked = function (i, x) {
     transitionScreenTo(ScreenState.PAUSED);
 };
-function fillText(ctx, txt, x, y, txtheight) {
-    if (txtheight === void 0) { txtheight = 50; }
-    var idx = 0;
-    for (var _i = 0, _a = txt.split('\n'); _i < _a.length; _i++) {
-        var part = _a[_i];
+function fillText(ctx, txt, x, y, txtheight = 50) {
+    let idx = 0;
+    for (let part of txt.split('\n')) {
         idx++;
         ctx.fillText(part, x, y + idx * txtheight, ctx.canvas.width);
     }
@@ -244,18 +235,16 @@ function transitionScreenTo(state) {
         if (!universe.paused)
             pauseUnpauseGame(true);
         universe.screenstate = ScreenState.CREDITS;
-        var can = getCanvas();
-        var ctx_2 = getCanvasContext(can);
+        let can = getCanvas();
+        let ctx = getCanvasContext(can);
         redraw();
-        ctx_2.fillStyle = '#DDDDDDEE';
-        ctx_2.fillRect(0, 0, can.width, can.height);
-        ctx_2.font = '50px sans-serif';
-        ctx_2.fillStyle = '#000000';
-        fillText(ctx_2, 'Creator: github.com/accyl\n\nInspired by: \nPowder Game by Dan-Ball \nElemental 3 by carykh \nElemental Community by davecaruso', can.width / 2, can.height / 8);
-        for (var _i = 0, _a = creditsButtons.buttons; _i < _a.length; _i++) {
-            var b_1 = _a[_i];
-            b_1.drawSelf();
-        }
+        ctx.fillStyle = '#DDDDDDEE';
+        ctx.fillRect(0, 0, can.width, can.height);
+        ctx.font = '50px sans-serif';
+        ctx.fillStyle = '#000000';
+        fillText(ctx, 'Creator: github.com/accyl\n\nInspired by: \nPowder Game by Dan-Ball \nElemental 3 by carykh \nElemental Community by davecaruso', can.width / 2, can.height / 8);
+        for (let b of creditsButtons.buttons)
+            b.drawSelf();
     }
     else if (state === ScreenState.PAUSED) {
         pauseUnpauseGame(true);
@@ -280,29 +269,27 @@ function pauseUnpauseGame(pause) {
         universe.runner.enabled = false;
         universe.paused = true;
         universe.screenstate = ScreenState.PAUSED;
-        var canv = getCanvas();
-        var ctx_3 = getCanvasContext(canv);
-        ctx_3.globalAlpha = 0.75;
+        let canv = getCanvas();
+        let ctx = getCanvasContext(canv);
+        ctx.globalAlpha = 0.75;
         // ctx.filter = 'blur(2px)';
         redraw();
-        ctx_3.fillStyle = '#FFFFFF';
-        ctx_3.fillRect(0, 0, canv.width, canv.height);
-        ctx_3.globalAlpha = 1;
-        ctx_3.fillStyle = '#000000';
-        ctx_3.font = '50px sans-serif';
-        ctx_3.textAlign = 'center';
-        ctx_3.fillText('PAUSED', canv.width / 2, canv.height / 6);
-        for (var _i = 0, _a = pauseButtons.buttons; _i < _a.length; _i++) {
-            var b_2 = _a[_i];
-            b_2.drawSelf();
-        }
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, canv.width, canv.height);
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = '#000000';
+        ctx.font = '50px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('PAUSED', canv.width / 2, canv.height / 6);
+        for (let b of pauseButtons.buttons)
+            b.drawSelf();
     }
     else { // unpause
         universe.runner.enabled = true;
         universe.paused = false;
         universe.screenstate = ScreenState.RUNNING;
-        var ctx_4 = getCanvasContext();
-        ctx_4.globalAlpha = 1;
+        let ctx = getCanvasContext();
+        ctx.globalAlpha = 1;
         // ctx.filter = 'none';
         // redraw();
     }
@@ -329,6 +316,6 @@ function pauseUnpauseGame(pause) {
             // universe.runner.enabled = !universe.runner.enabled;
             pauseUnpauseGame();
         }
-        console.log(e.key); // debug
+        // console.log(e.key); // debug
     }, false);
 })();

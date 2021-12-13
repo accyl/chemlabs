@@ -7,7 +7,7 @@ var PhysicsHookBehavior;
     PhysicsHookBehavior[PhysicsHookBehavior["CONSTRAINED"] = 2] = "CONSTRAINED";
 })(PhysicsHookBehavior || (PhysicsHookBehavior = {}));
 function newPhysicsHook(arg1, size, subst) {
-    var body0;
+    let body0;
     if ('x' in arg1 && 'y' in arg1) {
         // Vector
         arg1 = arg1;
@@ -18,7 +18,7 @@ function newPhysicsHook(arg1, size, subst) {
     else {
         body0 = arg1; // Matter.Body;
     }
-    var body = body0; //, 'boundsOnly': boolean };//Matter.Body;
+    let body = body0; //, 'boundsOnly': boolean };//Matter.Body;
     body['size'] = size;
     body['rect'] = body0;
     if (!subst || subst === SubstGroup.BOUNDS_ONLY) {
@@ -52,9 +52,8 @@ function newPhysicsHook(arg1, size, subst) {
     // });
     return body;
 }
-function newBounds(arg1, size, addToGlobal) {
-    if (addToGlobal === void 0) { addToGlobal = true; }
-    var h = newPhysicsHook(arg1, size, SubstGroup.BOUNDS_ONLY);
+function newBounds(arg1, size, addToGlobal = true) {
+    let h = newPhysicsHook(arg1, size, SubstGroup.BOUNDS_ONLY);
     if (addToGlobal) {
         Matter.Composite.add(universe.world, h);
     }
@@ -62,14 +61,14 @@ function newBounds(arg1, size, addToGlobal) {
 }
 function phys(s, pos, size) {
     if (!s.physhook) {
-        var vec = void 0;
+        let vec;
         if (pos) {
             vec = { 'x': pos[0], 'y': pos[1] };
         }
         else {
             vec = { 'x': 100, 'y': 100 };
         }
-        var vsize = void 0;
+        let vsize;
         if (size) {
             vsize = { 'x': size[0], 'y': size[1] };
         }
@@ -87,8 +86,7 @@ function phys(s, pos, size) {
         else if (s instanceof SubstGroup) {
             // s.physhook = new PhysicsHook(pos, size);
             s.physhook = newPhysicsHook(vec, vsize, s); // new PhysicsHookNew(vec, vsize);
-            for (var _i = 0, _a = s.substances; _i < _a.length; _i++) {
-                var subs = _a[_i];
+            for (let subs of s.substances) {
                 phys(subs);
             }
         }
@@ -98,7 +96,7 @@ function phys(s, pos, size) {
     return s;
 }
 function changePhyshookBehavior(x, b) {
-    var subst = assert(x.substs, "PhysicsHook must contain a substs in order to change that substance's behavior!");
+    let subst = assert(x.substs, "PhysicsHook must contain a substs in order to change that substance's behavior!");
     if (b === PhysicsHookBehavior.BEAKER) {
         x['collisionFilter'] = CollisionFilters.SOLID;
         x['ignoreGravity'] = undefined;

@@ -5,55 +5,52 @@
 // H2O(l) 2mol
 // H2O (l) 5mL
 // CH3CH2OH(l) 16g
-var AtomTracker = /** @class */ (function () {
-    function AtomTracker() {
+class AtomTracker {
+    constructor() {
         this._atoms = []; // can be a polyatomic
         this._qtys = [];
         this._atomicNums = [];
         this._molarMass = 0;
     }
-    AtomTracker.prototype.push = function (atom, qty) {
-        if (qty === void 0) { qty = 1; }
+    push(atom, qty = 1) {
         this._atoms.push(atom);
         if (atom.startsWith('(')) {
             // it's a polyatomic ion
             assert(atom.slice(-1) === ')', 'Unbalanced parens');
         }
         else {
-            var idx = ptable_symbs.indexOf(atom);
+            let idx = ptable_symbs.indexOf(atom);
             this._atomicNums.push(idx); // Permit 0 and -1
         }
         this._qtys.push(qty);
         this._molarMass = 0;
-    };
-    AtomTracker.prototype.setLastQty = function (qty) {
+    }
+    setLastQty(qty) {
         this._qtys[this._qtys.length - 1] = qty;
-    };
-    AtomTracker.prototype.molarMass = function () {
+    }
+    molarMass() {
         if (this._molarMass)
             return this._molarMass;
-        var tot = 0;
-        for (var i = 0; i < this._atomicNums.length; i++) {
-            var anum = this._atomicNums[i];
-            var m = ptable[anum].atomic_mass;
-            assert(m, "atomic mass for " + anum + " is undefined?");
+        let tot = 0;
+        for (let i = 0; i < this._atomicNums.length; i++) {
+            let anum = this._atomicNums[i];
+            let m = ptable[anum].atomic_mass;
+            assert(m, `atomic mass for ${anum} is undefined?`);
             tot += this._qtys[i] * m;
         }
         this._molarMass = tot;
         return tot;
-    };
-    return AtomTracker;
-}());
-var ChemicalBuilder = /** @class */ (function () {
-    function ChemicalBuilder() {
+    }
+}
+class ChemicalBuilder {
+    constructor() {
         this.atomt = new AtomTracker();
         // elems: string[] = [];
         this.formula = '';
         this.state = '';
         this.qty = '';
     }
-    return ChemicalBuilder;
-}());
+}
 function _isLower(inp) {
     return inp.length === 1 && 'abcdefghijklmnopqrstuvwxyz'.includes(inp);
 }
@@ -63,31 +60,28 @@ function _isCapital(inp) {
 function _isNumeric(inp) {
     return inp.length === 1 && '1234567890'.includes(inp);
 }
-var gbdr = new ChemicalBuilder();
-function formulaTknr(inp, startidx, bdr) {
-    if (startidx === void 0) { startidx = 0; }
-    if (bdr === void 0) { bdr = gbdr; }
+const gbdr = new ChemicalBuilder();
+function formulaTknr(inp, startidx = 0, bdr = gbdr) {
     // TODO: Ambiguous statement: CaRbON
     // CAlcium RuBidium Oxygen Nitrogen = CARBON
     // let elems = [];
     bdr.atomt = new AtomTracker();
-    var elemt = bdr.atomt;
-    var ptree = ptable_symb_tree;
-    var i = startidx;
-    function updateBdr(sliceidx, newidx) {
-        if (newidx === void 0) { newidx = sliceidx; }
+    let elemt = bdr.atomt;
+    let ptree = ptable_symb_tree;
+    let i = startidx;
+    function updateBdr(sliceidx, newidx = sliceidx) {
         bdr.formula = inp.slice(startidx, sliceidx);
         return [bdr.formula, sliceidx];
     }
-    var pre_whitespace_idx = -1;
+    let pre_whitespace_idx = -1;
     for (; i < inp.length; i++) {
-        var c = inp[i];
+        let c = inp[i];
         if (_isCapital(c)) {
             // start searching the tree
             if (!(c in ptable_symb_tree))
-                throw "Couldn't find capital letter " + c + " as a chemical element name at index " + i + " of " + inp + " ";
-            var capital = c;
-            var possibs = ptree[c];
+                throw `Couldn't find capital letter ${c} as a chemical element name at index ${i} of ${inp} `;
+            let capital = c;
+            let possibs = ptree[c];
             // look ahead one
             if (i + 1 >= inp.length) {
                 // uh oh an elem wont fit and we reached the end
@@ -101,7 +95,7 @@ function formulaTknr(inp, startidx, bdr) {
                 // we're at the end so 
                 return updateBdr(i + 1);
             }
-            var next = inp[i + 1];
+            let next = inp[i + 1];
             if (_isLower(next)) {
                 if (possibs.includes(next)) {
                     elemt.push('' + capital + next);
@@ -144,19 +138,19 @@ function formulaTknr(inp, startidx, bdr) {
             // or "sodium acetate (aq)"
         }
         else if (_isNumeric(c)) {
-            var _a = numberTknr(inp, i, 0), number = _a[0], newidx = _a[1];
+            let [number, newidx] = numberTknr(inp, i, 0);
             elemt.setLastQty(parseInt(number)); // TODO sanitation
             i = newidx - 1;
         }
         else if (c === '(') {
             // throw "unimplemented";
-            var _b = parenthesizer(inp, i), parens = _b[0], newidx = _b[1];
+            let [parens, newidx] = parenthesizer(inp, i);
             if (parens == '')
                 continue; // if nothing to parenthesize then let's just move on and ignore it
             if (!(parens[0] === '(' && parens[parens.length - 1] === ')'))
-                throw "parenthesizer returned a fragment that doesn't both start and end with parentheses: " + parens;
-            var insides = parens.slice(1, parens.length - 1);
-            var stop_1 = (pre_whitespace_idx !== -1) ? pre_whitespace_idx : i;
+                throw `parenthesizer returned a fragment that doesn't both start and end with parentheses: ${parens}`;
+            let insides = parens.slice(1, parens.length - 1);
+            let stop = (pre_whitespace_idx !== -1) ? pre_whitespace_idx : i;
             if (insides === 's') {
                 // It could be a lone sulfur as a polyatomic ion
                 // although wtf
@@ -164,19 +158,19 @@ function formulaTknr(inp, startidx, bdr) {
                 // bdr.formula = inp.slice(startidx, i);
                 // we reached a state of matter. we can stop now
                 bdr.state = 's';
-                return updateBdr(stop_1); // omit the parenthesized portion
+                return updateBdr(stop); // omit the parenthesized portion
             }
             else if (insides === 'l' || insides === 'L') {
                 bdr.state = 'l';
-                return updateBdr(stop_1); //[inp.slice(startidx, newidx), newidx];
+                return updateBdr(stop); //[inp.slice(startidx, newidx), newidx];
             }
             else if (insides === 'g' || insides === 'G') {
                 bdr.state = 'g';
-                return updateBdr(stop_1);
+                return updateBdr(stop);
             }
             else if (insides.toLowerCase() === 'aq') {
                 bdr.state = 'aq';
-                return updateBdr(stop_1);
+                return updateBdr(stop);
             }
             else {
                 // then it's probably a polyatomic ion
@@ -194,10 +188,10 @@ function formulaTknr(inp, startidx, bdr) {
             // ie. H2O (g) 5mol
             // let next = inp[i+1];
             // if(next)
-            var _c = whitespaceTknr(inp, i), __1 = _c[0], newidx = _c[1];
+            let [__, newidx] = whitespaceTknr(inp, i);
             if (newidx >= inp.length)
                 return updateBdr(i); // [inp.slice(startidx, i), i]; // if we reach the end then return and ignore the whitesp
-            var c2 = inp[newidx];
+            let c2 = inp[newidx];
             if (c2 == '(') {
                 // go run the parenthesizer
                 pre_whitespace_idx = i;
@@ -231,13 +225,12 @@ function formulaTknr(inp, startidx, bdr) {
  * @param inp
  * @param startidx
  */
-function parenthesizer(inp, startidx) {
-    if (startidx === void 0) { startidx = 0; }
+function parenthesizer(inp, startidx = 0) {
     if (inp[startidx] !== '(')
-        throw "You must include the starting parenthesis in the idx! " + inp + "[" + startidx + "] === " + inp[startidx];
-    var parenlvl = 1;
-    for (var i = startidx + 1; i < inp.length; i++) {
-        var c = inp[i];
+        throw `You must include the starting parenthesis in the idx! ${inp}[${startidx}] === ${inp[startidx]}`;
+    let parenlvl = 1;
+    for (let i = startidx + 1; i < inp.length; i++) {
+        let c = inp[i];
         if (c === '(') {
             parenlvl++;
         } // check for monoatomic ions
@@ -260,10 +253,8 @@ function parenthesizer(inp, startidx) {
  * @param escape_char
  * leave as empty string or undefined to not have an escape char
  */
-function stringTknr(inp, startidx, escape_char) {
-    if (startidx === void 0) { startidx = 0; }
-    if (escape_char === void 0) { escape_char = "\\"; }
-    var sc = undefined;
+function stringTknr(inp, startidx = 0, escape_char = "\\") {
+    let sc = undefined;
     if (inp[startidx] === '"') {
         sc = '"';
     }
@@ -271,11 +262,11 @@ function stringTknr(inp, startidx, escape_char) {
         sc = "'";
     }
     else
-        throw "First char must be either ' or \"! " + inp + "[" + startidx + "] === " + inp[startidx];
+        throw `First char must be either ' or "! ${inp}[${startidx}] === ${inp[startidx]}`;
     // let parenlvl = 1;
-    var isEscaped = false;
-    for (var i = startidx + 1; i < inp.length; i++) {
-        var c = inp[i];
+    let isEscaped = false;
+    for (let i = startidx + 1; i < inp.length; i++) {
+        let c = inp[i];
         if (c === escape_char) {
             isEscaped = !isEscaped; // use the fact that two escapes cancel each other out.
         }
@@ -289,13 +280,11 @@ function stringTknr(inp, startidx, escape_char) {
     // the string was never closed
     return ["", startidx];
 }
-function numberTknr(inp, startidx, max_dots) {
-    if (startidx === void 0) { startidx = 0; }
-    if (max_dots === void 0) { max_dots = 1; }
-    var nums = '0123456789';
-    var num_dots = 0;
-    for (var i = startidx; i < inp.length; i++) {
-        var c = inp[i];
+function numberTknr(inp, startidx = 0, max_dots = 1) {
+    let nums = '0123456789';
+    let num_dots = 0;
+    for (let i = startidx; i < inp.length; i++) {
+        let c = inp[i];
         if (nums.includes(c)) {
             continue;
         }
@@ -317,17 +306,15 @@ function numberTknr(inp, startidx, max_dots) {
     // if we get here, then we must have successfully ran until the end
     return [inp.slice(startidx), inp.length];
 }
-function sciNumberTknr(inp, startidx, max_dots) {
-    if (startidx === void 0) { startidx = 0; }
-    if (max_dots === void 0) { max_dots = 1; }
-    var _a = numberTknr(inp, startidx, max_dots), numstr = _a[0], newidx = _a[1];
+function sciNumberTknr(inp, startidx = 0, max_dots = 1) {
+    let [numstr, newidx] = numberTknr(inp, startidx, max_dots);
     if (newidx < inp.length) {
         if (numstr == '')
             return ['', startidx];
         // only if there's a numeral do we continue looking for e
         // ie. just a simple "e10" will not do, it has to be "4.683e10"
         if (inp[newidx] === 'e' || inp[newidx] === 'E') {
-            var _b = numberTknr(inp, newidx, 0), mantissa = _b[0], new2 = _b[1];
+            let [mantissa, new2] = numberTknr(inp, newidx, 0);
             return [inp.slice(startidx, new2), new2];
         }
         else if (inp.slice(newidx).startsWith('*10^')) {
@@ -339,11 +326,10 @@ function sciNumberTknr(inp, startidx, max_dots) {
     return [numstr, newidx]; // the numeral is at the end of the string and completely fills it. just return that numeral
     //  ['', startidx];
 }
-function whitespaceTknr(inp, startidx) {
-    if (startidx === void 0) { startidx = 0; }
-    var spaces = ' \n\t';
-    for (var i = startidx; i < inp.length; i++) {
-        var c = inp[i];
+function whitespaceTknr(inp, startidx = 0) {
+    let spaces = ' \n\t';
+    for (let i = startidx; i < inp.length; i++) {
+        let c = inp[i];
         if (spaces.includes(c)) {
             continue;
         }
@@ -355,17 +341,15 @@ function whitespaceTknr(inp, startidx) {
     // if we get here, then we must have successfully ran until the end
     return [inp.slice(startidx), inp.length];
 }
-function matchTknr(inp, rfncstr, startidx) {
-    if (rfncstr === void 0) { rfncstr = ''; }
-    if (startidx === void 0) { startidx = 0; }
+function matchTknr(inp, rfncstr = '', startidx = 0) {
     if (rfncstr === '')
         throw "rfncstr must not be empty!";
-    var j = 0;
-    var i = startidx;
+    let j = 0;
+    let i = startidx;
     for (; j < rfncstr.length;) {
         if (i > inp.length) {
             // then we ran out on our tape
-            throw "not enough space in inp to accomodate rfncstr! inp:" + inp + " rfncstr:" + rfncstr + " idx:" + startidx;
+            throw `not enough space in inp to accomodate rfncstr! inp:${inp} rfncstr:${rfncstr} idx:${startidx}`;
         }
         if (inp[i] === rfncstr[j]) {
             i++;
@@ -378,9 +362,9 @@ function matchTknr(inp, rfncstr, startidx) {
         }
     }
     // we continued the entire time
-    var sliced = inp.slice(startidx, i);
+    let sliced = inp.slice(startidx, i);
     if (sliced !== rfncstr)
-        throw ReferenceError("AssertionError: " + sliced + " should equal " + rfncstr + "! " + inp + " " + startidx + " " + i);
+        throw ReferenceError(`AssertionError: ${sliced} should equal ${rfncstr}! ${inp} ${startidx} ${i}`);
     return [sliced, i];
     // the inp ran out before rfncstr
 }
@@ -389,15 +373,13 @@ function matchTknr(inp, rfncstr, startidx) {
  * @returns
  * [prefix: string, base_unit: string, next_idx: num]
  */
-function unitTknr(inp, startidx, base_units) {
-    if (startidx === void 0) { startidx = 0; }
-    if (base_units === void 0) { base_units = ['g', 'L', 'mol', 'M', 'm', 'J', 'V', 'W-h', 'atm']; }
-    var si_prefixes = ['n', 'µ', 'm', 'c', 'd', 'k'];
+function unitTknr(inp, startidx = 0, base_units = ['g', 'L', 'mol', 'M', 'm', 'J', 'V', 'W-h', 'atm']) {
+    let si_prefixes = ['n', 'µ', 'm', 'c', 'd', 'k'];
     // for(let i=startidx;i<inp.length;i++) {
-    var c = inp[startidx];
-    var i2 = 0;
-    var s2 = '';
-    var prefix = '';
+    let c = inp[startidx];
+    let i2 = 0;
+    let s2 = '';
+    let prefix = '';
     if (si_prefixes.includes(c)) {
         // we're not in the clear yet. We have to find a matching base unit
         // TODO edge case for mol it gets confused for base unit of m
@@ -408,13 +390,12 @@ function unitTknr(inp, startidx, base_units) {
         // we don't have a prefix, it's just the regular base unit
         i2 = startidx;
     }
-    var max = i2 + 3 > inp.length ? inp.length : i2 + 3;
+    let max = Math.min(i2 + 3, inp.length);
     s2 = inp.slice(i2, max); // max length of base_units = 3
-    for (var _i = 0, base_units_1 = base_units; _i < base_units_1.length; _i++) {
-        var base = base_units_1[_i];
+    for (let base of base_units) {
         if (s2.startsWith(base)) {
             // first check for a closing condition - no letters behind
-            var nextidx = startidx + 1 + base.length;
+            let nextidx = i2 + base.length; // immediately after the base unit
             if (nextidx < inp.length) {
                 // if there's more characters, we need to check that
                 // there aren't any additional letters
@@ -433,10 +414,9 @@ function unitTknr(inp, startidx, base_units) {
     if (prefix && inp[startidx] == 'm') {
         // normally we would have a for loop for(let base of base_units) here,
         // but that seems a bit excessive for just one case
-        for (var _a = 0, _b = ['mol', 'm']; _a < _b.length; _a++) { // actually there's two cases. Which warrants a for loop
-            var base = _b[_a];
+        for (let base of ['mol', 'm']) { // actually there's two cases. Which warrants a for loop
             if (inp.slice(startidx).startsWith(base)) {
-                var nextidx = startidx + 1 + base.length;
+                let nextidx = startidx + 1 + base.length;
                 if (!(nextidx < inp.length && (_isCapital(inp[nextidx]) || _isLower(inp[nextidx])))) { //continue;
                     // if there's more characters, we need to check that
                     // there aren't any additional letters
@@ -451,13 +431,13 @@ function unitTknr(inp, startidx, base_units) {
     // }
 }
 // let q = [] as [num, string, string][];
-var QtyUnitList = /** @class */ (function () {
-    function QtyUnitList() {
+class QtyUnitList {
+    constructor() {
         this.qtys = [];
         this.si_prefixes = [];
         this.units = [];
     }
-    QtyUnitList.prototype.push = function (qty, unit1, unit2) {
+    push(qty, unit1, unit2) {
         this.qtys.push(qty);
         if (unit2) {
             // if we have unit2, then we know
@@ -470,128 +450,190 @@ var QtyUnitList = /** @class */ (function () {
             this.si_prefixes.push('');
             this.units.push(unit1);
         }
-    };
-    QtyUnitList.prototype.toString = function () {
-        var str = '';
-        for (var i = 0; i < this.qtys.length; i++) {
-            str += "[" + this.qtys[i] + " " + this.units[i] + "], ";
+    }
+    toString() {
+        let str = '';
+        for (let i = 0; i < this.qtys.length; i++) {
+            str += `[${this.qtys[i]} ${this.units[i]}], `;
         }
         return str;
-    };
-    QtyUnitList.prototype.toBuilder = function () {
-        var b = new QtyBuilder();
-        for (var i = 0; i < this.qtys.length; i++) {
-            var qty = this.qtys[i];
-            var pref = this.si_prefixes[i];
-            var unit = this.units[i];
-            b.push(qty, pref, unit);
-        }
-        return b;
-    };
-    return QtyUnitList;
-}());
-var QtyBuilder = /** @class */ (function () {
-    function QtyBuilder(tolerancePercent) {
-        if (tolerancePercent === void 0) { tolerancePercent = 0.0001; }
-        // because otherwise small numbers like 5 mm would have ridiculously small tolerance
-        this._tolPct = tolerancePercent; // use tolerance=-1 to disable
     }
-    QtyBuilder.prefixToMultiplier = function (si_pref) {
-        var si_prefixes = ['n', 'µ', 'm', 'c', 'd', '', 'k'];
-        var mults = [1e-9, 1e-6, 1e-3, 1e-2, 1e-1, 1, 1e3];
-        var idx = si_prefixes.indexOf(si_pref);
+    computed() {
+        return new ComputedSubstQty(this);
+        // for(let i=0;i<this.qtys.length;i++) {
+        // let qty = this.qtys[i];
+        // let pref = this.si_prefixes[i];
+        // let unit = this.units[i];
+        // b.push(qty, pref, unit);
+        // }
+    }
+    /**
+     * Gets the corresponding value based on the unit.
+     * If the unit has not been specified, undefined is returned
+     * @param base_unit For example, if `HCl 5mL 6mol` has been tokenized, the base unit would be `L` or `mol`
+     */
+    get(base_unit) {
+        let idx = this.units.indexOf(base_unit);
+        if (idx === -1)
+            return undefined;
+        return this.qtys[idx] * QtyUnitList.prefixToMultiplier(this.si_prefixes[idx]);
+    }
+    /**
+     * This version of get() returns the unit prefix instead of multiplying.
+     */
+    getPrefixial(base_unit) {
+        let idx = this.units.indexOf(base_unit);
+        if (idx === -1)
+            return undefined;
+        return [this.qtys[idx], this.si_prefixes[idx]];
+    }
+    static prefixToMultiplier(si_pref) {
+        let si_prefixes = Constants.SIprefs;
+        let mults = Constants.SIprefscoeffs;
+        let idx = si_prefixes.indexOf(si_pref);
         if (idx >= 0) {
             return mults[idx];
         }
         else {
-            throw ReferenceError("prefix " + si_pref + " not recognized!");
+            throw ReferenceError(`prefix ${si_pref} not recognized!`);
             ;
         }
-    };
-    QtyBuilder.prototype.isOutsideTolerance = function (orig, tent, throwme) {
-        if (throwme === void 0) { throwme = true; }
+    }
+}
+/**
+ * Deprecated for this reason: the order of quantities should NOT matter unless it's a last resort.
+ * For instance, we want `5M 5mol and 5mol 5M` to be consistent 100% of the time.
+ *
+class QtyBuilder {
+    
+    _tolPct:num;
+    qul: QtyUnitList;
+    constructor(qtys: QtyUnitList, tolerancePercent=0.0001) { // use percents, because of sigfigs
+        // because otherwise small numbers like 5 mm would have ridiculously small tolerance
+        this._tolPct = tolerancePercent; // use tolerance=-1 to disable
+        this.qul = qtys;
+    }
+    mass?: num;
+    volume?: num;
+    mol?: num;
+
+    private isOutsideTolerance(orig:num|undefined, tent:num) {
         // orig: undefined -> false
         //       0         -> tolerance is checked
         //       17        -> tolerance is checked
         // tent: undefined -> not permitted
         //       0         -> tolerance is checked
         //       17        -> tolerance is checked
-        var b = (orig !== undefined) && Math.abs(tent - orig) <= this._tolPct * orig;
-        if (b && throwme)
-            throw "outside tolerance " + orig + " " + tent;
-        return b;
-    };
-    QtyBuilder.prototype.push = function (qty, prefix, unit, check) {
-        if (check === void 0) { check = true; }
-        var mult = QtyBuilder.prefixToMultiplier(prefix);
-        var tent = qty * mult; // tentative
-        switch (unit) { // TODO: checking breaks when there are zeroes
+        return (orig !== undefined) && Math.abs(tent - orig) <= this._tolPct * orig;
+    }
+    push(qty:num, prefix:string, unit:string, check=true) {
+        let mult = QtyUnitList.prefixToMultiplier(prefix);
+        let tent = qty * mult;// tentative
+        switch(unit) {
+            // TODO: checking breaks when there are zeroes
             // so there might be some wacky stuff like infinite volume,
             // infinite molarity / mass
             case 'L':
-                if (check)
-                    this.isOutsideTolerance(this.volume, tent);
+                if (check && this.isOutsideTolerance(this.volume, tent)) throw `Volume outside tolerance ${this.volume} ${tent}`;
                 this.volume = tent;
                 break;
             case 'g':
-                if (check)
-                    this.isOutsideTolerance(this.mass, tent);
+                if (check && this.isOutsideTolerance(this.mass, tent)) throw `Mass outside tolerance ${this.mass} ${tent}`;
                 this.mass = tent;
                 break;
             case 'mol':
-                if (check)
-                    this.isOutsideTolerance(this.mol, tent);
-                this.mol = tent;
+                if (check && this.isOutsideTolerance(this.mol, tent)) throw `Mol outside tolerance ${this.mol} ${tent}`;
+                this.mol = tent
                 break;
             case 'M':
-                var molarity = tent; // M = mol / volume
-                if (this.mol === undefined) {
-                    if (this.volume === undefined) {
+                let molarity = tent; // M = mol / volume
+                if(this.mol === undefined) {
+                    if(this.volume === undefined) {
                         // we got nothing
                         // whatever let's just set default
                         this.volume = 1;
                         this.mol = this.volume * molarity;
-                    }
-                    else { // volume is defined
+                    } else { // volume is defined
                         this.mol = this.volume * molarity;
                     }
-                }
-                else { // mol is defined
-                    if (this.volume === undefined) { // volume = mol / M
+                } else { // mol is defined
+                    if(this.volume === undefined) { // volume = mol / M
                         this.volume = this.mol / molarity;
-                    }
-                    else { // both mol & volume is defined
+                    } else { // both mol & volume is defined
                         this.isOutsideTolerance(this.mol / this.volume, molarity);
                     }
                 }
                 break;
             default:
                 break;
+                
+
         }
-    };
-    return QtyBuilder;
-}());
-var gqul = new QtyUnitList();
-function qtyTknr(inp, startidx, qul) {
-    if (startidx === void 0) { startidx = 0; }
-    if (qul === void 0) { qul = gqul; }
+        
+    }
+
+    
+}*/
+/**
+ * Contains all quantitative properties of a substance (plus the state),
+ * such that given a valid protosubstance we will be able to construct a substance from this.
+ */
+class ComputedSubstQty {
+    constructor(qul) {
+        this.qul = qul;
+        this.mass = qul.get('g'); // mass, mol, and vol are the most vital stats.
+        this.mol = qul.get('mol');
+        this.vol = qul.get('L');
+        let M = qul.get('M');
+        // magic inferral happens here
+        if (this.state === undefined && M !== undefined)
+            this.state = 'aq'; // ifwe get a Molarity reading (ie. 5M), assume aqueous
+        if (M) {
+            if (this.vol !== undefined && this.mol === undefined) {
+                this.mol = M * this.vol;
+            }
+            else if (this.vol === undefined && this.mol !== undefined) {
+                this.vol = M / this.mol;
+            }
+            else if (this.mol === undefined && this.mass === undefined && this.vol === undefined) {
+                this.vol = 1;
+                this.mol = this.vol * M;
+            }
+        }
+    }
+    pcFrom(pc) {
+        return pc._getWithArgs(this);
+    }
+    formFrom(pc) {
+        let ret = this.pcFrom(pc).form();
+        if (this.mass)
+            ret.mass = this.mass;
+        if (this.mol && ret instanceof MolecularSubstance)
+            ret.mol = this.mol;
+        if (this.vol)
+            ret.volume = this.vol;
+        return ret;
+    }
+}
+const gqul = new QtyUnitList();
+function quantityTknr(inp, startidx = 0, qul = gqul) {
     // notice that "mL L g aq kg mol mmol" all can't be formed by chemical symbols
     // However Mg can, but not mg 
     // return ['', 0]; // TODO
-    var _a = whitespaceTknr(inp, startidx), __ = _a[0], idx = _a[1];
+    let [__, idx] = whitespaceTknr(inp, startidx);
     if (idx >= inp.length) {
         // if whitespace reaches all the way to the end
         return ['', startidx];
     }
     if (_isNumeric(inp[idx])) {
         // ah good
-        var _b = numberTknr(inp, idx), num = _b[0], idx2 = _b[1];
+        let [num, idx2] = numberTknr(inp, idx);
         if (num === '') {
             // if we don't find a number
             return ['', startidx];
         }
-        var _c = whitespaceTknr(inp, idx2), __2 = _c[0], idx3 = _c[1];
-        var _d = unitTknr(inp, idx3), si1 = _d[0], si2 = _d[1], idx4 = _d[2];
+        let [__, idx3] = whitespaceTknr(inp, idx2);
+        let [si1, si2, idx4] = unitTknr(inp, idx3);
         if (si2 === '') {
             // if we don't find a SI unit
             return ['', startidx];
@@ -608,57 +650,52 @@ function qtyTknr(inp, startidx, qul) {
         // throw "quantity tokenizer didn't find a ";
     }
 }
-function qtysTknr(inp, startidx, qbdr) {
-    var _a;
-    if (startidx === void 0) { startidx = 0; }
-    if (qbdr === void 0) { qbdr = gqul; }
-    var _b = qtyTknr(inp, startidx, qbdr), qtystr = _b[0], idx = _b[1];
-    var __ = '';
+function quantitiesTknr(inp, startidx = 0, qbdr = gqul) {
+    let [qtystr, idx] = quantityTknr(inp, startidx, qbdr);
+    let __ = '';
     while (qtystr && idx < inp.length) {
         // [__, idx] = whitespaceTknr(inp, idx); qtytknr removes whitespace from the beginning
-        _a = qtyTknr(inp, idx, qbdr), qtystr = _a[0], idx = _a[1];
+        [qtystr, idx] = quantityTknr(inp, idx, qbdr);
     }
     return [inp.slice(startidx, idx), idx];
 }
-function grandUnifiedTknr(inp, startidx) {
-    if (startidx === void 0) { startidx = 0; }
+function WStringTknr(inp, startidx = 0) {
     if (startidx >= inp.length)
         throw ReferenceError("bruh"); // really?
     if (_isNumeric(inp[startidx])) {
-        var qbdr = new QtyUnitList();
-        var _a = qtysTknr(inp, startidx, qbdr), qty = _a[0], idx = _a[1];
-        var _b = whitespaceTknr(inp, idx), __3 = _b[0], idx2 = _b[1];
-        var fbdr = new ChemicalBuilder();
-        var _c = formulaTknr(inp, idx2, fbdr), formula = _c[0], idx3 = _c[1];
+        let qbdr = new QtyUnitList();
+        let [qty, idx] = quantitiesTknr(inp, startidx, qbdr);
+        let [__, idx2] = whitespaceTknr(inp, idx);
+        let fbdr = new ChemicalBuilder();
+        let [formula, idx3] = formulaTknr(inp, idx2, fbdr);
         return [fbdr, qbdr];
     }
     else {
-        var fbdr = new ChemicalBuilder();
-        var _d = formulaTknr(inp, startidx, fbdr), formula = _d[0], idx = _d[1];
-        var qbdr = new QtyUnitList();
-        var _e = qtysTknr(inp, idx, qbdr), qty = _e[0], idx2 = _e[1];
-        var _f = whitespaceTknr(inp, idx2), __4 = _f[0], idx3 = _f[1];
+        let fbdr = new ChemicalBuilder();
+        let [formula, idx] = formulaTknr(inp, startidx, fbdr);
+        let qbdr = new QtyUnitList();
+        let [qty, idx2] = quantitiesTknr(inp, idx, qbdr);
+        let [__, idx3] = whitespaceTknr(inp, idx2);
         return [fbdr, qbdr];
     }
 }
-function w(inp, display) {
-    if (display === void 0) { display = true; }
-    var subst;
-    var _a = grandUnifiedTknr(inp), chem = _a[0], qty = _a[1];
+let W = function (inp, display = true) {
+    let subst;
+    let [chem, qty] = WStringTknr(inp);
     // form.formula
-    var formula = chem.formula;
-    var protos = undefined;
+    let formula = chem.formula;
+    let protos = undefined;
     if (chemicals.has(formula)) {
         protos = chemicals.get(formula);
     }
     else {
         protos = chemicals.saveCustom(chem);
-        console.log("formula " + formula + " not found in list of chemicals. autogenerating...");
+        console.log(`formula ${formula} not found in list of chemicals. autogenerating...`);
     }
     if (protos) {
         // let pargs = protos.args();
         // let qbuild = qty.toBuilder();
-        subst = protos.amt(qty, chem.state);
+        subst = protos.amt(qty.computed(), chem.state);
     }
     else {
         throw protos;
@@ -679,4 +716,4 @@ function w(inp, display) {
     // example kmno4. 
     // although by definition it won't always work - see no
     // or hga - HGa
-}
+};

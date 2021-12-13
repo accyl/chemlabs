@@ -7,10 +7,12 @@
 		<link rel="stylesheet" href="styles.css" />
 	</head>
 	<body>
-
 		<!-- Header -->
-			<header id="header"></header>
+		<header class="main-header container">
 							<h1>ChemLabs</h1>
+		</header>
+		<div class='main-container container'>
+
 		<div id="cwrap">
 			<div id="cdiv">
 				<canvas id="canvas" class='noselect'>
@@ -34,7 +36,7 @@
 				<form action="" onsubmit="return false;">
 				<input type='text' name="message" id="cmdbox" placeholder="Enter Chemical Here" rows="1">
 
-				<input type='submit' class="button" id="cmdbtn" onclick="onCommandButton()">Add to World</button>
+				<input type='submit' class="button" id="cmdbtn" value="Add to World" onclick="onCommandButton()">
 				</form>
 			</div>
 			
@@ -66,7 +68,7 @@
 				<li>&copy; Untitled.</li>
 			</ul>
 		</footer>
-
+	</div>
 	<!-- Scripts -->
 	<div class="scripts-div">
 		<!-- <script>var exports = {};</script> -->

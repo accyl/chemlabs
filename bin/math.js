@@ -14,63 +14,55 @@
 // meanwhile if we provide all 5 variables,
 // then algebra() would simply plug it into the equation
 // and check for equality within a certain tolerance.
-var Operator = /** @class */ (function () {
-    function Operator(char) {
+class Operator {
+    constructor(char) {
         this.char = char;
         Operator.oplist.push(this);
     }
-    Operator.oplist = [];
-    Operator.__ = function () {
-        var ops = ['+', '-', '*', '/', '^'];
-        for (var _i = 0, ops_1 = ops; _i < ops_1.length; _i++) {
-            var op = ops_1[_i];
-            new Operator(op);
-        }
-    }();
-    return Operator;
-}());
-var Expression = /** @class */ (function () {
-    function Expression() {
+}
+Operator.oplist = [];
+Operator.__ = function () {
+    let ops = ['+', '-', '*', '/', '^'];
+    for (let op of ops)
+        new Operator(op);
+}();
+class Expression {
+    constructor() {
         this.tokenlist = [];
     }
-    Expression.prototype.pushVar = function (varname) {
+    pushVar(varname) {
         this.tokenlist.push(varname);
-    };
-    Expression.prototype.pushOp = function (operator) {
+    }
+    pushOp(operator) {
         this.tokenlist.push(operator);
-    };
-    return Expression;
-}());
+    }
+}
 function algebraTknr(inp, startidx) {
-    for (var i = startidx; i < inp.length; i++) {
+    for (let i = startidx; i < inp.length; i++) {
     }
 }
-function algebra(eqn) {
-    var vari = [];
-    for (var _i = 1; _i < arguments.length; _i++) {
-        vari[_i - 1] = arguments[_i];
-    }
+function algebra(eqn, ...vari) {
 }
-var GeneralizedFunction = /** @class */ (function () {
-    function GeneralizedFunction(pos, vel, acc, n3deriv) {
-        this._x0 = pos ? pos : this._zeroes().map(function (x) { return x + 1; });
+class GeneralizedFunction {
+    constructor(pos, vel, acc, n3deriv) {
+        this._x0 = pos ? pos : this._zeroes().map(x => x + 1);
         this._v0 = vel ? vel : this._zeroes();
         this._a0 = acc ? acc : this._zeroes();
         if (n3deriv) {
             this.n3deriv = n3deriv;
         }
     }
-    GeneralizedFunction.prototype.pos = function (t) {
+    pos(t) {
         return this._x0;
-    };
-    GeneralizedFunction.prototype.vel = function (t) {
+    }
+    vel(t) {
         return this._v0;
-    };
-    GeneralizedFunction.prototype.acc = function (t) {
+    }
+    acc(t) {
         return this._a0;
-    };
+    }
     ;
-    GeneralizedFunction.prototype.nthderiv = function (n, t) {
+    nthderiv(n, t) {
         switch (n) {
             case 0:
                 return this.pos(t);
@@ -83,23 +75,22 @@ var GeneralizedFunction = /** @class */ (function () {
                     return this.n3deriv[n - 3];
                 return this._zeroes();
         }
-    };
-    GeneralizedFunction.prototype.step = function (t0, dt) {
+    }
+    step(t0, dt) {
         /**
          * applies euler's method once
          * dt = stepsize
          */
-        var dx = this.vel(t0).map(function (v) { return v * dt; });
-        this._x0 = this.pos(t0).map(function (x, i) { return x + dx[i]; }); // perform a veloity update
-        var dv = this.acc(t0).map(function (a) { return a * dt; });
-        this._v0 = this.vel(t0).map(function (v, i) { return v + dv[i]; }); // perform a veloity update
+        let dx = this.vel(t0).map(v => v * dt);
+        this._x0 = this.pos(t0).map((x, i) => x + dx[i]); // perform a veloity update
+        let dv = this.acc(t0).map(a => a * dt);
+        this._v0 = this.vel(t0).map((v, i) => v + dv[i]); // perform a veloity update
         // TODO updates of higher order derivatives
-    };
-    GeneralizedFunction.prototype.eulers = function (t0, dt, nsteps) {
-        for (var i = 0; i < nsteps; i++) {
+    }
+    eulers(t0, dt, nsteps) {
+        for (let i = 0; i < nsteps; i++) {
             this.step(t0, dt);
             t0 = t0 + dt;
         }
-    };
-    return GeneralizedFunction;
-}());
+    }
+}

@@ -1,19 +1,15 @@
 "use strict";
 // import { Vector } from "matter-js";
-var __ = undefined;
-var gvar = {};
-var lastClickedObject = undefined;
+let __ = undefined;
+let gvar = {};
+let lastClickedObject = undefined;
 // type vec = Vector;
-var _hex = function () {
+let _hex = function () {
     function _componentToHex(c) {
         var hex = Math.round(Math.min(c, 255)).toString(16);
         return hex.length == 1 ? "0" + hex : hex;
     }
-    var hex = function (r, g, b) {
-        var extras = [];
-        for (var _i = 3; _i < arguments.length; _i++) {
-            extras[_i - 3] = arguments[_i];
-        }
+    let hex = function (r, g, b, ...extras) {
         return "#" + _componentToHex(r) + _componentToHex(g) + _componentToHex(b);
     };
     return hex;
@@ -31,10 +27,9 @@ function assert(condition, message) {
     }
     return condition;
 }
-var CollisionFilters = /** @class */ (function () {
+class CollisionFilters {
     // all 0b111...1101 except category 2
-    function CollisionFilters(category, mask, group) {
-        if (group === void 0) { group = 0; }
+    constructor(category, mask, group = 0) {
         this.group = 0;
         if (group)
             this.group = group;
@@ -43,22 +38,21 @@ var CollisionFilters = /** @class */ (function () {
         if (mask)
             this.mask = mask;
     }
-    CollisionFilters.SOLID = new CollisionFilters(1, 0xFFFFFFFF);
-    CollisionFilters.MOUSE = new CollisionFilters(2, 0xFFFFFFFF);
-    CollisionFilters.WALL = new CollisionFilters(4, 0xFFFFFFFF);
-    CollisionFilters.GASLIKE = new CollisionFilters(8, 2 + 4); // only collide with walls and the mouse constraint
-    return CollisionFilters;
-}());
+}
+CollisionFilters.SOLID = new CollisionFilters(1, 0xFFFFFFFF);
+CollisionFilters.MOUSE = new CollisionFilters(2, 0xFFFFFFFF);
+CollisionFilters.WALL = new CollisionFilters(4, 0xFFFFFFFF);
+CollisionFilters.GASLIKE = new CollisionFilters(8, 2 + 4); // only collide with walls and the mouse constraint
 var ScreenState;
 (function (ScreenState) {
     ScreenState[ScreenState["PAUSED"] = 0] = "PAUSED";
     ScreenState[ScreenState["RUNNING"] = 1] = "RUNNING";
     ScreenState[ScreenState["CREDITS"] = 2] = "CREDITS";
 })(ScreenState || (ScreenState = {}));
-var universe = {};
+let universe = {};
 universe.paused = false;
 function getCanvas() {
-    var canvas = document.getElementById("canvas");
+    let canvas = document.getElementById("canvas");
     if (canvas && canvas instanceof HTMLCanvasElement) {
         return canvas;
     }
@@ -70,8 +64,14 @@ function getCanvasContext(canvas) {
     if (!canvas) {
         canvas = getCanvas();
     }
-    var ctxt = canvas.getContext("2d");
+    let ctxt = canvas.getContext("2d");
     if (ctxt === null)
         throw new TypeError("Context is null?");
     return ctxt;
 }
+class Constants {
+}
+Constants.R = 8.31446261815324; // (J)/(K-mol) = 
+Constants.Ratm = 0.082057366080960; // (L-atm)/(K-mol)
+Constants.SIprefs = ['n', 'µ', 'm', 'c', 'd', '', 'k'];
+Constants.SIprefscoeffs = [1e-9, 1e-6, 1e-3, 1e-2, 1e-1, 1, 1e3];
