@@ -1,9 +1,23 @@
 "use strict";
 // <reference path='phys/physold.ts'/>
+var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, privateMap) {
+    if (!privateMap.has(receiver)) {
+        throw new TypeError("attempted to get private field on non-instance");
+    }
+    return privateMap.get(receiver);
+};
+var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, privateMap, value) {
+    if (!privateMap.has(receiver)) {
+        throw new TypeError("attempted to set private field on non-instance");
+    }
+    privateMap.set(receiver, value);
+    return value;
+};
+var _m, _v;
+class ChemicalIntrinsics {
+}
 class ChemicalType {
     constructor() {
-        // intrinsic, intensive properties go here like density
-        this.density = 1; // g/mL
         this.specificHeatCapacity = 0; // J/(g-K)
         this.chemicalFormula = "";
         /**
@@ -174,7 +188,9 @@ class Substance extends SubstGroup {
     constructor(type) {
         super();
         this.subsystems = [];
-        this._v = 1;
+        // mol = 0; 
+        _m.set(this, 1);
+        _v.set(this, 1);
         this._T = 273.15;
         this.type = type ? type : ChemicalType.NONE;
         this.state = type ? type.state : "";
@@ -183,18 +199,25 @@ class Substance extends SubstGroup {
         this.substances = a;
     }
     getSubstance(key) { return this; }
-    // mol = 0; 
     get mass() {
-        return this.type.density * this.volume;
+        return __classPrivateFieldGet(this, _m);
     }
-    set mass(mass) {
-        this.volume = mass / this.type.density;
+    set mass(m) {
+        __classPrivateFieldSet(this, _m, m);
     }
     get volume() {
-        return this._v;
+        if (this.type.density) {
+            return this.mass / this.type.density;
+        }
+        return __classPrivateFieldGet(this, _v);
     }
     set volume(volume) {
-        this._v = volume;
+        if (this.type.density) {
+            this.mass = volume * this.type.density;
+        }
+        else {
+            __classPrivateFieldSet(this, _v, volume);
+        }
     }
     get temperature() {
         return this._T;
@@ -237,6 +260,7 @@ class Substance extends SubstGroup {
             this.concentration = kval;
     }
 }
+_m = new WeakMap(), _v = new WeakMap();
 function makeMolecular(s) {
     let molec = s;
     Object.defineProperty(molec, 'molarMass', {

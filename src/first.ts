@@ -6,7 +6,7 @@ let __ = undefined;
 let gvar = {} as any;
 
 let lastClickedObject = undefined;
-
+// glob = Global
 
 type num = number;
 type tup = Array<number>;
@@ -57,7 +57,7 @@ class CollisionFilters {
 enum ScreenState {
     PAUSED, RUNNING, CREDITS
 }
-let universe = {} as { engine: Matter.Engine, world: Matter.World, runner: Matter.Runner, paused: Boolean, screenstate: ScreenState };
+let universe = {} as { engine: Matter.Engine, world: Matter.World, runner: Matter.Runner, paused: Boolean, screenstate: ScreenState, glob: Global};
 universe.paused = false;
 
 function getCanvas(): HTMLCanvasElement {

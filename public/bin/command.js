@@ -612,6 +612,8 @@ class ComputedSubstQty {
             ret.mol = this.mol;
         if (this.vol)
             ret.volume = this.vol;
+        if (this.state && !ret.state)
+            ret.state = this.state; // for custom
         return ret;
     }
 }

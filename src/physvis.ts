@@ -110,6 +110,7 @@ class Global extends SubstGroup {
     }
 }
 const glob = new Global();
+universe.glob = glob;
 phys(glob, [0, 0], [canvas.width, canvas.height]);
 let b = newBounds({ x: canvas.width / 4, y: canvas.height / 4 }, { x: canvas.width / 2, y: canvas.height / 2 }); // canvas.width/2, y:canvas.height/2});
 

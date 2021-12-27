@@ -1,11 +1,14 @@
 // <reference path='phys/physold.ts'/>
 
+class ChemicalIntrinsics {
 
+}
 
 
 class ChemicalType {
+    // dependent on the state of the subst.
     // intrinsic, intensive properties go here like density
-    density: number = 1; // g/mL
+    density?: number; // g/mL
     specificHeatCapacity: number = 0; // J/(g-K)
     chemicalFormula = "";
     /** 
@@ -25,19 +28,46 @@ class ChemicalType {
 
 class ProtoChemical extends ChemicalType{
     static NONE = new ProtoChemical();
+    #statemap = new Map() as Map<string, ProtoChemical>;
+    standardState: ProtoChemical;
+    constructor(standardState?: ProtoChemical, state?: string) {
+        super();
+        if(standardState) {
+            this.standardState = standardState;
+        } else {
+            this.standardState = this;
+        }
+        if (state) {
+            this.standardState.pushNewState(this, this.state);
+            this.state = state;
+        }
+    }
+    getStandardState(): ProtoChemical {
+        return this.standardState;
+    }
+    getWithArgs(args: ComputedQty | string): ProtoChemical | undefined{
+        let state = args instanceof ComputedQty ? args.state : args;
+        let standard = this.getStandardState();
+        if(state === standard.state) return standard;
+        let ret = state ? this.getStandardState().#statemap.get(state) : undefined;
+        return ret;
+    }
+    pushNewState(chemical: ProtoChemical, condition: ComputedQty | string) {
+        let state = condition instanceof ComputedQty ? condition.state : condition;
+        if(state && this.getWithArgs(state) === undefined) {
+            this.getStandardState().#statemap.set(state, chemical);
+        }
+    }
 
-    amt(qty: ComputedSubstQty, state?: string) {
+    amt(qty: ComputedQty, state?: string) {
         // let args = new PSArgs(this, qty);
         // if(state) args.state = state;
         if(state) qty.state = state;
         return qty.formFrom(this);
     }
-    _getWithArgs(args: ComputedSubstQty): ProtoChemical {
-        return this; // doesn't work right now
-    }
-    constructor() {
-        super();
-    }
+    // _getWithArgs(args: ComputedQty): ProtoChemical {
+    //     return this; // doesn't work right now
+    // }
     /**
      * Shortcut for getting one with default args
      * @returns 
@@ -58,23 +88,24 @@ class ProtoChemical extends ChemicalType{
         altStates = altStates ? altStates : [] as JsonChemical[];
         // if(constructed) assert(constructed.length === 1 + altStates.length);
 
-        let main = Object.assign(new ProtoChemical(), defaul, all) as ProtoChemical & JsonChemical & { stateMap: any };
-        main.stateMap = new Map() as Map<string, ProtoChemical>;
+        let main = Object.assign(new ProtoChemical(), defaul, all) as ProtoChemical & JsonChemical; // & { stateMap: any };
+        // main.stateMap = new Map() as Map<string, ProtoChemical>;
 
         let subs = [];
         subs.push(main);
 
         for (let alt of altStates) {
-            let sub = Object.assign(new ProtoChemical(), alt, all);
+            let sub = Object.assign(new ProtoChemical(main), alt, all);
             subs.push(sub);
         }
         for (let sub of subs) {
-            main.stateMap.set(sub.state, sub);
+            main.pushNewState(sub, sub.state);
         }
-        main._getWithArgs = function (x) {
-            let o = main.stateMap.get(x);
-            return o === undefined ? main : o;
-        }
+            // main.stateMap.set(sub.state, sub);
+        // main._getWithArgs = function (x) {
+        //     let o = main.stateMap.get(x);
+        //     return o === undefined ? main : o;
+        // }
         if (freeze) {
             for (let x of subs) {
                 Object.freeze(x);
@@ -184,18 +215,26 @@ class Substance extends SubstGroup {
     readonly subsystems: SubstGroup[] = [];
     getSubstance(key: number) {return this;}
     // mol = 0; 
+    #m = 1;
     get mass() {
-        return this.type.density * this.volume;
+        return this.#m;
     }
-    set mass(mass:num) {
-        this.volume = mass / this.type.density;
+    set mass(m: num) {
+        this.#m = m;
     }
-    _v = 1;
+    #v = 1;
     get volume() { // in mL
-        return this._v;
+        if(this.type.density) {
+            return this.mass / this.type.density; 
+        }
+        return this.#v;
     }
     set volume(volume) {
-        this._v = volume;
+        if (this.type.density) {
+            this.mass = volume * this.type.density;
+        } else {
+            this.#v = volume;
+        }
     }
     _T = 273.15;
     get temperature() {

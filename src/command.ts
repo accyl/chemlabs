@@ -41,12 +41,25 @@ class AtomTracker {
         return tot;
     }
 }
-class ChemicalBuilder {
+class FormulaTknrOutput {
     atomt: AtomTracker = new AtomTracker();
     // elems: string[] = [];
     formula: string = '';
     state: string = '';
-    qty: string = '';
+    // qty: string = '';
+    constructor(pc?: ProtoChemical) {
+        if(pc) {
+            this.formula = pc.chemicalFormula;
+            this.state = pc.state;
+            if('atomTracker' in pc) {
+                this.atomt = (pc as any).atomTracker;
+            } else {
+                let formulaBuilder = new FormulaTknrOutput();
+                formulaTknr(this.formula, 0, formulaBuilder);
+            }
+            
+        }
+    }
 }
 function _isLower(inp: string) {
     return inp.length === 1 && 'abcdefghijklmnopqrstuvwxyz'.includes(inp);
@@ -57,7 +70,7 @@ function _isCapital(inp: string) {
 function _isNumeric(inp: string) {
     return inp.length === 1 && '1234567890'.includes(inp);
 }
-const gbdr = new ChemicalBuilder();
+const gbdr = new FormulaTknrOutput();
 type tokenizer = (inp: string, startidx: num)=> [string, num]; // takes an original string, plus an index then returns a token plus a new index
 function formulaTknr(inp: string, startidx = 0, bdr = gbdr): [string, num] {
     // TODO: Ambiguous statement: CaRbON
@@ -442,7 +455,7 @@ class QtyUnitList {
         return str;
     }
     computed() {
-        return new ComputedSubstQty(this);
+        return new ComputedQty(this);
         // for(let i=0;i<this.qtys.length;i++) {
             // let qty = this.qtys[i];
             // let pref = this.si_prefixes[i];
@@ -558,7 +571,7 @@ class QtyBuilder {
  * Contains all quantitative properties of a substance (plus the state),
  * such that given a valid protosubstance we will be able to construct a substance from this.
  */
-class ComputedSubstQty {
+class ComputedQty {
     qul: QtyUnitList;
     mass?:num;
     mol?:num;
@@ -584,14 +597,20 @@ class ComputedSubstQty {
             }
         }
     }
-    pcFrom(pc: ProtoChemical): ProtoChemical {
-        return pc._getWithArgs(this);
-    }
+
     formFrom(pc: ProtoChemical): Substance {
-        let ret = this.pcFrom(pc).form();
+        let orig = pc.getWithArgs(this);
+        if(orig === undefined) {
+            // perhaps a state isn't set
+            let formulaBuilder = new FormulaTknrOutput(pc.getStandardState());
+            formulaBuilder.state = pc.state;
+            orig = chemicals.saveCustom(formulaBuilder);
+        }
+        let ret = orig.form();
         if (this.mass) ret.mass = this.mass;
         if (this.mol && ret instanceof MolecularSubstance) ret.mol = this.mol;
         if (this.vol) ret.volume = this.vol;
+        if (this.state && !ret.state) ret.state = this.state; // for custom
         return ret;
     }
 }
@@ -639,18 +658,18 @@ function quantitiesTknr(inp: string, startidx = 0, qbdr: QtyUnitList = gqul): [s
     return [inp.slice(startidx, idx), idx];
 }
 
-function WStringTknr(inp:string, startidx=0): [ChemicalBuilder, QtyUnitList] {
+function WStringTknr(inp:string, startidx=0): [FormulaTknrOutput, QtyUnitList] {
     if(startidx >= inp.length) throw ReferenceError("bruh"); // really?
     if(_isNumeric(inp[startidx])) {
         let qbdr = new QtyUnitList();
         let [qty, idx] = quantitiesTknr(inp, startidx, qbdr);
         let [__, idx2] = whitespaceTknr(inp, idx);
-        let fbdr = new ChemicalBuilder();
+        let fbdr = new FormulaTknrOutput();
         let [formula, idx3] = formulaTknr(inp, idx2, fbdr);
         return [fbdr, qbdr];
     } else {
 
-        let fbdr = new ChemicalBuilder();
+        let fbdr = new FormulaTknrOutput();
         let [formula, idx] = formulaTknr(inp, startidx, fbdr);
         let qbdr = new QtyUnitList();
         let [qty, idx2] = quantitiesTknr(inp, idx, qbdr);
