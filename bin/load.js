@@ -94,7 +94,7 @@ function debugBody(body) {
         let ss = ph.substs;
         lastClickedObject = ss;
         for (let s of ss.substances) {
-            ret += `${s.type.chemicalFormula} (${s.state}) ${s.mass}g ${s.volume}L ${s.temperature}K \n`;
+            ret += `${s.type.chemicalFormula} (${s.state ? s.state : 'state unknown'}) ${s.mass}g ${s.volume}L ${s.temperature}K \n`;
         }
         paste.textContent = ret;
     }

@@ -13,7 +13,8 @@ chemicals.saveCustom = function (chem) {
     let all = {
         chemicalFormula: formula,
         molarMass: atomt.molarMass(),
-        rgb: [250, 250, 250]
+        rgb: [250, 250, 250],
+        density: undefined
     };
     let phase = chem.state;
     if (!phase && atomt._atoms.length == 1) {
