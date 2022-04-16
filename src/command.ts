@@ -1,4 +1,4 @@
-/// <reference path='ptable.ts'/>
+/// <reference path='data/ptable.ts'/>
 /// <reference path='chemicals.ts'/>
 
 

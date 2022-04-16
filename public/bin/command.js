@@ -1,5 +1,5 @@
 "use strict";
-/// <reference path='ptable.ts'/>
+/// <reference path='data/ptable.ts'/>
 /// <reference path='chemicals.ts'/>
 // H2O (l) 2mol 
 // H2O(l) 2mol
@@ -42,13 +42,24 @@ class AtomTracker {
         return tot;
     }
 }
-class ChemicalBuilder {
-    constructor() {
+class FormulaTknrOutput {
+    // qty: string = '';
+    constructor(pc) {
         this.atomt = new AtomTracker();
         // elems: string[] = [];
         this.formula = '';
         this.state = '';
-        this.qty = '';
+        if (pc) {
+            this.formula = pc.chemicalFormula;
+            this.state = pc.state;
+            if ('atomTracker' in pc) {
+                this.atomt = pc.atomTracker;
+            }
+            else {
+                let formulaBuilder = new FormulaTknrOutput();
+                formulaTknr(this.formula, 0, formulaBuilder);
+            }
+        }
     }
 }
 function _isLower(inp) {
@@ -60,7 +71,7 @@ function _isCapital(inp) {
 function _isNumeric(inp) {
     return inp.length === 1 && '1234567890'.includes(inp);
 }
-const gbdr = new ChemicalBuilder();
+const gbdr = new FormulaTknrOutput();
 function formulaTknr(inp, startidx = 0, bdr = gbdr) {
     // TODO: Ambiguous statement: CaRbON
     // CAlcium RuBidium Oxygen Nitrogen = CARBON
@@ -459,7 +470,7 @@ class QtyUnitList {
         return str;
     }
     computed() {
-        return new ComputedSubstQty(this);
+        return new ComputedQty(this);
         // for(let i=0;i<this.qtys.length;i++) {
         // let qty = this.qtys[i];
         // let pref = this.si_prefixes[i];
@@ -578,7 +589,7 @@ class QtyBuilder {
  * Contains all quantitative properties of a substance (plus the state),
  * such that given a valid protosubstance we will be able to construct a substance from this.
  */
-class ComputedSubstQty {
+class ComputedQty {
     constructor(qul) {
         this.qul = qul;
         this.mass = qul.get('g'); // mass, mol, and vol are the most vital stats.
@@ -601,11 +612,15 @@ class ComputedSubstQty {
             }
         }
     }
-    pcFrom(pc) {
-        return pc._getWithArgs(this);
-    }
     formFrom(pc) {
-        let ret = this.pcFrom(pc).form();
+        let orig = pc.getWithArgs(this);
+        if (orig === undefined) {
+            // perhaps a state isn't set
+            let formulaBuilder = new FormulaTknrOutput(pc.getStandardState());
+            formulaBuilder.state = pc.state;
+            orig = chemicals.saveCustom(formulaBuilder);
+        }
+        let ret = orig.form();
         if (this.mass)
             ret.mass = this.mass;
         if (this.mol && ret instanceof MolecularSubstance)
@@ -668,12 +683,12 @@ function WStringTknr(inp, startidx = 0) {
         let qbdr = new QtyUnitList();
         let [qty, idx] = quantitiesTknr(inp, startidx, qbdr);
         let [__, idx2] = whitespaceTknr(inp, idx);
-        let fbdr = new ChemicalBuilder();
+        let fbdr = new FormulaTknrOutput();
         let [formula, idx3] = formulaTknr(inp, idx2, fbdr);
         return [fbdr, qbdr];
     }
     else {
-        let fbdr = new ChemicalBuilder();
+        let fbdr = new FormulaTknrOutput();
         let [formula, idx] = formulaTknr(inp, startidx, fbdr);
         let qbdr = new QtyUnitList();
         let [qty, idx2] = quantitiesTknr(inp, idx, qbdr);

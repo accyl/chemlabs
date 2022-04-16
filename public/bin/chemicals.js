@@ -13,6 +13,7 @@ chemicals.saveCustom = function (chem) {
     let all = {
         chemicalFormula: formula,
         molarMass: atomt.molarMass(),
+        atomTracker: atomt,
         rgb: [250, 250, 250],
         density: undefined
     };
@@ -46,29 +47,26 @@ function chemicalFromJson(all, defaul, altStates, freeze = true) {
     return ProtoChemical.fromJson(all, defaul, altStates, freeze);
 }
 chemicals.set('H2O', function () {
-    let g = new ProtoChemical();
-    g.state = "g";
-    g.specificHeatCapacity = 2.080;
     let l = new ProtoChemical();
     l.state = "l";
     l.density = 999.8395;
     l.specificHeatCapacity = 4.184;
     l.rgb = [0xF0, 0xF0, 0xFF];
-    let s = new ProtoChemical();
-    s.state = "s";
+    let g = new ProtoChemical(l, 'g');
+    // g.state = "g";
+    g.specificHeatCapacity = 2.080;
+    let s = new ProtoChemical(l, 's');
+    // s.state = "s";
     s.density = 916.8; // ice
     s.specificHeatCapacity = 2.05;
     g.chemicalFormula = l.chemicalFormula = s.chemicalFormula = "H2O";
     g.molarMass = l.molarMass = s.molarMass = 18.01528; // g/mol;
-    l._getWithArgs = function (args) {
-        if (args.state === "s")
-            return s;
-        if (args.state === "l")
-            return l;
-        if (args.state === "g")
-            return g;
-        return l;
-    };
+    // l.getWithArgs = function (args: ComputedQty): ProtoChemical {
+    //     if (args.state === "s") return s;
+    //     if (args.state === "l") return l;
+    //     if (args.state === "g") return g;
+    //     return l;
+    // }
     Object.freeze(g);
     Object.freeze(l);
     Object.freeze(s);
@@ -90,17 +88,15 @@ chemicals.set('KMnO4', function () {
     };
     aq.chemicalFormula = "KMnO4";
     aq.molarMass = 158.034; // g/mol
-    let s = new ProtoChemical();
-    s.state = 's';
+    let s = new ProtoChemical(aq, 's');
+    // s.state = 's';
     s.rgb = [0x9F, 0x00, 0xFF];
     s.density = 2700;
-    aq._getWithArgs = function (args) {
-        if (args.state === "aq")
-            return aq;
-        if (args.state === "s")
-            return s;
-        return aq; // default condition, for if a state is omitted
-    };
+    // aq.getWithArgs = function (args: ComputedQty): ProtoChemical {
+    //     if (args.state === "aq") return aq;
+    //     if (args.state === "s") return s;
+    //     return aq; // default condition, for if a state is omitted
+    // }
     Object.freeze(s);
     Object.freeze(aq); // lock 
     return aq;

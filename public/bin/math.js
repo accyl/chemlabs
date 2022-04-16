@@ -1,3 +1,4 @@
+"use strict";
 // TODO: generalize this.
 // ie. have a function algebra(eqn: string, vari... variables)
 // in general if a provided variable is undefined, assume that it is
@@ -13,47 +14,37 @@
 // meanwhile if we provide all 5 variables,
 // then algebra() would simply plug it into the equation
 // and check for equality within a certain tolerance.
-
 class Operator {
-    char;
-    private constructor(char: string) {
+    constructor(char) {
         this.char = char;
         Operator.oplist.push(this);
     }
-    static oplist: Operator[] = [];
-    private static __ = function () {
-        let ops = ['+', '-', '*', '/', '^'];
-        for (let op of ops) new Operator(op);
-    }();
-
 }
+Operator.oplist = [];
+Operator.__ = function () {
+    let ops = ['+', '-', '*', '/', '^'];
+    for (let op of ops)
+        new Operator(op);
+}();
 class Expression {
-    tokenlist: Array<string | Operator> = [];
-    pushVar(varname: string) {
+    constructor() {
+        this.tokenlist = [];
+    }
+    pushVar(varname) {
         this.tokenlist.push(varname);
     }
-    pushOp(operator: string) {
+    pushOp(operator) {
         this.tokenlist.push(operator);
     }
 }
-
-function algebraTknr(inp: string, startidx: num) {
+function algebraTknr(inp, startidx) {
     for (let i = startidx; i < inp.length; i++) {
-
     }
 }
-function algebra(eqn: string, ...vari: num[]) {
-
+function algebra(eqn, ...vari) {
 }
-
-abstract class GeneralizedFunction {
-    abstract _zeroes(): tup;
-    _x0: tup;
-    _v0: tup;
-    _a0: tup;
-    n3deriv?: tup[];
-    constructor(pos?: [num, num, num], vel?: [num, num, num], acc?: [num, num, num], n3deriv?: [num, num, num][]) {
-
+class GeneralizedFunction {
+    constructor(pos, vel, acc, n3deriv) {
         this._x0 = pos ? pos : this._zeroes().map(x => x + 1);
         this._v0 = vel ? vel : this._zeroes();
         this._a0 = acc ? acc : this._zeroes();
@@ -61,17 +52,17 @@ abstract class GeneralizedFunction {
             this.n3deriv = n3deriv;
         }
     }
-
-    pos(t?: num): tup {
+    pos(t) {
         return this._x0;
     }
-    vel(t?: num): tup {
+    vel(t) {
         return this._v0;
     }
-    acc(t?: num): tup {
+    acc(t) {
         return this._a0;
-    };
-    nthderiv(n: number, t: number): tup {
+    }
+    ;
+    nthderiv(n, t) {
         switch (n) {
             case 0:
                 return this.pos(t);
@@ -80,25 +71,23 @@ abstract class GeneralizedFunction {
             case 2:
                 return this.acc(t);
             default:
-                if (this.n3deriv) return this.n3deriv[n - 3];
+                if (this.n3deriv)
+                    return this.n3deriv[n - 3];
                 return this._zeroes();
         }
     }
-
-    step(t0: num, dt: num) {
+    step(t0, dt) {
         /**
-         * applies euler's method once 
+         * applies euler's method once
          * dt = stepsize
          */
         let dx = this.vel(t0).map(v => v * dt);
         this._x0 = this.pos(t0).map((x, i) => x + dx[i]); // perform a veloity update
-
-
         let dv = this.acc(t0).map(a => a * dt);
         this._v0 = this.vel(t0).map((v, i) => v + dv[i]); // perform a veloity update
         // TODO updates of higher order derivatives
     }
-    eulers(t0: num, dt: num, nsteps: num) {
+    eulers(t0, dt, nsteps) {
         for (let i = 0; i < nsteps; i++) {
             this.step(t0, dt);
             t0 = t0 + dt;

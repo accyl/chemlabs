@@ -1,32 +1,50 @@
 /* @import url("fontawesome-all.min.css"); */
+
+
 /* @import url("https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,300italic,400,400italic"); */
+
 * {
     /* color: rgb(119, 119, 119); */
-	font-family: "Source Sans Pro", Helvetica, sans-serif;
+    font-family: "Source Sans Pro", Helvetica, sans-serif;
 }
+
 #cwrap {
     /* display: inline-block; */
-    width:100%;
+    width: 100%;
     display: flex;
     flex-direction: row;
 }
+
 #cdiv {
     height: 30vw;
     width: 50vw;
     border: solid blue 1px;
-    margin: 1vh 0vw 1vh 0vw;
+    margin: 0vh 0vw 0vh 1vw;
     /* display: inline-block; */
     flex: 1 1 auto;
-
 }
+
 #huddiv {
     height: 30vw;
-    width: 5vw;
+    /* width: 5vw; */
     border: solid purple 1px;
-    margin: 1vh 0vw 1vh 0vw;
+    margin: 0vh 0vw 0vh 0vw;
     /* display: inline-block; */
     flex: 1 1 auto;
 }
+
+#einspector {
+    flex-direction: column;
+    width: 15vw;
+    border: solid cyan 1px;
+}
+
+#einspector>* {
+    width: 95%;
+    height: 3vw;
+    border: solid blue 1px;
+}
+
 canvas {
     border: solid black 1px;
     /* size: 400px 500px; */
@@ -34,32 +52,45 @@ canvas {
     height: 100%;
 }
 
+
 /* h1 { */
-    /* margin: 3vh 1vw 3vh 5vw; */
+
+
+/* margin: 3vh 1vw 3vh 5vw; */
+
+
 /* } */
+
+
 /* .icons, .copyright { */
+
 body {
     margin: 3vh 1vw 3vh 3vw;
-
 }
 
 code {
-  font-family: Consolas,"courier new";
-  color: crimson;
-  background-color: #f1f1f1;
-  padding: 2px;
-  font-size: 105%;
+    font-family: Consolas, "courier new";
+    color: crimson;
+    background-color: #f1f1f1;
+    padding: 2px;
+    font-size: 105%;
 }
+
 ul li {
     display: inline;
 }
+
 ul {
-    overflow: auto;  
+    overflow: auto;
 }
+
 li {
-  white-space:nowrap;
+    white-space: nowrap;
 }
-footer, .icons, .copyright {
+
+footer,
+.icons,
+.copyright {
     padding: 0 0 0 0;
 }
 
@@ -67,25 +98,33 @@ footer, .icons, .copyright {
     white-space: pre;
     overflow: hidden;
     overflow-wrap: normal;
-    overflow-x:scroll;
-    resize: none; 
+    overflow-x: scroll;
+    resize: none;
     text-overflow: ellipsis;
-    width: 50%; /*height: 69px;*/
+    width: 50%;
+    /*height: 69px;*/
 }
 
 .noselect {
-  -webkit-touch-callout: none; /* iOS Safari */
-    -webkit-user-select: none; /* Safari */
-     -khtml-user-select: none; /* Konqueror HTML */
-       -moz-user-select: none; /* Old versions of Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-            user-select: none; /* Non-prefixed version, currently
+    -webkit-touch-callout: none;
+    /* iOS Safari */
+    -webkit-user-select: none;
+    /* Safari */
+    -khtml-user-select: none;
+    /* Konqueror HTML */
+    -moz-user-select: none;
+    /* Old versions of Firefox */
+    -ms-user-select: none;
+    /* Internet Explorer/Edge */
+    user-select: none;
+    /* Non-prefixed version, currently
                                   supported by Chrome, Edge, Opera and Firefox */
 }
 
 .button {
     cursor: pointer;
 }
+
 .container {
     width: 92%;
     max-width: 1000px;
@@ -94,13 +133,13 @@ footer, .icons, .copyright {
     padding-right: 1em;
     margin: auto;
 }
-.main-container {
- margin:auto;
 
+.main-container {
+    margin: auto;
 }
 
 .main-header {
-    margin:auto;
-    padding-top:0.5em;
+    margin: auto;
+    padding-top: 0.5em;
     padding-bottom: 0.25em;
 }
