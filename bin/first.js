@@ -69,6 +69,13 @@ function getCanvasContext(canvas) {
         throw new TypeError("Context is null?");
     return ctxt;
 }
+function Wdispatch(eventName, eventInfo, extraSubcribers = '') {
+    let subscribers = $('.subscribed, .inspector ' + extraSubcribers);
+    subscribers.trigger(eventName, eventInfo);
+}
+// $('#einspector').on('substanceCreated', function (e, eventInfo) {
+//     alert('(notifier1)The value of eventInfo is: ' + eventInfo);
+// });
 class Constants {
 }
 Constants.R = 8.31446261815324; // (J)/(K-mol) = 

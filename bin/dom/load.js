@@ -318,4 +318,5 @@ function pauseUnpauseGame(pause) {
         }
         // console.log(e.key); // debug
     }, false);
+    // Make sure this code gets executed after the DOM is loaded.
 })();

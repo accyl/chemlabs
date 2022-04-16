@@ -126,6 +126,8 @@ function tang(s, addToGlobal = true, pos, size) {
         else
             throw "s " + ret + "not instanceof System nor Substance!";
     }
+    // console.log('disp!')
+    Wdispatch('substanceCreated', { 'substance': s });
     return ret;
 }
 var drawer = new Drawer(); // the principal drawer
