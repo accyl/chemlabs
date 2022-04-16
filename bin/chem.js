@@ -13,7 +13,7 @@ var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (
     privateMap.set(receiver, value);
     return value;
 };
-var _m, _v;
+var _statemap, _m, _v;
 class ChemicalIntrinsics {
 }
 class ChemicalType {
@@ -36,8 +36,36 @@ class ChemicalType {
 }
 ChemicalType.NONE = new ChemicalType();
 class ProtoChemical extends ChemicalType {
-    constructor() {
+    constructor(standardState, state) {
         super();
+        _statemap.set(this, new Map());
+        if (standardState) {
+            this.standardState = standardState;
+        }
+        else {
+            this.standardState = this;
+        }
+        if (state) {
+            this.standardState.pushNewState(this, this.state);
+            this.state = state;
+        }
+    }
+    getStandardState() {
+        return this.standardState;
+    }
+    getWithArgs(args) {
+        let state = args instanceof ComputedQty ? args.state : args;
+        let standard = this.getStandardState();
+        if (state === standard.state)
+            return standard;
+        let ret = state ? __classPrivateFieldGet(this.getStandardState(), _statemap).get(state) : undefined;
+        return ret;
+    }
+    pushNewState(chemical, condition) {
+        let state = condition instanceof ComputedQty ? condition.state : condition;
+        if (state && this.getWithArgs(state) === undefined) {
+            __classPrivateFieldGet(this.getStandardState(), _statemap).set(state, chemical);
+        }
     }
     amt(qty, state) {
         // let args = new PSArgs(this, qty);
@@ -46,9 +74,9 @@ class ProtoChemical extends ChemicalType {
             qty.state = state;
         return qty.formFrom(this);
     }
-    _getWithArgs(args) {
-        return this; // doesn't work right now
-    }
+    // _getWithArgs(args: ComputedQty): ProtoChemical {
+    //     return this; // doesn't work right now
+    // }
     /**
      * Shortcut for getting one with default args
      * @returns
@@ -67,21 +95,22 @@ class ProtoChemical extends ChemicalType {
         // if(constructed && constructed.length == 0) constructed = undefined;
         altStates = altStates ? altStates : [];
         // if(constructed) assert(constructed.length === 1 + altStates.length);
-        let main = Object.assign(new ProtoChemical(), defaul, all);
-        main.stateMap = new Map();
+        let main = Object.assign(new ProtoChemical(), defaul, all); // & { stateMap: any };
+        // main.stateMap = new Map() as Map<string, ProtoChemical>;
         let subs = [];
         subs.push(main);
         for (let alt of altStates) {
-            let sub = Object.assign(new ProtoChemical(), alt, all);
+            let sub = Object.assign(new ProtoChemical(main), alt, all);
             subs.push(sub);
         }
         for (let sub of subs) {
-            main.stateMap.set(sub.state, sub);
+            main.pushNewState(sub, sub.state);
         }
-        main._getWithArgs = function (x) {
-            let o = main.stateMap.get(x);
-            return o === undefined ? main : o;
-        };
+        // main.stateMap.set(sub.state, sub);
+        // main._getWithArgs = function (x) {
+        //     let o = main.stateMap.get(x);
+        //     return o === undefined ? main : o;
+        // }
         if (freeze) {
             for (let x of subs) {
                 Object.freeze(x);
@@ -90,6 +119,7 @@ class ProtoChemical extends ChemicalType {
         return main;
     }
 }
+_statemap = new WeakMap();
 ProtoChemical.NONE = new ProtoChemical();
 /*
 class PSArgs {
