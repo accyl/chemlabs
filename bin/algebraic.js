@@ -1,4 +1,7 @@
 "use strict";
+/**
+ * Unused test abstractified class for math, algebra.
+ */
 // TODO: generalize this.
 // ie. have a function algebra(eqn: string, vari... variables)
 // in general if a provided variable is undefined, assume that it is
