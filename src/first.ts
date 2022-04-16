@@ -78,6 +78,14 @@ function getCanvasContext(canvas?: HTMLCanvasElement): CanvasRenderingContext2D 
     return ctxt;
 }
 
+function Wdispatch(eventName: string, eventInfo: any, extraSubcribers = '') {
+    let subscribers = $('.subscribed, .inspector ' + extraSubcribers);
+    subscribers.trigger(eventName, eventInfo);
+}
+// $('#einspector').on('substanceCreated', function (e, eventInfo) {
+//     alert('(notifier1)The value of eventInfo is: ' + eventInfo);
+// });
+
 class Constants {
     static R = 8.31446261815324; // (J)/(K-mol) = 
     static Ratm = 0.082057366080960; // (L-atm)/(K-mol)

@@ -25,10 +25,9 @@
             <div id="huddiv">
                 <canvas id="hud" width='20' height='100'></canvas>
             </div>
-            <div id="einspector">
-                <div class="example-thing">
+            <div class="inspector" id="einspector">
+                <!-- <div class="example-thing"> </div>-->
 
-                </div>
             </div>
         </div>
         <div>
@@ -39,7 +38,8 @@
         <br>
         <div>
             <div class="textarea-wrapper">
-                <form action="" onsubmit="() => {return false;}">
+
+                <form action="" onsubmit="return false;">
                     <input type='text' name="message" id="cmdbox" placeholder="Enter Chemical Here" rows="1">
 
                     <input type='submit' class="button" id="cmdbtn" value="Add to World" onclick="onCommandButton()">
@@ -79,9 +79,12 @@
     <div class="scripts-div">
         <!-- <script>var exports = {};</script> -->
         <!-- <script src="https://unpkg.com/lodash@4.17.20"></script> -->
-
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
         <!-- <script src="data/ptabledata.js"></script> -->
         <script src="bin/first.js"></script>
+
+        <script src="bin/dom/inspector.js"></script>
+
 
         <script src="bin/data/ptable.js"></script>
 
@@ -93,6 +96,7 @@
         <script src="raw/matter.min.js"></script>
 
         <script src="raw/tut.matter.js"></script>
+
 
         <!-- <script src="bin/physold.js"></script> -->
         <script src="bin/phys.js"></script>
@@ -111,7 +115,6 @@
         <!-- <script src="bin/command.js"></script> -->
 
         <script src="bin/dom/load.js"></script>
-        <script src="bin/dom/inspector.js"></script>
         <script src="raw/load.js"></script>
 
     </div>

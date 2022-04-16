@@ -1,5 +1,4 @@
 "use strict";
-// <reference path='../../raw/matter.min.js'/>
 var PhysicsHookBehavior;
 (function (PhysicsHookBehavior) {
     PhysicsHookBehavior[PhysicsHookBehavior["FREE"] = 0] = "FREE";
@@ -42,6 +41,7 @@ function newPhysicsHook(arg1, size, subst) {
         }
         body['label'] = "" + subst; //.substances[0].type.chemicalFormula;
     }
+    body.toString = () => { return `[PhysHook label="${body.label}" id=${body.id}]`; };
     // Object.defineProperty(body, 'pos', {
     //     get: function () { return body.position },
     //     set: function (x) { body.position = x }
@@ -52,11 +52,14 @@ function newPhysicsHook(arg1, size, subst) {
     // });
     return body;
 }
+function addToWorld(h) {
+    Matter.Composite.add(universe.world, h);
+    Wdispatch('matterCreated', { 'matter': h });
+}
 function newBounds(arg1, size, addToGlobal = true) {
     let h = newPhysicsHook(arg1, size, SubstGroup.BOUNDS_ONLY);
-    if (addToGlobal) {
-        Matter.Composite.add(universe.world, h);
-    }
+    if (addToGlobal)
+        addToWorld(h);
     return h;
 }
 function phys(s, pos, size) {
@@ -78,7 +81,7 @@ function phys(s, pos, size) {
         if (s instanceof Substance) {
             // s.physhook = new PhysicsHook(pos, size);
             s.physhook = newPhysicsHook(vec, vsize, s); //new PhysicsHookNew(vec, vsize);
-            Matter.Composite.add(universe.world, [s.physhook]); //.rect]);
+            addToWorld([s.physhook]); //.rect]);
         }
         else if (s === SubstGroup.BOUNDS_ONLY) {
             assert(false, "Use newBounds()!");

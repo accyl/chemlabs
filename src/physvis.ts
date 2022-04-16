@@ -125,7 +125,11 @@ function tang<S extends Substance | SubstGroup>(s: S, addToGlobal=true, pos?: [n
         } else if (ret instanceof SubstGroup) {
             glob.subsystems.push(ret);
         } else throw "s " + ret + "not instanceof System nor Substance!";
+
+
     }
+    // console.log('disp!')
+    Wdispatch('substanceCreated', { 'substance': s });
     return ret;
 }
 

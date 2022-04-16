@@ -1,8 +1,10 @@
 // <reference path='../../raw/matter.min.js'/>
-
+/** 
+ * Bridge between matter.js and the rest of my code
+ *  
+ */
 type Vector = Matter.Vector;
-// Bridge between matter.js and the rest of my code
-// 
+
 
 interface PhysicsHook extends Matter.Body{
     // rect: Matter.Body;
@@ -57,6 +59,7 @@ function newPhysicsHook(arg1: Matter.Body | Vector, size: Vector, subst: Substan
         body['label'] = "" + subst; //.substances[0].type.chemicalFormula;
 
     }
+    body.toString = () => {return `[PhysHook label="${body.label}" id=${body.id}]`}
     // Object.defineProperty(body, 'pos', {
     //     get: function () { return body.position },
     //     set: function (x) { body.position = x }
@@ -67,11 +70,14 @@ function newPhysicsHook(arg1: Matter.Body | Vector, size: Vector, subst: Substan
     // });
     return body as any;
 }
+
+function addToWorld(h: PhysicsHook | PhysicsHook[]) {
+    Matter.Composite.add(universe.world, h);
+    Wdispatch('matterCreated', {'matter': h});
+}
 function newBounds(arg1: Matter.Body | Vector, size: Vector, addToGlobal=true) {
     let h = newPhysicsHook(arg1, size, SubstGroup.BOUNDS_ONLY);
-    if(addToGlobal) {
-        Matter.Composite.add(universe.world, h);
-    }
+    if(addToGlobal) addToWorld(h);
     return h;
 }
 
@@ -92,7 +98,7 @@ function phys<S extends Substance | SubstGroup>(s: S, pos?: [num, num], size?: [
         if (s instanceof Substance) {
             // s.physhook = new PhysicsHook(pos, size);
             s.physhook = newPhysicsHook(vec, vsize, s); //new PhysicsHookNew(vec, vsize);
-            Matter.Composite.add(universe.world, [s.physhook]); //.rect]);
+            addToWorld([s.physhook]); //.rect]);
 
         } else if (s === SubstGroup.BOUNDS_ONLY) {
             assert(false, "Use newBounds()!");
