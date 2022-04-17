@@ -295,6 +295,10 @@ function makeMolecular(s: Substance) {
     });
     return molec as MolecularSubstance;
 }
+interface IMolecularSubstance extends Substance {
+    molarMass: num;
+    mol: num;
+}
 class MolecularSubstance extends Substance {
     // molarMass = 1;
     // type2: MolecularSubstanceType;
@@ -326,18 +330,10 @@ function makeGaseous(x: MolecularSubstance) {
         // set: function (x) { molec.type.molarMass = x }
     });
 }
-class GaseousSubstance extends MolecularSubstance{
+interface GaseousSubstance extends MolecularSubstance{
     // PV=nRT
     // P = nRT/V
-    #P?: num;
-    get pressure() { 
-        // in atm // PV=nRT 4 variables 1 constant => 3 degrees of freedom. P = constraint
-        // there is a better way. Use constraints + laws.
-        return this.#P === undefined ? this.mol * Constants.Ratm * this.temperature / this.volume : this.#P; 
-    }
-    set pressure(p) {
-        this.#P = p;
-    }
+    pressure: num;
 }
 
 class AqueousSubstance extends MolecularSubstance {
