@@ -13,7 +13,7 @@ var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (
     privateMap.set(receiver, value);
     return value;
 };
-var _statemap, _m, _v;
+var _statemap, _m, _v, _P;
 class ChemicalIntrinsics {
 }
 class ChemicalType {
@@ -336,12 +336,22 @@ function makeGaseous(x) {
     });
 }
 class GaseousSubstance extends MolecularSubstance {
-    // PV=nRT
-    // P = nRT/V
+    constructor() {
+        super(...arguments);
+        // PV=nRT
+        // P = nRT/V
+        _P.set(this, void 0);
+    }
     get pressure() {
-        return this.mol * Constants.Ratm * this.temperature / this.volume;
+        // in atm // PV=nRT 4 variables 1 constant => 3 degrees of freedom. P = constraint
+        // there is a better way. Use constraints + laws.
+        return __classPrivateFieldGet(this, _P) === undefined ? this.mol * Constants.Ratm * this.temperature / this.volume : __classPrivateFieldGet(this, _P);
+    }
+    set pressure(p) {
+        __classPrivateFieldSet(this, _P, p);
     }
 }
+_P = new WeakMap();
 class AqueousSubstance extends MolecularSubstance {
     constructor(solutetype, solvent) {
         super(solutetype);
