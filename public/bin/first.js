@@ -21,9 +21,12 @@ function _rgb(hex) {
     var b = bigint & 255;
     return [r, g, b];
 }
-function assert(condition, message) {
+function assert(condition, message, hard = true) {
     if (!condition) {
-        throw new Error(message || "Assertion failed");
+        if (hard)
+            throw new Error(message || "Assertion failed");
+        else
+            console.log(message || "Assertion failed :(");
     }
     return condition;
 }

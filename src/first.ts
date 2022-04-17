@@ -30,9 +30,10 @@ function _rgb(hex: string): [num,num,num] {
 
     return [r,g,b];
 }
-function assert(condition: any, message?: any) {
+function assert(condition: any, message?: any, hard=true) {
     if (!condition) {
-        throw new Error(message || "Assertion failed");
+        if(hard) throw new Error(message || "Assertion failed");
+        else console.log(message || "Assertion failed :(")
     }
     return condition;
 }

@@ -329,8 +329,14 @@ function makeGaseous(x: MolecularSubstance) {
 class GaseousSubstance extends MolecularSubstance{
     // PV=nRT
     // P = nRT/V
-    get pressure() { // in atm
-        return this.mol * Constants.Ratm * this.temperature / this.volume; 
+    #P?: num;
+    get pressure() { 
+        // in atm // PV=nRT 4 variables 1 constant => 3 degrees of freedom. P = constraint
+        // there is a better way. Use constraints + laws.
+        return this.#P === undefined ? this.mol * Constants.Ratm * this.temperature / this.volume : this.#P; 
+    }
+    set pressure(p) {
+        this.#P = p;
     }
 }
 
