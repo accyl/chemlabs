@@ -87,12 +87,11 @@ abstract class DynamicLaw<S extends Substance> {
         }
 
     }
-    //TODO automatically calculate the unknown from everything except the preserved 
+    //TODO automatically calculate the unknown from everything except the preserved
     /**
      * Update fields, then automatically update the unknown variable in accordance with the law.
-     * @param s an arbitrary Substance
+     * @param subst an arbitrary Substance
      * @param r a record of fields to change
-     * @param unknown The variable to update and recalculate
      * @param preservedVars
      * Remove variables from the record which can be assumed to be constant.
      * For an example, density or molarMass is a variable which is typically constant-ish.
@@ -100,25 +99,44 @@ abstract class DynamicLaw<S extends Substance> {
      * We usually don't want to change density
      * AKA intensive variables.
      * An interface can have the user dynamically choose which ones 
+     * 
+     * @description the unknown variable is automatically inferred from the remaining variables.
      */
-    update(s: S, r: Record<string, number>, unknown?: string, preservedVars?: string[]) {
+    update(subst: S, r: Record<string, number>, preservedVars?: string[]) {
         for (let key of Object.keys(r)) {
-            this.setter(s, key, r[key]);
+            this.setter(subst, key, r[key]);
         }
-        if(unknown) { // if we known the unknown, we can immediately solve for unknown
-            this.solveFor(s, unknown);
+
+        if(preservedVars === undefined) preservedVars = [];
+
+        let changes = Object.keys(r);
+
+        // we now remove preserved and changed variables to find the unknown
+
+        let allvars = Object.keys(this.getters(subst)); // all the variables we know about
+        allvars = allvars.filter(x => !changes.includes(x)); // remove changed variables as they cannot be the unknown
+
+        // we remove preserved variables now
+        allvars = allvars.filter(x => !preservedVars!.includes(x));
+
+        let count = allvars.length;
+        if(count === 0) {
+            throw new Error(`No unknowns found in ${this.law.text()}`); // this is one way to handle this. This works as we make sure that
+            // we never return a preserved variable.
+            // alternatively, we can return the last preserved variable, as we know that the preserved variable must be in allvars
+            // return preservedVars![preservedVars!.length - 1];
+        }
+        
+        if (count === 1) {
+            // of all the new variables, and of all of the preserved variables, we have only one unknown
+            let unk = allvars[0];
+            return this.solveFor(subst, unk);
         } else {
-            if(preservedVars === undefined) preservedVars = [];
-            // we can deduce that the unknown is everything that hasn't been updated, and also isn't a preservedVar
-            let allvars = this.getters(s);
-            for(let newinfo of Object.keys(r)) {
-                delete allvars[newinfo];
-            }
-            for(let preservedVar of preservedVars) {
-
-            }
-
+            // we can't solve for them all at once, because we don't know which one is which.
+            throw new Error(`Multiple unknowns found in ${this.law.text()}`);
         }
+
+        
     }
 }
 abstract class CompactLaw<S extends Substance> extends DynamicLaw<S> {
@@ -238,8 +256,3 @@ let equations = {
     molar: new MolecularLaw(),
     ideal: new IdealGasLaw()
 }
-/*
- Test functions:
-equations.molar.update(glob.s[0], {n: 3}, 'm') // should update the mass of the KMnO4 (sp.aq)
-
- */
