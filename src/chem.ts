@@ -5,7 +5,7 @@ class ChemicalIntrinsics {
 }
 
 
-class ChemicalType {
+class SubstanceType {
     // dependent on the state of the subst.
     // intrinsic, intensive properties go here like density
     density?: number; // g/mL
@@ -18,7 +18,7 @@ class ChemicalType {
     molar_absorptivity = [1, 1, 1]; */
     rgb: tup = [255, 255, 255];
     state = "g";
-    static NONE = new ChemicalType();
+    static NONE = new SubstanceType();
     molarMass: number = -1;
     equals(x: any) {
         console.warn("unimplemented equals in chem.ts ChemicalType!");
@@ -26,11 +26,11 @@ class ChemicalType {
     }
 }
 
-class ProtoChemical extends ChemicalType{
-    static NONE = new ProtoChemical();
-    #statemap = new Map() as Map<string, ProtoChemical>;
-    standardState: ProtoChemical;
-    constructor(standardState?: ProtoChemical, state?: string) {
+class SubstanceMaker extends SubstanceType{
+    static NONE = new SubstanceMaker();
+    #statemap = new Map() as Map<string, SubstanceMaker>;
+    standardState: SubstanceMaker;
+    constructor(state?: string, standardState?: SubstanceMaker) {
         super();
         if(standardState) {
             this.standardState = standardState;
@@ -42,17 +42,17 @@ class ProtoChemical extends ChemicalType{
             this.state = state;
         }
     }
-    getStandardState(): ProtoChemical {
+    getStandardState(): SubstanceMaker {
         return this.standardState;
     }
-    getWithArgs(args: ComputedQty | string): ProtoChemical | undefined{
+    getWithArgs(args: ComputedQty | string): SubstanceMaker | undefined{
         let state = args instanceof ComputedQty ? args.state : args;
         let standard = this.getStandardState();
         if(state === standard.state) return standard;
         let ret = state ? this.getStandardState().#statemap.get(state) : undefined;
         return ret;
     }
-    pushNewState(chemical: ProtoChemical, condition: ComputedQty | string) {
+    pushNewState(chemical: SubstanceMaker, condition: ComputedQty | string) {
         let state = condition instanceof ComputedQty ? condition.state : condition;
         if(state && this.getWithArgs(state) === undefined) {
             this.getStandardState().#statemap.set(state, chemical);
@@ -76,7 +76,7 @@ class ProtoChemical extends ChemicalType{
         return new Substance(this);
     }
 
-    static fromJson(all: any, defaul: JsonChemical, altStates?: JsonChemical[], freeze = true): ProtoChemical { //sObj?: any, lObj?: any, gObj?: any, aqObj?: any){
+    static fromJson(all: any, defaul: JsonChemical, altStates?: JsonChemical[], freeze = true): SubstanceMaker { //sObj?: any, lObj?: any, gObj?: any, aqObj?: any){
         // TODO
         // any such function that constructs from JSON must be able to customize the constructor
         // For example using a spectralA
@@ -88,14 +88,14 @@ class ProtoChemical extends ChemicalType{
         altStates = altStates ? altStates : [] as JsonChemical[];
         // if(constructed) assert(constructed.length === 1 + altStates.length);
 
-        let main = Object.assign(new ProtoChemical(), defaul, all) as ProtoChemical & JsonChemical; // & { stateMap: any };
+        let main = Object.assign(new SubstanceMaker(), defaul, all) as SubstanceMaker & JsonChemical; // & { stateMap: any };
         // main.stateMap = new Map() as Map<string, ProtoChemical>;
 
         let subs = [];
         subs.push(main);
 
         for (let alt of altStates) {
-            let sub = Object.assign(new ProtoChemical(main), alt, all);
+            let sub = Object.assign(new SubstanceMaker(alt.state, main), alt, all);
             subs.push(sub);
         }
         for (let sub of subs) {
@@ -243,11 +243,11 @@ class Substance extends SubstGroup {
     set temperature(T) {
         this._T = T;
     }
-    type: ChemicalType;
+    type: SubstanceType;
     state?: string; // State of Matter
-    constructor(type?: ChemicalType) {
+    constructor(type?: SubstanceType) {
         super();
-        this.type = type ? type : ChemicalType.NONE;
+        this.type = type ? type : SubstanceType.NONE;
         this.state = type ? type.state : "";
         let a = [];
         a.push(this);
@@ -263,7 +263,7 @@ class Substance extends SubstGroup {
     toString() {
         return `${this.type.chemicalFormula} ${this.mass}g`;
     }
-    isChemicalType(test: ChemicalType) {
+    isChemicalType(test: SubstanceType) {
         return this.type === test;
     }
     get kValue() { 
@@ -302,7 +302,7 @@ interface IMolecularSubstance extends Substance {
 class MolecularSubstance extends Substance {
     // molarMass = 1;
     // type2: MolecularSubstanceType;
-    constructor(type: ChemicalType) {//MolecularSubstanceType) {
+    constructor(type: SubstanceType) {//MolecularSubstanceType) {
         super(type);
         // TODO Hacky dumb solution. THeoretically solvable by generics but I have to refactor a constructor & it's a headache
         // this.type2 = type;
@@ -339,7 +339,7 @@ interface GaseousSubstance extends MolecularSubstance{
 class AqueousSubstance extends MolecularSubstance {
     solvent: Substance;
     maxConcentration: num = Number.POSITIVE_INFINITY; // Also called the maximum solubility
-    constructor(solutetype: ChemicalType, solvent: Substance) {
+    constructor(solutetype: SubstanceType, solvent: Substance) {
         super(solutetype);
         this.solvent = solvent;
     }
@@ -387,7 +387,7 @@ class AqueousSubstance extends MolecularSubstance {
 
 class SpectralAqueousSubstance extends AqueousSubstance {
     spectra_f;
-    constructor(solute: ChemicalType, solvent: Substance, spectra_f: (wl: num)=>num) {
+    constructor(solute: SubstanceType, solvent: Substance, spectra_f: (wl: num)=>num) {
         super(solute, solvent);
         this.spectra_f = spectra_f;
 

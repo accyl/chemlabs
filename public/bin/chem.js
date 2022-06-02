@@ -16,7 +16,7 @@ var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (
 var _statemap, _m, _v;
 class ChemicalIntrinsics {
 }
-class ChemicalType {
+class SubstanceType {
     constructor() {
         this.specificHeatCapacity = 0; // J/(g-K)
         this.chemicalFormula = "";
@@ -34,9 +34,9 @@ class ChemicalType {
         return this == x;
     }
 }
-ChemicalType.NONE = new ChemicalType();
-class ProtoChemical extends ChemicalType {
-    constructor(standardState, state) {
+SubstanceType.NONE = new SubstanceType();
+class SubstanceMaker extends SubstanceType {
+    constructor(state, standardState) {
         super();
         _statemap.set(this, new Map());
         if (standardState) {
@@ -95,12 +95,12 @@ class ProtoChemical extends ChemicalType {
         // if(constructed && constructed.length == 0) constructed = undefined;
         altStates = altStates ? altStates : [];
         // if(constructed) assert(constructed.length === 1 + altStates.length);
-        let main = Object.assign(new ProtoChemical(), defaul, all); // & { stateMap: any };
+        let main = Object.assign(new SubstanceMaker(), defaul, all); // & { stateMap: any };
         // main.stateMap = new Map() as Map<string, ProtoChemical>;
         let subs = [];
         subs.push(main);
         for (let alt of altStates) {
-            let sub = Object.assign(new ProtoChemical(main), alt, all);
+            let sub = Object.assign(new SubstanceMaker(alt.state, main), alt, all);
             subs.push(sub);
         }
         for (let sub of subs) {
@@ -120,7 +120,7 @@ class ProtoChemical extends ChemicalType {
     }
 }
 _statemap = new WeakMap();
-ProtoChemical.NONE = new ProtoChemical();
+SubstanceMaker.NONE = new SubstanceMaker();
 /*
 class PSArgs {
     // Yeah I know it's messy but
@@ -222,7 +222,7 @@ class Substance extends SubstGroup {
         _m.set(this, 1);
         _v.set(this, 1);
         this._T = 273.15;
-        this.type = type ? type : ChemicalType.NONE;
+        this.type = type ? type : SubstanceType.NONE;
         this.state = type ? type.state : "";
         let a = [];
         a.push(this);

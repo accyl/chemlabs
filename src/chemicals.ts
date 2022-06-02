@@ -1,6 +1,6 @@
 /// <reference path='chem.ts'/>
 
-const chemicals = new Map() as Map<string, ProtoChemical> & { saveCustom: (chem: FormulaTknrOutput) => ProtoChemical };
+const chemicals = new Map() as Map<string, SubstanceMaker> & { saveCustom: (chem: FormulaTknrOutput) => SubstanceMaker };
 
 
 
@@ -49,24 +49,23 @@ chemicals.saveCustom = function (chem: FormulaTknrOutput) {
 // new method below
 
 type JsonChemical = { state: string };
-function chemicalFromJson(all: any, defaul: JsonChemical, altStates?: JsonChemical[], freeze = true): ProtoChemical { //sObj?: any, lObj?: any, gObj?: any, aqObj?: any){
-    return ProtoChemical.fromJson(all, defaul, altStates, freeze);
+function chemicalFromJson(all: any, defaul: JsonChemical, altStates?: JsonChemical[], freeze = true): SubstanceMaker { //sObj?: any, lObj?: any, gObj?: any, aqObj?: any){
+    return SubstanceMaker.fromJson(all, defaul, altStates, freeze);
 }
 
 chemicals.set('H2O', function(){
 
 
-    let l = new ProtoChemical();
-    l.state = "l";
+    let l = new SubstanceMaker('l');
     l.density = 999.8395;
     l.specificHeatCapacity = 4.184;
     l.rgb = [0xF0, 0xF0, 0xFF];
 
-    let g = new ProtoChemical(l, 'g');
+    let g = new SubstanceMaker('g', l);
     // g.state = "g";
     g.specificHeatCapacity = 2.080;
 
-    let s = new ProtoChemical(l, 's');
+    let s = new SubstanceMaker('s', l);
     // s.state = "s";
     s.density = 916.8; // ice
     s.specificHeatCapacity = 2.05;
@@ -89,7 +88,7 @@ chemicals.set('H2O', function(){
 }());
 chemicals.set('KMnO4', function(){
     // molar mass: 158.033949
-    let aq = new ProtoChemical();
+    let aq = new SubstanceMaker();
     // me.stateOfMatter = "s"; // TODO this feels dumb
     aq.state = "aq";
     // aq.molar_absorptivity = [0.8, 1.75, 0.45];
@@ -105,7 +104,7 @@ chemicals.set('KMnO4', function(){
     aq.chemicalFormula = "KMnO4";
     aq.molarMass = 158.034; // g/mol
 
-    let s = new ProtoChemical(aq, 's');
+    let s = new SubstanceMaker('s', aq);
     // s.state = 's';
     s.rgb = [0x9F,0x00,0xFF];
     s.density = 2700;
@@ -131,9 +130,9 @@ chemicals.set('H2', function () {
         rgb: [250, 250, 255]
     };
     // g.molarMass = l.molarMass = s.molarMass = 18.01528; // g/mol;
-    return ProtoChemical.fromJson(all, g, [l]);
+    return SubstanceMaker.fromJson(all, g, [l]);
 }());
-W.c = function(key: string): ProtoChemical | undefined {
+W.c = function(key: string): SubstanceMaker | undefined {
     return chemicals.get(key);
 }
 // new method above

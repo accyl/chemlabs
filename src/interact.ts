@@ -1,6 +1,6 @@
 
 class RateExpression {
-    reactants: ChemicalType[] = [];
+    reactants: SubstanceType[] = [];
     powers: num[] = [];
     k: num = 1; // rate 
     R(orderedReactants: Substance[]) {
@@ -16,7 +16,7 @@ class RateExpression {
 type RateExpr = RateExpression;
 class BoundRateExpr extends RateExpression{
     brx: Substance[] = [];
-    constructor(k: num, rxt: ChemicalType[]) {
+    constructor(k: num, rxt: SubstanceType[]) {
         super();
         this.reactants = rxt;
         this.k = k;
@@ -29,31 +29,31 @@ class BoundRateExpr extends RateExpression{
     }
 }
 class BalancedRxn {
-    reactants: ChemicalType[] = [];
-    products: ChemicalType[] = [];
+    reactants: SubstanceType[] = [];
+    products: SubstanceType[] = [];
     coefficients: num[] = []; // reactants, then products
-    constructor(rxt: ChemicalType[], px: ChemicalType[], coeff: num[]) {
+    constructor(rxt: SubstanceType[], px: SubstanceType[], coeff: num[]) {
         this.reactants = rxt;
         this.products = px;
         this.coefficients = coeff;
     }
-    chemicalEntry(index: num): [ChemicalType, num] {
+    chemicalEntry(index: num): [SubstanceType, num] {
         let chem = index >= this.reactants.length ? this.products[index - this.reactants.length] : this.reactants[index];
         let coeff = this.coefficients[index];
         return [chem, coeff];
     }
-    forEach(callback: (chem: ChemicalType, coeff: num)=> void) {
+    forEach(callback: (chem: SubstanceType, coeff: num)=> void) {
         this.forEachReactant(callback);
         this.forEachProduct(callback);
         
     }
-    forEachReactant(callback: (chem: ChemicalType, coeff: num) => void) {
+    forEachReactant(callback: (chem: SubstanceType, coeff: num) => void) {
         let i = 0;
         for (; i < this.reactants.length; i++) {
             callback(this.reactants[i], this.coefficients[i]);
         }
     }
-    forEachProduct(callback: (chem: ChemicalType, coeff: num) => void) {
+    forEachProduct(callback: (chem: SubstanceType, coeff: num) => void) {
         let j = 0;
         for (; j < this.products.length; j++) {
             callback(this.products[j], this.coefficients[j + this.reactants.length]);
@@ -70,14 +70,14 @@ class Equilibrium extends BalancedRxn {
     // K = exp(-RT/ΔG°)
     // Ecell = Ecell° - RT/(nF)*lnQ
     K = 1;
-    constructor(rxt: ChemicalType[], px: ChemicalType[], coeff: num[], K: num) {
+    constructor(rxt: SubstanceType[], px: SubstanceType[], coeff: num[], K: num) {
         super(rxt, px, coeff);
         this.K = K;
     }
     toJson() {
         return {'K': this.K, 'rx': this.reactants, 'px': this.products, 'coeff': this.coefficients};
     }
-    static fromJson(x: {K:num, rx:ChemicalType[], px:ChemicalType[], coeff:num[]}) {
+    static fromJson(x: {K:num, rx:SubstanceType[], px:SubstanceType[], coeff:num[]}) {
         return new Equilibrium(x.rx, x.px, x.coeff, x.K);
     }
     plugReactants(reactants: Substance[]) {

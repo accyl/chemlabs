@@ -47,7 +47,7 @@ class FormulaTknrOutput {
     formula: string = '';
     state: string = '';
     // qty: string = '';
-    constructor(pc?: ProtoChemical) {
+    constructor(pc?: SubstanceMaker) {
         if(pc) {
             this.formula = pc.chemicalFormula;
             this.state = pc.state;
@@ -598,7 +598,7 @@ class ComputedQty {
         }
     }
 
-    formFrom(pc: ProtoChemical): Substance {
+    formFrom(pc: SubstanceMaker): Substance {
         let orig = pc.getWithArgs(this);
         if(orig === undefined) {
             // perhaps a state isn't set
@@ -713,4 +713,4 @@ let W = function(inp: string, display=true): Substance {
     // example kmno4. 
     // although by definition it won't always work - see no
     // or hga - HGa
-} as {(inp: string, display?: boolean): Substance; c: (inp: string) => ProtoChemical | undefined};
+} as {(inp: string, display?: boolean): Substance; c: (inp: string) => SubstanceMaker | undefined};
