@@ -9,7 +9,7 @@ function addDefault() {
 function slider() {
     let h = document.querySelector("#slider");
     for (let s of glob.substances) {
-        if (s instanceof AqueousSubstance) {
+        if ('concentration' in s) {
             // s.concentration = h.value / 10000000;
             // s.concentration = h.value / 10;
             // apparently the maximum molarity of KMnO4 is a mere 0.405 M lol
