@@ -26,138 +26,8 @@ class SubstanceType {
     }
 }
 
-class SubstanceMaker extends SubstanceType{
-    static NONE = new SubstanceMaker();
-    #statemap = new Map() as Map<string, SubstanceMaker>;
-    standardState: SubstanceMaker;
-    constructor(state?: string, standardState?: SubstanceMaker) {
-        super();
-        if(standardState) {
-            this.standardState = standardState;
-        } else {
-            this.standardState = this;
-        }
-        if (state) {
-            this.standardState.pushNewState(this, this.state);
-            this.state = state;
-        }
-    }
-    getStandardState(): SubstanceMaker {
-        return this.standardState;
-    }
-    getWithArgs(args: ComputedQty | string): SubstanceMaker | undefined{
-        let state = args instanceof ComputedQty ? args.state : args;
-        let standard = this.getStandardState();
-        if(state === standard.state) return standard;
-        let ret = state ? this.getStandardState().#statemap.get(state) : undefined;
-        return ret;
-    }
-    pushNewState(chemical: SubstanceMaker, condition: ComputedQty | string) {
-        let state = condition instanceof ComputedQty ? condition.state : condition;
-        if(state && this.getWithArgs(state) === undefined) {
-            this.getStandardState().#statemap.set(state, chemical);
-        }
-    }
 
-    amt(qty: ComputedQty, state?: string) {
-        // let args = new PSArgs(this, qty);
-        // if(state) args.state = state;
-        if(state) qty.state = state;
-        return qty.formFrom(this);
-    }
-    // _getWithArgs(args: ComputedQty): ProtoChemical {
-    //     return this; // doesn't work right now
-    // }
-    /**
-     * Shortcut for getting one with default args
-     * @returns 
-     */
-    form(): Substance {
-        return new Substance(this);
-    }
 
-    static fromJson(all: any, defaul: JsonChemical, altStates?: JsonChemical[], freeze = true): SubstanceMaker { //sObj?: any, lObj?: any, gObj?: any, aqObj?: any){
-        // TODO
-        // any such function that constructs from JSON must be able to customize the constructor
-        // For example using a spectralA
-        // maybe make that itself as a json option flag?
-        // THen we need to pass arguments into the constructor.
-        // Again we might just have arguments under '0', '1' pipe into 
-        // the constructor and set default readings to be equivalent
-        // if(constructed && constructed.length == 0) constructed = undefined;
-        altStates = altStates ? altStates : [] as JsonChemical[];
-        // if(constructed) assert(constructed.length === 1 + altStates.length);
-
-        let main = Object.assign(new SubstanceMaker(), defaul, all) as SubstanceMaker & JsonChemical; // & { stateMap: any };
-        // main.stateMap = new Map() as Map<string, ProtoChemical>;
-
-        let subs = [];
-        subs.push(main);
-
-        for (let alt of altStates) {
-            let sub = Object.assign(new SubstanceMaker(alt.state, main), alt, all);
-            subs.push(sub);
-        }
-        for (let sub of subs) {
-            main.pushNewState(sub, sub.state);
-        }
-            // main.stateMap.set(sub.state, sub);
-        // main._getWithArgs = function (x) {
-        //     let o = main.stateMap.get(x);
-        //     return o === undefined ? main : o;
-        // }
-        if (freeze) {
-            for (let x of subs) {
-                Object.freeze(x);
-            }
-        }
-        return main;
-    }
-}
-/*
-class PSArgs {
-    // Yeah I know it's messy but
-    // there needs to be a way to construct substances with different states (of matter)
-    // but which are otherwise completely identical
-    // without triplicating of quadruplicating or septuplicating or whatever( ie. for ice)
-    // I hope using a factory pattern will be somewhat better?
-    ps: ProtoChemical;
-    state?: string; // state of matter
-    mol?: number;
-    mass?: number;
-    volmL?: number;
-    molarity?: number;
-    qul: QtyUnitList;
-    constructor(ps: ProtoChemical, qty: QtyUnitList | QtyComputed) {
-        this.ps = ps;        
-        let computed;
-        if(qty instanceof QtyUnitList) {
-            computed = qty.computed();
-            if(!(computed.mass||computed.mol||computed.vol)) computed.mol = 1; // set a default
-        } else {
-            computed = qty;
-        }
-        this.qul = computed.qul;
-        if(computed) {
-            this.mass = computed.mass; // mass, mol, and vol are the most vital stats.
-            this.mol = computed.mol;
-            if (computed.vol) this.volmL = computed.vol * 1000;
-            else this.volmL = computed.vol;            
-        }
-        // magic inferral happens here
-        if(this.state === undefined && this.molarity !== undefined) this.state = 'aq'; // ifwe get a Molarity reading (ie. 5M), assume aqueous
-    }
-    getProto(): ProtoChemical {
-        return this.ps._getWithArgs(this);
-    }
-    form(): Substance {
-        let ret = this.getProto().form();
-        if(this.mass) ret.mass = this.mass;
-        if(this.mol && ret instanceof MolecularSubstance) ret.mol = this.mol;
-        if(this.volmL) ret.volume = this.volmL / 1000;
-        return ret;
-    }
-}*/
 
 /**
  * Coerce a substance into basically being a unit system
@@ -224,24 +94,17 @@ class Substance extends SubstGroup {
     }
     #v = 1;
     get volume() { // in mL
-        if(this.type.density) {
-            return this.mass / this.type.density; 
-        }
         return this.#v;
     }
     set volume(volume) {
-        if (this.type.density) {
-            this.mass = volume * this.type.density;
-        } else {
-            this.#v = volume;
-        }
+        this.#v = volume;
     }
-    _T = 273.15;
+    #T = 273.15;
     get temperature() {
-        return this._T;
+        return this.#T;
     }
     set temperature(T) {
-        this._T = T;
+        this.#T = T;
     }
     type: SubstanceType;
     state?: string; // State of Matter
@@ -282,63 +145,135 @@ class Substance extends SubstGroup {
         if ('concentration' in this) (this as any).concentration = kval;
     }
 }
-function makeMolecular(s: Substance) {
-    let molec = s as Substance & {molarMass: any, mol: any};
-    Object.defineProperty(molec, 'molarMass', {
-        get: function () { return molec.type.molarMass },
-        set: function (x) { molec.type.molarMass = x }
-    });
-    molec['mol'] = 1;
-    Object.defineProperty(molec, 'molarMass', {
-        get: function () { return molec.mol * molec.molarMass },
-        set: function (mass) { molec.mol = mass / molec!.molarMass }
-    });
-    return molec as MolecularSubstance;
+interface SubstanceConstructor {
+    new(proto: SubstanceMaker): Substance;
 }
-interface IMolecularSubstance extends Substance {
+class SubstanceMaker extends SubstanceType {
+    static NONE = new SubstanceMaker();
+    #statemap = new Map() as Map<string, SubstanceMaker>;
+    standardState: SubstanceMaker;
+    #substConstr: SubstanceConstructor;
+    constructor(state?: string, standardState?: SubstanceMaker, constructor: SubstanceConstructor=Substance) {
+        super();
+        if (standardState) {
+            this.standardState = standardState;
+        } else {
+            this.standardState = this;
+        }
+        if (state) {
+            this.standardState.pushNewState(this, this.state);
+            this.state = state;
+        }
+        this.#substConstr = constructor;
+    }
+    getStandardState(): SubstanceMaker {
+        return this.standardState;
+    }
+    getWithArgs(args: ComputedQty | string): SubstanceMaker | undefined {
+        let state = args instanceof ComputedQty ? args.state : args;
+        let standard = this.getStandardState();
+        if (state === standard.state) return standard;
+        let ret = state ? this.getStandardState().#statemap.get(state) : undefined;
+        return ret;
+    }
+    pushNewState(chemical: SubstanceMaker, condition: ComputedQty | string) {
+        let state = condition instanceof ComputedQty ? condition.state : condition;
+        if (state && this.getWithArgs(state) === undefined) {
+            this.getStandardState().#statemap.set(state, chemical);
+        }
+    }
+
+    amt(qty: ComputedQty, state?: string) {
+        // let args = new PSArgs(this, qty);
+        if (state) qty.state = state;
+        return qty.formFrom(this);
+    }
+    // _getWithArgs(args: ComputedQty): ProtoChemical {
+    //     return this; // doesn't work right now
+    // }
+    /**
+     * Shortcut for getting one with default args
+     * @returns 
+     */
+    form(): Substance {
+        return new this.#substConstr(this);
+    }
+
+    static fromJson(all: any, defaul: JsonChemical, altStates?: JsonChemical[], freeze = true): SubstanceMaker { //sObj?: any, lObj?: any, gObj?: any, aqObj?: any){
+        // TODO
+        // any such function that constructs from JSON must be able to customize the constructor
+        // For example using a spectralA
+        // maybe make that itself as a json option flag?
+        // THen we need to pass arguments into the constructor.
+        // Again we might just have arguments under '0', '1' pipe into 
+        // the constructor and set default readings to be equivalent
+        // if(constructed && constructed.length == 0) constructed = undefined;
+        altStates = altStates ? altStates : [] as JsonChemical[];
+        // if(constructed) assert(constructed.length === 1 + altStates.length);
+
+        let main = Object.assign(new SubstanceMaker(), defaul, all) as SubstanceMaker & JsonChemical; // & { stateMap: any };
+        // main.stateMap = new Map() as Map<string, ProtoChemical>;
+
+        let subs = [];
+        subs.push(main);
+
+        for (let alt of altStates) {
+            let sub = Object.assign(new SubstanceMaker(alt.state, main), alt, all);
+            subs.push(sub);
+        }
+        for (let sub of subs) {
+            main.pushNewState(sub, sub.state);
+        }
+        // main.stateMap.set(sub.state, sub);
+        // main._getWithArgs = function (x) {
+        //     let o = main.stateMap.get(x);
+        //     return o === undefined ? main : o;
+        // }
+        if (freeze) {
+            for (let x of subs) {
+                Object.freeze(x);
+            }
+        }
+        return main;
+    }
+}
+
+// we use mixins. see https://www.typescriptlang.org/docs/handbook/mixins.html
+type Mixin<T> = new (...args: any[]) => T;
+
+interface MolecularSubstance extends Substance {
     molarMass: num;
     mol: num;
 }
-class MolecularSubstance extends Substance {
-    // molarMass = 1;
-    // type2: MolecularSubstanceType;
-    constructor(type: SubstanceType) {//MolecularSubstanceType) {
-        super(type);
-        // TODO Hacky dumb solution. THeoretically solvable by generics but I have to refactor a constructor & it's a headache
-        // this.type2 = type;
-    }
-    get molarMass() {
-        return this.type.molarMass;
-    }
-    set molarMass(s) {
-        this.type.molarMass = s;
-    }
-    mol = 1;
-    get mass() {
-        return this.mol * this.molarMass;
-    }
-    set mass(mass) {
-        this.mol = mass / this!.molarMass;
+function makeMolecular<T extends Mixin<Substance>>(s: T) {
+    return class MolecularSubstance extends s {
+        get molarMass() { return this.type.molarMass; }
+        set molarMass(m) { this.type.molarMass = m; }
+        mol = 1;
+        get mass(): number {
+            return this.mol * this.molarMass;
+        }
+        set mass(m: number) {
+            this.mol = this.mass / this.molarMass;
+        }
     }
 }
-function makeGaseous(x: MolecularSubstance) {
-    assert('mol' in x, `${x} is somehow not a molecular substance?`);
-        // how
-    let gas = x as any;
-    Object.defineProperty(gas, 'pressure', {
-        get: function () { return this.mol * Constants.Ratm * this.temperature / this.volume }
-        // set: function (x) { molec.type.molarMass = x }
-    });
-}
-interface GaseousSubstance extends MolecularSubstance{
-    // PV=nRT
-    // P = nRT/V
+interface GaseousSubstance extends MolecularSubstance {
     pressure: num;
 }
+function makeGaseous<T extends Mixin<MolecularSubstance>>(x: T) {
 
-class AqueousSubstance extends MolecularSubstance {
+    return class GaseousSubstance extends x {
+        get pressure() { return this.mol * Constants.Ratm * this.temperature / this.volume }
+    }
+}
+
+interface AqueousSubstance {
     solvent: Substance;
-    maxConcentration: num = Number.POSITIVE_INFINITY; // Also called the maximum solubility
+    concentration: num;
+}
+class AqueousSubstanceImpl extends makeMolecular(Substance) implements AqueousSubstance {
+    solvent: Substance;
     constructor(solutetype: SubstanceType, solvent: Substance) {
         super(solutetype);
         this.solvent = solvent;
@@ -347,18 +282,7 @@ class AqueousSubstance extends MolecularSubstance {
         return this.mol / (this.solvent.volume); // TODO: usually this.volume will be negligible.
     }
     set concentration(val) {
-        // we probably can assume that they want to change mols, not volume
-        if(val > this.maxConcentration) {
-            // TODO supersaturated. Actually normally this would be 
-            // solved using equilibria but it's not implemented yet
-            // so let's just reject it for now
-            return;
-        }
-        let molneeded = val * this.solvent.volume; 
-        // we assume that the volume of solute is negligible
-        // because technically molarity is volume of solution, not
-        // volume of solvent
-        this.mol = molneeded;
+        this.mol = val * this.solvent.volume;
     }
     set volume(val: num) {
         // they probably want to change the solvent volume
@@ -366,7 +290,8 @@ class AqueousSubstance extends MolecularSubstance {
     }
     get volume() {
         return this.solvent.volume;
-    }/*
+    }
+    /*
     absorbance(length_traveled: num=1): tup {
         // A = ε * l * ç
         // ε = molar absorptivity
@@ -383,17 +308,44 @@ class AqueousSubstance extends MolecularSubstance {
     color(background: tup = [255, 255, 255], l: num = 1) {
         return this.transmittance(l).map((x, i) => x * background[i]); // we assume that we're plotting it against a white
     }*/
-}
 
-class SpectralAqueousSubstance extends AqueousSubstance {
+}
+function makeAqueous<T extends Mixin<MolecularSubstance>>(x: T, solventIn: Substance) {
+    return class AqueousSubstance extends x {
+        solvent=solventIn;
+        get concentration() {
+            return this.mol / (this.solvent.volume); // TODO: assume the change of volume due to the solute is negligible.
+        }
+        set concentration(val) {
+            // we probably can assume that they want to change mols, not volume
+            // we assume that the volume of solute is negligible
+            // because technically molarity is volume of solution, not
+            // volume of solvent
+            // also in some cases adding solute can actually DECREASE volume of solution. see dissolution of nacl
+            this.mol = val * this.solvent.volume;
+        }
+        set volume(val: num) {
+            this.solvent.volume = val;
+        }
+        get volume() {
+            return this.solvent.volume;
+        }
+    }
+}
+function makeSpectralAqueous<T extends Mixin<AqueousSubstance>>(x: T, spectra_fIn: (wl: num) => num) {
+    return class SpectralAqueousSubstance extends x {
+        spectra_f = spectra_fIn;
+        color(background: tup = [255, 255, 255], l: num = 1) {
+            return rgb_from_spectrum(x => f_daylight(x) * transmittance(this.spectra_f(x), this.concentration));
+        }
+    }
+}
+class SpectralAqueousSubstance extends AqueousSubstanceImpl {
     spectra_f;
     constructor(solute: SubstanceType, solvent: Substance, spectra_f: (wl: num)=>num) {
         super(solute, solvent);
         this.spectra_f = spectra_f;
 
-    }
-    private _shortcut(x: num) {
-            return f_daylight(x) * transmittance(this.spectra_f(x), this.concentration);
     }
     color(background: tup = [255, 255, 255], l: num = 1) {
         return rgb_from_spectrum(x => f_daylight(x) * transmittance(this.spectra_f(x), this.concentration));

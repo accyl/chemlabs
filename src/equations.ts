@@ -168,7 +168,7 @@ abstract class CompactLaw<S extends Substance> extends DynamicLaw<S> {
         this.varCount = Object.keys(nerdnameToFieldname).length;
     }
 }
-class MolecularLaw<S extends IMolecularSubstance> extends CompactLaw<S>{
+class MolecularLaw<S extends MolecularSubstance> extends CompactLaw<S>{
 
     law: Law = nerdamer('mass=molarMass*mol');
     constructor() {

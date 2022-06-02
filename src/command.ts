@@ -608,7 +608,7 @@ class ComputedQty {
         }
         let ret = orig.form();
         if (this.mass) ret.mass = this.mass;
-        if (this.mol && ret instanceof MolecularSubstance) ret.mol = this.mol;
+        if (this.mol && 'mol' in ret) (ret as MolecularSubstance).mol = this.mol;
         if (this.vol) ret.volume = this.vol;
         if (this.state && !ret.state) ret.state = this.state; // for custom
         return ret;
