@@ -19,23 +19,6 @@ function WStringTknr(inp, startidx = 0) {
         return [fbdr, qbdr];
     }
 }
-function tang(s, addToGlobal = true, pos, size) {
-    let ret = phys(s);
-    if (addToGlobal) {
-        if (ret instanceof Substance) {
-            // glob.substances.push(ret);
-            glob.addSubst(ret);
-        }
-        else if (ret instanceof SubstGroup) {
-            glob.subsystems.push(ret);
-        }
-        else
-            throw "s " + ret + "not instanceof System nor Substance!";
-    }
-    // console.log('disp!')
-    Wdispatch('substanceCreated', { 'substance': s });
-    return ret;
-}
 let W = function (inp, display = true) {
     let subst;
     let [chem, qty] = WStringTknr(inp);

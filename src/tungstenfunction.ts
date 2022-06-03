@@ -1,17 +1,16 @@
-"use strict";
-function WStringTknr(inp, startidx = 0) {
+function WStringTknr(inp: string, startidx = 0): [FormulaTknrOutput, QtyUnitList] {
     if (startidx >= inp.length)
         throw ReferenceError("bruh"); // really?
     if (_isNumeric(inp[startidx])) {
         let qbdr = new QtyUnitList();
         let [qty, idx] = quantitiesTknr(inp, startidx, qbdr);
         let [__, idx2] = whitespaceTknr(inp, idx);
-        let fbdr = new SaveCustomChemicalInput();
+        let fbdr = new FormulaTknrOutput();
         let [formula, idx3] = formulaTknr(inp, idx2, fbdr);
         return [fbdr, qbdr];
-    }
-    else {
-        let fbdr = new SaveCustomChemicalInput();
+    } else {
+
+        let fbdr = new FormulaTknrOutput();
         let [formula, idx] = formulaTknr(inp, startidx, fbdr);
         let qbdr = new QtyUnitList();
         let [qty, idx2] = quantitiesTknr(inp, idx, qbdr);
@@ -19,24 +18,7 @@ function WStringTknr(inp, startidx = 0) {
         return [fbdr, qbdr];
     }
 }
-function tang(s, addToGlobal = true, pos, size) {
-    let ret = phys(s);
-    if (addToGlobal) {
-        if (ret instanceof Substance) {
-            // glob.substances.push(ret);
-            glob.addSubst(ret);
-        }
-        else if (ret instanceof SubstGroup) {
-            glob.subsystems.push(ret);
-        }
-        else
-            throw "s " + ret + "not instanceof System nor Substance!";
-    }
-    // console.log('disp!')
-    Wdispatch('substanceCreated', { 'substance': s });
-    return ret;
-}
-let W = function (inp, display = true) {
+let W = function (inp: string, display = true): Substance {
     let subst;
     let [chem, qty] = WStringTknr(inp);
     // form.formula
@@ -44,8 +26,7 @@ let W = function (inp, display = true) {
     let protos = undefined;
     if (chemicals.has(formula)) {
         protos = chemicals.get(formula);
-    }
-    else {
+    } else {
         protos = chemicals.saveCustom(chem);
         console.log(`formula ${formula} not found in list of chemicals. autogenerating...`);
     }
@@ -53,8 +34,8 @@ let W = function (inp, display = true) {
         // let pargs = protos.args();
         // let qbuild = qty.toBuilder();
         subst = protos.amt(qty.computed(), chem.state);
-    }
-    else {
+
+    } else {
         throw protos;
     }
     // } else {
@@ -63,8 +44,7 @@ let W = function (inp, display = true) {
         updateZIndex();
         redraw();
         return subst;
-    }
-    else {
+    } else {
         return subst;
     }
     // TODO: with a greedy algorithm, we can
@@ -73,4 +53,4 @@ let W = function (inp, display = true) {
     // example kmno4. 
     // although by definition it won't always work - see no
     // or hga - HGa
-};
+} as { (inp: string, display?: boolean): Substance; c: (inp: string) => SubstanceMaker | undefined; };
