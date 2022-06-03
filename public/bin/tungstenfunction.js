@@ -1,27 +1,32 @@
 "use strict";
-function WStringTknr(inp, startidx = 0) {
-    if (startidx >= inp.length)
-        throw ReferenceError("bruh"); // really?
-    if (_isNumeric(inp[startidx])) {
-        let qbdr = new QtyUnitList();
-        let [qty, idx] = quantitiesTknr(inp, startidx, qbdr);
-        let [__, idx2] = whitespaceTknr(inp, idx);
-        let fbdr = new NewAtomTracker();
-        let [formula, idx3] = formulaTknr(inp, idx2, fbdr);
-        return [fbdr, qbdr];
+/// <reference path='command.ts'/>
+var Tokenizers;
+(function (Tokenizers) {
+    function WStringTknr(inp, startidx = 0) {
+        if (startidx >= inp.length)
+            throw ReferenceError("bruh"); // really?
+        if (Tokenizers._isNumeric(inp[startidx])) {
+            let qbdr = new Tokenizers.QtyUnitList();
+            let [qty, idx, _] = Tokenizers.quantitiesTknr(inp, startidx, qbdr);
+            let [__, idx2] = Tokenizers.whitespaceTknr(inp, idx);
+            let fbdr = new NewAtomTracker();
+            let [formula, idx3] = Tokenizers.formulaTknr(inp, idx2, fbdr);
+            return [fbdr, qbdr];
+        }
+        else {
+            let fbdr = new NewAtomTracker();
+            let [formula, idx] = Tokenizers.formulaTknr(inp, startidx, fbdr);
+            let qbdr = new Tokenizers.QtyUnitList();
+            let [qty, idx2, _] = Tokenizers.quantitiesTknr(inp, idx, qbdr);
+            let [__, idx3] = Tokenizers.whitespaceTknr(inp, idx2);
+            return [fbdr, qbdr];
+        }
     }
-    else {
-        let fbdr = new NewAtomTracker();
-        let [formula, idx] = formulaTknr(inp, startidx, fbdr);
-        let qbdr = new QtyUnitList();
-        let [qty, idx2] = quantitiesTknr(inp, idx, qbdr);
-        let [__, idx3] = whitespaceTknr(inp, idx2);
-        return [fbdr, qbdr];
-    }
-}
+    Tokenizers.WStringTknr = WStringTknr;
+})(Tokenizers || (Tokenizers = {}));
 let W = function (inp, display = true) {
     let subst;
-    let [chem, qty] = WStringTknr(inp);
+    let [chem, qty] = Tokenizers.WStringTknr(inp);
     // form.formula
     let formula = chem.formula;
     let protos = undefined;

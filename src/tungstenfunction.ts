@@ -1,26 +1,30 @@
-function WStringTknr(inp: string, startidx = 0): [NewAtomTracker, QtyUnitList] {
-    if (startidx >= inp.length)
-        throw ReferenceError("bruh"); // really?
-    if (_isNumeric(inp[startidx])) {
-        let qbdr = new QtyUnitList();
-        let [qty, idx] = quantitiesTknr(inp, startidx, qbdr);
-        let [__, idx2] = whitespaceTknr(inp, idx);
-        let fbdr = new NewAtomTracker();
-        let [formula, idx3] = formulaTknr(inp, idx2, fbdr);
-        return [fbdr, qbdr];
-    } else {
+/// <reference path='command.ts'/>
 
-        let fbdr = new NewAtomTracker();
-        let [formula, idx] = formulaTknr(inp, startidx, fbdr);
-        let qbdr = new QtyUnitList();
-        let [qty, idx2] = quantitiesTknr(inp, idx, qbdr);
-        let [__, idx3] = whitespaceTknr(inp, idx2);
-        return [fbdr, qbdr];
+namespace Tokenizers {
+    export function WStringTknr(inp: string, startidx = 0): [NewAtomTracker, QtyUnitList] {
+        if (startidx >= inp.length)
+            throw ReferenceError("bruh"); // really?
+        if (_isNumeric(inp[startidx])) {
+            let qbdr = new QtyUnitList();
+            let [qty, idx, _] = quantitiesTknr(inp, startidx, qbdr);
+            let [__, idx2] = whitespaceTknr(inp, idx);
+            let fbdr = new NewAtomTracker();
+            let [formula, idx3] = formulaTknr(inp, idx2, fbdr);
+            return [fbdr, qbdr];
+        } else {
+
+            let fbdr = new NewAtomTracker();
+            let [formula, idx] = formulaTknr(inp, startidx, fbdr);
+            let qbdr = new QtyUnitList();
+            let [qty, idx2, _] = quantitiesTknr(inp, idx, qbdr);
+            let [__, idx3] = whitespaceTknr(inp, idx2);
+            return [fbdr, qbdr];
+        }
     }
 }
 let W = function (inp: string, display = true): Substance {
     let subst;
-    let [chem, qty] = WStringTknr(inp);
+    let [chem, qty] = Tokenizers.WStringTknr(inp);
     // form.formula
     let formula = chem.formula;
     let protos = undefined;

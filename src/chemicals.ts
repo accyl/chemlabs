@@ -61,23 +61,14 @@ chemicals.set('H2O', function(){
     l.rgb = [0xF0, 0xF0, 0xFF];
 
     let g = new SubstanceMaker('g', l);
-    // g.state = "g";
     g.specificHeatCapacity = 2.080;
 
     let s = new SubstanceMaker('s', l);
-    // s.state = "s";
     s.density = 916.8; // ice
     s.specificHeatCapacity = 2.05;
 
     g.chemicalFormula = l.chemicalFormula = s.chemicalFormula = "H2O";
     g.molarMass = l.molarMass = s.molarMass = 18.01528; // g/mol;
-
-    // l.getWithArgs = function (args: ComputedQty): ProtoChemical {
-    //     if (args.state === "s") return s;
-    //     if (args.state === "l") return l;
-    //     if (args.state === "g") return g;
-    //     return l;
-    // }
 
     Object.freeze(g);
     Object.freeze(l);
@@ -127,7 +118,6 @@ chemicals.set('H2', function () {
         molarMass: 2.016,
         rgb: [250, 250, 255]
     };
-    // g.molarMass = l.molarMass = s.molarMass = 18.01528; // g/mol;
     return SubstanceMaker.fromJson(all, g, [l]);
 }());
 W.c = function(key: string): SubstanceMaker | undefined {
