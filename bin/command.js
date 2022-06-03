@@ -56,8 +56,8 @@ class FormulaTknrOutput {
                 this.atomt = pc.atomTracker;
             }
             else {
-                let formulaBuilder = new FormulaTknrOutput();
-                formulaTknr(this.formula, 0, formulaBuilder);
+                // let formulaBuilder = new FormulaTknrOutput();
+                formulaTknr(this.formula, 0, this);
             }
         }
     }

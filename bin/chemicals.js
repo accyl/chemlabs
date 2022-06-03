@@ -1,5 +1,5 @@
 "use strict";
-/// <reference path='chem.ts'/>
+/// <reference path='substance.ts'/>
 const chemicals = new Map();
 /**
  * dynamically creates a new chemical entry with the specified ChemicalBuilder chemical and which
