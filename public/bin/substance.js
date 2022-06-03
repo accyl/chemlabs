@@ -244,7 +244,13 @@ class SubstanceMaker extends SubstanceType {
             __classPrivateFieldGet(this.getStandardState(), _statemap).set(state, chemical);
         }
     }
-    amt(qty, state) {
+    /**
+     * Makes a substance with the specifiied amount
+     * @param qty
+     * @param state
+     * @returns
+     */
+    amount(qty, state) {
         // let args = new PSArgs(this, qty);
         if (state)
             qty.state = state;
@@ -253,9 +259,9 @@ class SubstanceMaker extends SubstanceType {
         let orig = this.getWithArgs(qty);
         if (orig === undefined) {
             // perhaps a state isn't set
-            let formulaBuilder = new FormulaTknrOutput(this.getStandardState());
-            formulaBuilder.state = this.state;
-            orig = chemicals.saveCustom(formulaBuilder);
+            let atomTracker = new NewAtomTracker(this.getStandardState());
+            atomTracker.state = this.state;
+            orig = chemicals.saveCustom(atomTracker);
         }
         let ret = orig.form();
         if (qty.mass)

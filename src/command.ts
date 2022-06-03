@@ -6,7 +6,8 @@
 // H2O(l) 2mol
 // H2O (l) 5mL
 // CH3CH2OH(l) 16g
-class AtomTracker {
+class NewAtomTracker {
+    // start old atomtracker
     _atoms: string[]=[]; // can be a polyatomic
     _qtys:num[] = [];
 
@@ -40,9 +41,8 @@ class AtomTracker {
         this._molarMass = tot;
         return tot;
     }
-}
-class FormulaTknrOutput {
-    atomt: AtomTracker = new AtomTracker();
+    // end old atomtracker
+    // start old formulaTknrBuilder
     // elems: string[] = [];
     formula: string = '';
     state: string = '';
@@ -51,10 +51,15 @@ class FormulaTknrOutput {
         if(pc) {
             this.formula = pc.chemicalFormula;
             this.state = pc.state;
-            if('atomTracker' in pc) {
-                this.atomt = (pc as any).atomTracker;
+            if('newAtomTracker' in pc) {
+                // if the AtomTracker was cached, then we can save some compute and copy over the cached values
+                let tracker = (pc as SubstanceMaker & {'newAtomTracker': NewAtomTracker}).newAtomTracker;
+                this._atoms = tracker._atoms;
+                this._qtys = tracker._qtys;
+                this._atomicNums = tracker._atomicNums;
+                this._molarMass = tracker._molarMass;
             } else {
-                // let formulaBuilder = new FormulaTknrOutput();
+                // otherwise, we recompute
                 formulaTknr(this.formula, 0, this);
             }
             
@@ -70,21 +75,25 @@ function _isCapital(inp: string) {
 function _isNumeric(inp: string) {
     return inp.length === 1 && '1234567890'.includes(inp);
 }
-const gbdr = new FormulaTknrOutput();
+const gbdr = new NewAtomTracker();
 type tokenizer = (inp: string, startidx: num)=> [string, num]; // takes an original string, plus an index then returns a token plus a new index
-function formulaTknr(inp: string, startidx = 0, bdr = gbdr): [string, num] {
+function formulaTknr(inp: string, startidx = 0, atomt?: NewAtomTracker): [string, num] {
     // TODO: Ambiguous statement: CaRbON
     // CAlcium RuBidium Oxygen Nitrogen = CARBON
     // let elems = [];
-    bdr.atomt = new AtomTracker();
-    let elemt = bdr.atomt;
+    if(atomt === undefined) {
+        throw new Error('formulaTknr: AtomTracker is undefined');
+    }
+    atomt = atomt as NewAtomTracker;
+    // bdr.atomt = new OldAtomTracker();
+    // let elemt = bdr.atomt;
 
     let ptree = ptable_symb_tree as any;
     let i=startidx;
 
     function updateBdr(sliceidx: num, newidx: num = sliceidx): [string, num] {
-        bdr.formula = inp.slice(startidx, sliceidx);
-        return [bdr.formula, sliceidx];
+        atomt!.formula = inp.slice(startidx, sliceidx);
+        return [atomt!.formula, sliceidx];
     }
     let pre_whitespace_idx = -1;
 
@@ -101,7 +110,7 @@ function formulaTknr(inp: string, startidx = 0, bdr = gbdr): [string, num] {
                 // uh oh an elem wont fit and we reached the end
                 // if at the end, then it signals a single capital at the end - for example H2O.
                 if (possibs.includes('')) {
-                    elemt.push(capital);
+                    atomt.push(capital);
                 } else { // error
                     throw "bad query";
                 }
@@ -112,14 +121,14 @@ function formulaTknr(inp: string, startidx = 0, bdr = gbdr): [string, num] {
             let next = inp[i+1];
             if(_isLower(next)) {
                 if (possibs.includes(next)) {
-                    elemt.push('' + capital + next);
+                    atomt.push('' + capital + next);
                     i++;
                     continue;
                 } else if (capital == 'U' && next == 'u') { // // special case for Uue
                     if(i+2 >= inp.length)                  // uh oh an elem wont fit and we reached the end
                         throw "bad query"; // and 'Uu' is not a possible elem
                     if (inp[i + 2] == 'e') {
-                        elemt.push('Uue');
+                        atomt.push('Uue');
                         i+=2; // the incrementer adds one at the end
                         continue;
                     } else { // then 'Uux' is not a possible elem
@@ -133,7 +142,7 @@ function formulaTknr(inp: string, startidx = 0, bdr = gbdr): [string, num] {
             } else {
                 // if not a lower case, then it might be a number or it just might be the empty char ie. oxygen - O
                 if (possibs.includes('')) {
-                    elemt.push(capital);
+                    atomt.push(capital);
                 } else {
                     // error
                     throw "bad query";
@@ -146,7 +155,7 @@ function formulaTknr(inp: string, startidx = 0, bdr = gbdr): [string, num] {
             // or "sodium acetate (aq)"
         } else if(_isNumeric(c)) {
             let [number, newidx] = numberTknr(inp, i, 0);
-            elemt.setLastQty(parseInt(number)); // TODO sanitation
+            atomt.setLastQty(parseInt(number)); // TODO sanitation
             i = newidx-1;
         } else if (c === '(') {
             // throw "unimplemented";
@@ -161,21 +170,21 @@ function formulaTknr(inp: string, startidx = 0, bdr = gbdr): [string, num] {
                 // Al2(S)3 7mL 
                 // bdr.formula = inp.slice(startidx, i);
                 // we reached a state of matter. we can stop now
-                bdr.state = 's';
+                atomt.state = 's';
                 return updateBdr(stop); // omit the parenthesized portion
             } else if(insides === 'l' || insides === 'L') {
-                bdr.state = 'l';
+                atomt.state = 'l';
                 return updateBdr(stop);//[inp.slice(startidx, newidx), newidx];
             } else if(insides === 'g' || insides === 'G') {
-                bdr.state = 'g';
+                atomt.state = 'g';
                 return updateBdr(stop);
             } else if(insides.toLowerCase() === 'aq') {
-                bdr.state = 'aq';
+                atomt.state = 'aq';
                 return updateBdr(stop);
             } else {
                 // then it's probably a polyatomic ion
                 // like Mg(OH)2g
-                bdr.atomt.push(parens);
+                atomt.push(parens);
                 i=newidx-1;
                 continue;
             }            
@@ -598,21 +607,8 @@ class ComputedQty {
         }
     }
 
-    formFrom(pc: SubstanceMaker): Substance {
-        let orig = pc.getWithArgs(this);
-        if(orig === undefined) {
-            // perhaps a state isn't set
-            let formulaBuilder = new FormulaTknrOutput(pc.getStandardState());
-            formulaBuilder.state = pc.state;
-            orig = chemicals.saveCustom(formulaBuilder);
-        }
-        let ret = orig.form();
-        if (this.mass) ret.mass = this.mass;
-        if (this.mol && 'mol' in ret) (ret as MolecularSubstance).mol = this.mol;
-        if (this.vol) ret.volume = this.vol;
-        if (this.state && !ret.state) ret.state = this.state; // for custom
-        return ret;
-    }
+    // formFrom(pc: SubstanceMaker): Substance { // see SubstanceMaker.amt() }
+
 }
 const gqul = new QtyUnitList();
 function quantityTknr(inp: string, startidx: num = 0, qul: QtyUnitList = gqul): [string, num] {

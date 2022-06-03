@@ -1,26 +1,25 @@
 /// <reference path='substance.ts'/>
 
-const chemicals = new Map() as Map<string, SubstanceMaker> & { saveCustom: (chem: FormulaTknrOutput) => SubstanceMaker };
+const chemicals = new Map() as Map<string, SubstanceMaker> & { saveCustom: (chem: NewAtomTracker) => SubstanceMaker };
 
 
 
 /**
  * dynamically creates a new chemical entry with the specified ChemicalBuilder chemical and which
  * exposes the ProtoChemical with which you can create massed substances
- * @param chem ChemicalBuilder that the chemical composition of the new substance
+ * @param atomt ChemicalBuilder that the chemical composition of the new substance
  * @returns the ProtoChemical, which can at any time be accessed through $c(key: string)
  */
-chemicals.saveCustom = function (chem: FormulaTknrOutput) {
-    let formula = chem.formula;
-    let atomt = chem.atomt;
+chemicals.saveCustom = function (atomt: NewAtomTracker) {
+    let formula = atomt.formula;
     let all = {
-        chemicalFormula: formula,
+        chemicalFormula: atomt.formula,
         molarMass: atomt.molarMass(),
-        atomTracker: atomt,
+        newAtomTracker: atomt,
         rgb: [250, 250, 250],
         density: undefined
     };
-    let phase = chem.state;
+    let phase = atomt.state;
     if (!phase && atomt._atoms.length == 1) {
         // a substance comprised of a single atom
         let anum = atomt._atomicNums[0];
