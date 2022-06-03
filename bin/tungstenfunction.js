@@ -6,12 +6,12 @@ function WStringTknr(inp, startidx = 0) {
         let qbdr = new QtyUnitList();
         let [qty, idx] = quantitiesTknr(inp, startidx, qbdr);
         let [__, idx2] = whitespaceTknr(inp, idx);
-        let fbdr = new FormulaTknrOutput();
+        let fbdr = new NewAtomTracker();
         let [formula, idx3] = formulaTknr(inp, idx2, fbdr);
         return [fbdr, qbdr];
     }
     else {
-        let fbdr = new FormulaTknrOutput();
+        let fbdr = new NewAtomTracker();
         let [formula, idx] = formulaTknr(inp, startidx, fbdr);
         let qbdr = new QtyUnitList();
         let [qty, idx2] = quantitiesTknr(inp, idx, qbdr);
@@ -35,7 +35,7 @@ let W = function (inp, display = true) {
     if (protos) {
         // let pargs = protos.args();
         // let qbuild = qty.toBuilder();
-        subst = protos.amt(qty.computed(), chem.state);
+        subst = protos.amount(qty.computed(), chem.state);
     }
     else {
         throw protos;
