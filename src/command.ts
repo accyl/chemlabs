@@ -54,8 +54,8 @@ class FormulaTknrOutput {
             if('atomTracker' in pc) {
                 this.atomt = (pc as any).atomTracker;
             } else {
-                let formulaBuilder = new FormulaTknrOutput();
-                formulaTknr(this.formula, 0, formulaBuilder);
+                // let formulaBuilder = new FormulaTknrOutput();
+                formulaTknr(this.formula, 0, this);
             }
             
         }

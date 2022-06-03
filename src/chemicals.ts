@@ -1,4 +1,4 @@
-/// <reference path='chem.ts'/>
+/// <reference path='substance.ts'/>
 
 const chemicals = new Map() as Map<string, SubstanceMaker> & { saveCustom: (chem: FormulaTknrOutput) => SubstanceMaker };
 
