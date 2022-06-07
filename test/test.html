@@ -1,0 +1,40 @@
+<!--boilerplate html-->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Jasmine Runner</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jasmine/3.6.0/jasmine.css">
+    </link>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/3.6.0/jasmine.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/3.6.0/jasmine-html.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/3.6.0/boot.js"></script>
+
+</head>
+
+<body>
+    <script src="../public/bin/first.js"></script>
+
+    <script src="../public/bin/data/ptable.js"></script>
+    <script src="../public/bin/command.js"></script>
+
+    <script src="testTokenizers.test.js"></script>
+
+
+    <script>
+        function adder(x, y) {
+            return x + y;
+        }
+
+
+        describe('adder function', function() {
+            it('2 + 2 should equal 4', function() {
+                expect(adder(2, 2)).toBe(4);
+            })
+        });
+    </script>
+</body>
+
+</html>
