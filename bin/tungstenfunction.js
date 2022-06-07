@@ -9,12 +9,12 @@ var Tokenizers;
             let qbdr = new Tokenizers.QtyUnitList();
             let [qty, idx, _] = Tokenizers.quantitiesTknr(inp, startidx, qbdr);
             let [__, idx2] = Tokenizers.whitespaceTknr(inp, idx);
-            let fbdr = new NewAtomTracker();
+            let fbdr = new AtomTracker();
             let [formula, idx3] = Tokenizers.formulaTknr(inp, idx2, fbdr);
             return [fbdr, qbdr];
         }
         else {
-            let fbdr = new NewAtomTracker();
+            let fbdr = new AtomTracker();
             let [formula, idx] = Tokenizers.formulaTknr(inp, startidx, fbdr);
             let qbdr = new Tokenizers.QtyUnitList();
             let [qty, idx2, _] = Tokenizers.quantitiesTknr(inp, idx, qbdr);

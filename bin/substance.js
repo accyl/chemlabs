@@ -259,7 +259,7 @@ class SubstanceMaker extends SubstanceType {
         let orig = this.getWithArgs(qty);
         if (orig === undefined) {
             // perhaps a state isn't set
-            let atomTracker = new NewAtomTracker(this.getStandardState());
+            let atomTracker = new AtomTracker(this.getStandardState());
             atomTracker.state = this.state;
             orig = chemicals.saveCustom(atomTracker);
         }

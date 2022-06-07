@@ -1,4 +1,6 @@
 "use strict";
+// import nerdamer from 'nerdamer';
+/// <reference path="../node_modules/nerdamer/index.d.ts" />
 // TODO i've just created a glorified alias system. 
 let idealGasLaw = nerdamer('P*V=n*R*T');
 (() => {

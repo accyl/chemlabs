@@ -1,4 +1,5 @@
 "use strict";
+/// <reference path="../../node_modules/@types/jquery" />
 $('#einspector').on('matterCreated', function (e, eventInfo) {
     // originates from phys() in phys.ts
     // alert('(notifier1)The value of eventInfo is: ' + eventInfo);
