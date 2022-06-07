@@ -17,9 +17,9 @@ chemicals.saveCustom = function (atomt) {
         density: undefined
     };
     let phase = atomt.state;
-    if (!phase && atomt._atoms.length == 1) {
+    if (!phase && atomt.atoms.length == 1) {
         // a substance comprised of a single atom
-        let anum = atomt._atomicNums[0];
+        let anum = atomt.atomicNums[0];
         switch (ptable[anum].phase) {
             case 'Solid':
                 phase = 's';

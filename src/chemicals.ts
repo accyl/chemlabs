@@ -1,6 +1,6 @@
 /// <reference path='substance.ts'/>
 
-const chemicals = new Map() as Map<string, SubstanceMaker> & { saveCustom: (chem: NewAtomTracker) => SubstanceMaker };
+const chemicals = new Map() as Map<string, SubstanceMaker> & { saveCustom: (chem: AtomTracker) => SubstanceMaker };
 
 
 
@@ -10,7 +10,7 @@ const chemicals = new Map() as Map<string, SubstanceMaker> & { saveCustom: (chem
  * @param atomt ChemicalBuilder that the chemical composition of the new substance
  * @returns the ProtoChemical, which can at any time be accessed through $c(key: string)
  */
-chemicals.saveCustom = function (atomt: NewAtomTracker) {
+chemicals.saveCustom = function (atomt: AtomTracker) {
     let formula = atomt.formula;
     let all = {
         chemicalFormula: atomt.formula,
@@ -20,9 +20,9 @@ chemicals.saveCustom = function (atomt: NewAtomTracker) {
         density: undefined
     };
     let phase = atomt.state;
-    if (!phase && atomt._atoms.length == 1) {
+    if (!phase && atomt.atoms.length == 1) {
         // a substance comprised of a single atom
-        let anum = atomt._atomicNums[0];
+        let anum = atomt.atomicNums[0];
         switch (ptable[anum].phase) {
             case 'Solid':
                 phase = 's';

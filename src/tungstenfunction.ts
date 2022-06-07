@@ -1,19 +1,19 @@
 /// <reference path='command.ts'/>
 
 namespace Tokenizers {
-    export function WStringTknr(inp: string, startidx = 0): [NewAtomTracker, QtyUnitList] {
+    export function WStringTknr(inp: string, startidx = 0): [AtomTracker, QtyUnitList] {
         if (startidx >= inp.length)
             throw ReferenceError("bruh"); // really?
         if (_isNumeric(inp[startidx])) {
             let qbdr = new QtyUnitList();
             let [qty, idx, _] = quantitiesTknr(inp, startidx, qbdr);
             let [__, idx2] = whitespaceTknr(inp, idx);
-            let fbdr = new NewAtomTracker();
+            let fbdr = new AtomTracker();
             let [formula, idx3] = formulaTknr(inp, idx2, fbdr);
             return [fbdr, qbdr];
         } else {
 
-            let fbdr = new NewAtomTracker();
+            let fbdr = new AtomTracker();
             let [formula, idx] = formulaTknr(inp, startidx, fbdr);
             let qbdr = new QtyUnitList();
             let [qty, idx2, _] = quantitiesTknr(inp, idx, qbdr);

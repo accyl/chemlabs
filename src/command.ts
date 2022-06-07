@@ -1,42 +1,61 @@
-/// <reference path='data/ptable.ts'/>
+/// <reference path='first.ts'/>
 /// <reference path='chemicals.ts'/>
+/// <reference path='data/ptable.ts'/>
 
 
 // H2O (l) 2mol 
 // H2O(l) 2mol
 // H2O (l) 5mL
 // CH3CH2OH(l) 16g
-class NewAtomTracker {
+class AtomTracker {
     // start old atomtracker
-    _atoms: string[]=[]; // can be a polyatomic
-    _qtys:num[] = [];
+    atoms: (string | AtomTracker)[]=[]; // can be a polyatomic
+    qtys:num[] = [];
 
-    _atomicNums: num[]=[];
+    atomicNums: num[]=[];
     _molarMass = 0;
 
     push(atom:string, qty=1) {
-        this._atoms.push(atom);
-        if(atom.startsWith('(')) {
-            // it's a polyatomic ion
-            assert(atom.slice(-1) === ')', 'Unbalanced parens');
+
+        if(typeof atom === 'string') {
+            if (atom.startsWith('(')) {
+                // it's a polyatomic ion
+                assert(atom.slice(-1) === ')', 'Unbalanced parens');
+                this.atoms.push(new AtomTracker(atom.slice(1, -1)));
+                this.atomicNums.push(-1);
+
+            } else {
+                let idx = ptable_symbs.indexOf(atom);
+                this.atoms.push(atom);
+                this.atomicNums.push(idx); // Permit 0 and -1
+            }
         } else {
-            let idx = ptable_symbs.indexOf(atom);
-            this._atomicNums.push(idx); // Permit 0 and -1
+            this.atoms.push(atom);
+            this.atomicNums.push(-1);
         }
-        this._qtys.push(qty);
+        this.qtys.push(qty);
         this._molarMass = 0;
+
     }
     setLastQuantity(qty:num) {
-        this._qtys[this._qtys.length-1] = qty;
+        this.qtys[this.qtys.length-1] = qty;
     }
     molarMass() {
         if(this._molarMass) return this._molarMass;
         let tot = 0;
-        for(let i=0;i<this._atomicNums.length;i++) {
-            let anum = this._atomicNums[i];
-            let m = ptable[anum].atomic_mass as num;
+        for(let i=0;i<this.atomicNums.length;i++) {
+            let anum = this.atomicNums[i];
+            let m;
+            if(anum === -1 || anum === 0) {
+                // we have a nonvalid atomic number. So it could be a polyatomic ion
+                let polyatom = this.atoms[i];
+                assert(polyatom instanceof AtomTracker, `atom ${polyatom} has an unknown atomic number and unknown mass, and is not a polyatom`)
+                m = (polyatom as AtomTracker).molarMass();
+            } else {
+                m = ptable[anum].atomic_mass as num;
+            }
             assert(m, `atomic mass for ${anum} is undefined?`);
-            tot += this._qtys[i] * m;
+            tot += this.qtys[i] * m;
         }
         this._molarMass = tot;
         return tot;
@@ -47,16 +66,19 @@ class NewAtomTracker {
     formula: string = '';
     state: string = '';
     // qty: string = '';
-    constructor(pc?: SubstanceMaker) {
-        if(pc) {
-            this.formula = pc.chemicalFormula;
-            this.state = pc.state;
-            if('newAtomTracker' in pc) {
+    constructor(input?: SubstanceMaker | string | undefined) {
+        if(!input) return;
+        if(typeof input === 'string') {
+            Tokenizers.formulaTknr(input, 0, this);
+        } else if(input instanceof SubstanceMaker) {
+            this.formula = input.chemicalFormula;
+            this.state = input.state;
+            if('newAtomTracker' in input) {
                 // if the AtomTracker was cached, then we can save some compute and copy over the cached values
-                let tracker = (pc as SubstanceMaker & {'newAtomTracker': NewAtomTracker}).newAtomTracker;
-                this._atoms = tracker._atoms;
-                this._qtys = tracker._qtys;
-                this._atomicNums = tracker._atomicNums;
+                let tracker = (input as SubstanceMaker & {'newAtomTracker': AtomTracker}).newAtomTracker;
+                this.atoms = tracker.atoms;
+                this.qtys = tracker.qtys;
+                this.atomicNums = tracker.atomicNums;
                 this._molarMass = tracker._molarMass;
             } else {
                 // otherwise, we recompute
@@ -87,14 +109,14 @@ namespace Tokenizers {
      * @param atomt 
      * @returns 
      */
-    export function formulaTknr(inp: string, startidx = 0, atomt?: NewAtomTracker): [string, num] {
+    export function formulaTknr(inp: string, startidx = 0, atomt?: AtomTracker): [string, num] {
         // TODO: Ambiguous statement: CaRbON
         // CAlcium RuBidium Oxygen Nitrogen = CARBON
         // let elems = [];
         if(atomt === undefined) {
             throw new Error('formulaTknr: AtomTracker is undefined');
         }
-        atomt = atomt as NewAtomTracker;
+        atomt = atomt as AtomTracker;
         // bdr.atomt = new OldAtomTracker();
         // let elemt = bdr.atomt;
 
@@ -194,6 +216,7 @@ namespace Tokenizers {
                 } else {
                     // then it's probably a polyatomic ion
                     // like Mg(OH)2g
+                    // TODO
                     atomt.push(parens);
                     i=newidx-1;
                     continue;
