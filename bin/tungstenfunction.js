@@ -7,18 +7,18 @@ var Tokenizers;
             throw ReferenceError("bruh"); // really?
         if (Tokenizers._isNumeric(inp[startidx])) {
             let qbdr = new Tokenizers.QtyUnitList();
-            let [qty, idx, _] = Tokenizers.quantitiesTknr(inp, startidx, qbdr);
-            let [__, idx2] = Tokenizers.whitespaceTknr(inp, idx);
+            let [qty, idx, _] = Tokenizers.quantitiesTokenizer(inp, startidx, qbdr);
+            let [__, idx2] = Tokenizers.whitespaceTokenizer(inp, idx);
             let fbdr = new AtomTracker();
-            let [formula, idx3] = Tokenizers.formulaTknr(inp, idx2, fbdr);
+            let [formula, idx3] = Tokenizers.formulaTokenizer(inp, idx2, fbdr);
             return [fbdr, qbdr];
         }
         else {
             let fbdr = new AtomTracker();
-            let [formula, idx] = Tokenizers.formulaTknr(inp, startidx, fbdr);
+            let [formula, idx] = Tokenizers.formulaTokenizer(inp, startidx, fbdr);
             let qbdr = new Tokenizers.QtyUnitList();
-            let [qty, idx2, _] = Tokenizers.quantitiesTknr(inp, idx, qbdr);
-            let [__, idx3] = Tokenizers.whitespaceTknr(inp, idx2);
+            let [qty, idx2, _] = Tokenizers.quantitiesTokenizer(inp, idx, qbdr);
+            let [__, idx3] = Tokenizers.whitespaceTokenizer(inp, idx2);
             return [fbdr, qbdr];
         }
     }
