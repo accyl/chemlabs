@@ -6,18 +6,18 @@ namespace Tokenizers {
             throw ReferenceError("bruh"); // really?
         if (_isNumeric(inp[startidx])) {
             let qbdr = new QtyUnitList();
-            let [qty, idx, _] = quantitiesTknr(inp, startidx, qbdr);
-            let [__, idx2] = whitespaceTknr(inp, idx);
+            let [qty, idx, _] = quantitiesTokenizer(inp, startidx, qbdr);
+            let [__, idx2] = whitespaceTokenizer(inp, idx);
             let fbdr = new AtomTracker();
-            let [formula, idx3] = formulaTknr(inp, idx2, fbdr);
+            let [formula, idx3] = formulaTokenizer(inp, idx2, fbdr);
             return [fbdr, qbdr];
         } else {
 
             let fbdr = new AtomTracker();
-            let [formula, idx] = formulaTknr(inp, startidx, fbdr);
+            let [formula, idx] = formulaTokenizer(inp, startidx, fbdr);
             let qbdr = new QtyUnitList();
-            let [qty, idx2, _] = quantitiesTknr(inp, idx, qbdr);
-            let [__, idx3] = whitespaceTknr(inp, idx2);
+            let [qty, idx2, _] = quantitiesTokenizer(inp, idx, qbdr);
+            let [__, idx3] = whitespaceTokenizer(inp, idx2);
             return [fbdr, qbdr];
         }
     }

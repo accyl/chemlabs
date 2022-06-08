@@ -69,7 +69,7 @@ class AtomTracker {
     constructor(input?: SubstanceMaker | string | undefined) {
         if(!input) return;
         if(typeof input === 'string') {
-            Tokenizers.formulaTknr(input, 0, this);
+            Tokenizers.formulaTokenizer(input, 0, this);
         } else if(input instanceof SubstanceMaker) {
             this.formula = input.chemicalFormula;
             this.state = input.state;
@@ -82,7 +82,7 @@ class AtomTracker {
                 this._molarMass = tracker._molarMass;
             } else {
                 // otherwise, we recompute
-                Tokenizers.formulaTknr(this.formula, 0, this);
+                Tokenizers.formulaTokenizer(this.formula, 0, this);
             }
             
         }
@@ -109,7 +109,7 @@ namespace Tokenizers {
      * @param atomt 
      * @returns 
      */
-    export function formulaTknr(inp: string, startidx = 0, atomt?: AtomTracker): [string, num] {
+    export function formulaTokenizer(inp: string, startidx = 0, atomt?: AtomTracker): [string, num] {
         // TODO: Ambiguous statement: CaRbON
         // CAlcium RuBidium Oxygen Nitrogen = CARBON
         // let elems = [];
@@ -186,7 +186,7 @@ namespace Tokenizers {
                 // ie if you query "ethanol (l)"
                 // or "sodium acetate (aq)"
             } else if(_isNumeric(c)) {
-                let [number, newidx] = numberTknr(inp, i, 0);
+                let [number, newidx] = numberTokenizer(inp, i, 0);
                 atomt.setLastQuantity(parseInt(number)); // TODO sanitation
                 i = newidx-1;
             } else if (c === '(') {
@@ -229,7 +229,7 @@ namespace Tokenizers {
                 // ie. H2O (g) 5mol
                 // let next = inp[i+1];
                 // if(next)
-                let [__, newidx] = whitespaceTknr(inp, i);
+                let [__, newidx] = whitespaceTokenizer(inp, i);
                 if (newidx >= inp.length) return updateBdr(i); // [inp.slice(startidx, i), i]; // if we reach the end then return and ignore the whitesp
                 let c2 = inp[newidx];
                 if(c2 == '(') {
@@ -292,7 +292,7 @@ namespace Tokenizers {
      * @param escape_char
      * leave as empty string or undefined to not have an escape char
      */
-    export function stringTknr(inp: string, startidx: num = 0, escape_char: string="\\"): [string, num] {
+    export function stringTokenizer(inp: string, startidx: num = 0, escape_char: string="\\"): [string, num] {
         let sc = undefined;
         if (inp[startidx] === '"') {
             sc = '"';
@@ -319,7 +319,7 @@ namespace Tokenizers {
         return ["", startidx];
     }
 
-    export function numberTknr(inp: string, startidx: num=0, max_dots=1): [string, num] {
+    export function numberTokenizer(inp: string, startidx: num=0, max_dots=1): [string, num] {
         let nums = '0123456789';
         let num_dots = 0;
         for (let i = startidx; i < inp.length; i++) {
@@ -342,15 +342,15 @@ namespace Tokenizers {
         // if we get here, then we must have successfully ran until the end
         return [inp.slice(startidx), inp.length];
     }
-    export function sciNumberTknr(inp: string, startidx: num = 0, max_dots = 1): [string, num] {
-        let [numstr, newidx] = numberTknr(inp, startidx, max_dots);
+    export function sciNumberTokenizer(inp: string, startidx: num = 0, max_dots = 1): [string, num] {
+        let [numstr, newidx] = numberTokenizer(inp, startidx, max_dots);
         if (newidx < inp.length) {
             if (numstr == '') return ['', startidx]; 
             // only if there's a numeral do we continue looking for e
             // ie. just a simple "e10" will not do, it has to be "4.683e10"
 
             if (inp[newidx] === 'e' || inp[newidx] === 'E') {
-                let [mantissa, new2] = numberTknr(inp, newidx, 0);
+                let [mantissa, new2] = numberTokenizer(inp, newidx, 0);
                 return [inp.slice(startidx, new2), new2];
             } else if(inp.slice(newidx).startsWith('*10^')) {
                 // TODO allow spaces
@@ -365,7 +365,7 @@ namespace Tokenizers {
         
 
     }
-    export function whitespaceTknr(inp: string, startidx: num = 0): [string, num] {
+    export function whitespaceTokenizer(inp: string, startidx: num = 0): [string, num] {
         let spaces = ' \n\t';
         for (let i = startidx; i < inp.length; i++) {
             let c = inp[i];
@@ -380,7 +380,7 @@ namespace Tokenizers {
         return [inp.slice(startidx), inp.length];
     }
 
-    export function matchTknr(inp: string, rfncstr = '', startidx:num=0): [string, num] {
+    export function matchTokenizer(inp: string, rfncstr = '', startidx:num=0): [string, num] {
         if(rfncstr === '') throw "rfncstr must not be empty!";
         let j=0;
         let i=startidx;
@@ -420,7 +420,7 @@ namespace Tokenizers {
      * @returns
      * [prefix: string, base_unit: string, next_idx: num]
      */
-    export function unitTknr(inp:string, startidx:num=0, 
+    export function unitTokenizer(inp:string, startidx:num=0, 
         base_units=default_base_units): [string, string, num] {
 
         let si_prefixes = ['n', 'µ','m','c','d','k'];
@@ -657,7 +657,7 @@ namespace Tokenizers {
      * @returns the QtyUnitList is returned for convenience. However, if this value is discarded, the QtyUnitList is still accessible 
      * as the function mutates the QtyUnitList that was passed in as an argument.
      */
-    export function quantityTknr(inp: string, startidx: num = 0, qul?: QtyUnitList, base_units?: string[]): [string, num, QtyUnitList] {
+    export function quantityTokenizer(inp: string, startidx: num = 0, qul?: QtyUnitList, base_units?: string[]): [string, num, QtyUnitList] {
         // notice that "mL L g aq kg mol mmol" all can't be formed by chemical symbols
         // However Mg can, but not mg 
         // return ['', 0]; // TODO
@@ -666,20 +666,20 @@ namespace Tokenizers {
             
             qul = new QtyUnitList();
         }
-        let [__, idx] = whitespaceTknr(inp, startidx);
+        let [__, idx] = whitespaceTokenizer(inp, startidx);
         if(idx >= inp.length) {
             // if whitespace reaches all the way to the end
             return ['', startidx, qul];
         }
         if (_isNumeric(inp[idx])) {
             // ah good
-            let [num, idx2] = numberTknr(inp, idx);
+            let [num, idx2] = numberTokenizer(inp, idx);
             if (num === '') {
                 // if we don't find a number
                 return ['', startidx, qul];
             }
-            let [__, idx3] = whitespaceTknr(inp, idx2);
-            let [si1, si2, idx4] = unitTknr(inp, idx3, base_units);
+            let [__, idx3] = whitespaceTokenizer(inp, idx2);
+            let [si1, si2, idx4] = unitTokenizer(inp, idx3, base_units);
             if (si2 === '') {
                 // if we don't find a SI unit
                 return ['', startidx, qul];
@@ -703,15 +703,15 @@ namespace Tokenizers {
      * @returns the QtyUnitList is returned for convenience. However, if this value is discarded, the QtyUnitList is still accessible 
      * as the function mutates the QtyUnitList that was passed in as an argument.
      */
-    export function quantitiesTknr(inp: string, startidx = 0, qbdr?: QtyUnitList, base_units?: string[]): [string, num, QtyUnitList] {
+    export function quantitiesTokenizer(inp: string, startidx = 0, qbdr?: QtyUnitList, base_units?: string[]): [string, num, QtyUnitList] {
         if(qbdr === undefined) qbdr = new QtyUnitList();
-        let [qtystr, idx, _] = quantityTknr(inp, startidx, qbdr, base_units);
+        let [qtystr, idx, _] = quantityTokenizer(inp, startidx, qbdr, base_units);
         
         let __ = '';
         while(qtystr && idx < inp.length) {
             // [__, idx] = whitespaceTknr(inp, idx); qtytknr removes whitespace from the beginning
             
-            [qtystr, idx, _] = quantityTknr(inp, idx, qbdr, base_units);
+            [qtystr, idx, _] = quantityTokenizer(inp, idx, qbdr, base_units);
             
         }
         return [inp.slice(startidx, idx), idx, qbdr];

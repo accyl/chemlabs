@@ -2,7 +2,7 @@
 
 describe("Whitespace Tokenizer", function() {
     it("strips whitespace", function() {
-        expect(Tokenizers.whitespaceTknr("    removes preceding whitespace", 0)).toEqual(["    ", 4]);
+        expect(Tokenizers.whitespaceTokenizer("    removes preceding whitespace", 0)).toEqual(["    ", 4]);
 
     });
 });
@@ -22,7 +22,7 @@ describe("Parenthesizer", function() {
 describe("Formula Tokenizer", function() {
     it("tracks KMnO4", function() {
         let atomt = new AtomTracker();
-        Tokenizers.formulaTknr('KMnO4', 0, atomt);
+        Tokenizers.formulaTokenizer('KMnO4', 0, atomt);
         expect(atomt.atoms).toEqual(['K', 'Mn', 'O']);
         expect(atomt.qtys).toEqual([1, 1, 4]);
         expect(atomt.atomicNums).toEqual([19, 25, 8]);
@@ -32,7 +32,7 @@ describe("Formula Tokenizer", function() {
 
     it("distinguishes Co from CO, using test case CoCO3", function() {
         let atomt = new AtomTracker();
-        Tokenizers.formulaTknr('CoCO3', 0, atomt);
+        Tokenizers.formulaTokenizer('CoCO3', 0, atomt);
         expect(atomt.atoms).toEqual(['Co', 'C', 'O']);
         expect(atomt.qtys).toEqual([1, 1, 3]);
         expect(atomt.atomicNums).toEqual([27, 6, 8]);
@@ -43,7 +43,7 @@ describe("Formula Tokenizer", function() {
 
     function molarMass(inp) {
         let atomt = new AtomTracker();
-        Tokenizers.formulaTknr(inp, 0, atomt);
+        Tokenizers.formulaTokenizer(inp, 0, atomt);
         return atomt.molarMass();
     }
 
@@ -73,19 +73,19 @@ describe("Formula Tokenizer", function() {
 
 describe("Quantities Tokenizer", function() {
     it("tokenizes quantities", function() {
-        let [str1, num1, obj1] = Tokenizers.quantitiesTknr("6 mol 7 mL 400K", 0)
+        let [str1, num1, obj1] = Tokenizers.quantitiesTokenizer("6 mol 7 mL 400K", 0)
         ''
         expect([str1, num1]).toEqual(['6 mol 7 mL 400K', 15]);
         expect(obj1).toEqual(jasmine.objectContaining({ qtys: [6, 7, 400], si_prefixes: ['', 'm', ''], units: ['mol', 'L', 'K'] }));
-        expect(Tokenizers.quantitiesTknr("69 V 13ms 797  kg 420atm", 0)[2])
+        expect(Tokenizers.quantitiesTokenizer("69 V 13ms 797  kg 420atm", 0)[2])
             .toEqual(jasmine.objectContaining({ qtys: [69, 13, 797, 420], si_prefixes: ['', 'm', 'k', ''], units: ['V', 's', 'g', 'atm'] }));
 
-        expect(Tokenizers.quantitiesTknr("8yhyhyhyh", 0)[2])
+        expect(Tokenizers.quantitiesTokenizer("8yhyhyhyh", 0)[2])
             .toEqual(jasmine.objectContaining({ qtys: [], si_prefixes: [], units: [] }));
 
-        expect(Tokenizers.quantitiesTknr("H2O 5mL", 0)[2])
+        expect(Tokenizers.quantitiesTokenizer("H2O 5mL", 0)[2])
             .toEqual(jasmine.objectContaining({ qtys: [], si_prefixes: [], units: [] }));
-        expect(Tokenizers.quantitiesTknr("5mol H2O 6mL", 0)[2])
+        expect(Tokenizers.quantitiesTokenizer("5mol H2O 6mL", 0)[2])
             .toEqual(jasmine.objectContaining({ qtys: [5], si_prefixes: [''], units: ['mol'] }));
 
     });
