@@ -70,3 +70,23 @@ describe("Formula Tokenizer", function() {
 
     });
 });
+
+describe("Quantities Tokenizer", function() {
+    it("tokenizes quantities", function() {
+        let [str1, num1, obj1] = Tokenizers.quantitiesTknr("6 mol 7 mL 400K", 0)
+        ''
+        expect([str1, num1]).toEqual(['6 mol 7 mL 400K', 15]);
+        expect(obj1).toEqual(jasmine.objectContaining({ qtys: [6, 7, 400], si_prefixes: ['', 'm', ''], units: ['mol', 'L', 'K'] }));
+        expect(Tokenizers.quantitiesTknr("69 V 13ms 797  kg 420atm", 0)[2])
+            .toEqual(jasmine.objectContaining({ qtys: [69, 13, 797, 420], si_prefixes: ['', 'm', 'k', ''], units: ['V', 's', 'g', 'atm'] }));
+
+        expect(Tokenizers.quantitiesTknr("8yhyhyhyh", 0)[2])
+            .toEqual(jasmine.objectContaining({ qtys: [], si_prefixes: [], units: [] }));
+
+        expect(Tokenizers.quantitiesTknr("H2O 5mL", 0)[2])
+            .toEqual(jasmine.objectContaining({ qtys: [], si_prefixes: [], units: [] }));
+        expect(Tokenizers.quantitiesTknr("5mol H2O 6mL", 0)[2])
+            .toEqual(jasmine.objectContaining({ qtys: [5], si_prefixes: [''], units: ['mol'] }));
+
+    });
+});

@@ -406,67 +406,71 @@ namespace Tokenizers {
         // the inp ran out before rfncstr
 
     }
-
+    /**
+     * base units should be ordered from the more specific to more general.
+     * For example, we want to detect 'mol' before 'm'. That way, '6mol' is recognized as 6 moles and not 6 meters.
+     */
+    export const default_base_units = ['L', 'mol', 'M', 'J', 'V', 'W-h', 'atm', 'K', 
+    'C', 'F', 'N', 'Pa', 'A', 'Hz', 
+        'lbs', 'gal', 
+        'm', 'g', 's']; // 'rad', 'sr', 'cd'];
+    
     /**
      * Parses and tokenizes SI Units
      * @returns
      * [prefix: string, base_unit: string, next_idx: num]
      */
     export function unitTknr(inp:string, startidx:num=0, 
-        base_units=['g','L','mol','M','m', 'J', 'V', 'W-h', 'atm']): [string, string, num] {
-        let si_prefixes = ['n', 'µ','m','c','d','k'];
-        // for(let i=startidx;i<inp.length;i++) {
-        let c = inp[startidx];
-        let i2 = 0;
-        let s2 = '';
-        let prefix = '';
-        if(si_prefixes.includes(c)) {
-            // we're not in the clear yet. We have to find a matching base unit
-                    // TODO edge case for mol it gets confused for base unit of m
-            i2 = startidx+1;
-            prefix = c;
-        } else {
-            // we don't have a prefix, it's just the regular base unit
-            i2 = startidx;
-        }
-        let max = Math.min(i2+3, inp.length);
-        s2 = inp.slice(i2, max); // max length of base_units = 3
+        base_units=default_base_units): [string, string, num] {
 
-        for(let base of base_units) {
-            if(s2.startsWith(base)) {
-                // first check for a closing condition - no letters behind
-                let nextidx = i2+base.length; // immediately after the base unit
-                if(nextidx < inp.length) {
-                    // if there's more characters, we need to check that
-                    // there aren't any additional letters
-                    // for example, `cLasp` shouldn't be recognized as `cL`
-                    if(_isCapital(inp[nextidx]) || _isLower(inp[nextidx])) continue;
-                }
-                // return [inp.slice(startidx, nextidx), nextidx]
-                return [prefix, base, nextidx];
-            }
+        let si_prefixes = ['n', 'µ','m','c','d','k'];
+
+        // the idea is that we match greedily. First we assume there's a prefix, then look for a base unit
+        // If we don't find a match, then we backstep and try again without a prefix
+        // For example, first 'mol' would assume that the 'm' is a milli- SI prefix
+        // but once we fail to find a match, we backtrack and try again without the 'm', thus recognizing the base unit 'mol'
+        let firstChar = inp[startidx];
+        let prefix = '';
+
+        // begin for-loop initialization
+        let state = 0;
+        if (si_prefixes.includes(firstChar)) {
+            prefix = firstChar; // if we find a prefix, use it
+        } else {
+            state = 1; 
+            // if we fail to detect a prefix, we skip the first execution of the function skip to the second time
         }
-        // no match
-        // but wait first we have to check the edge case of mmol/ mol / mm / m
-        // TODO optimize 
-        // TODO rewrite this for the general case
-        if(prefix && inp[startidx] == 'm') {
-            // normally we would have a for loop for(let base of base_units) here,
-            // but that seems a bit excessive for just one case
-            for(let base of ['mol', 'm']) { // actually there's two cases. Which warrants a for loop
-                if (inp.slice(startidx).startsWith(base)) {
-                    let nextidx = startidx + 1 + base.length;
-                    if (!(nextidx < inp.length && (_isCapital(inp[nextidx]) || _isLower(inp[nextidx])))) {//continue;
-                        // if there's more characters, we need to check that
-                        // there aren't any additional letters
+        // end for-loop initialization
+
+        for (; state < 2; state++) { 
+            // really what this for-loop does is it repeats the following code twice
+
+            if(state >= 1) { 
+                // if we ever reach the second time, it means that we failed to match the prefix
+                // the second time, we always use a null prefix = ''
+                prefix = '';
+            }
+
+            for (let base of base_units) {
+                if (inp.startsWith(base, startidx + prefix.length)) {
+                    // great! we found a matching prefix and base unit
+                    // we just need to do a check
+                    let nextidx = startidx + prefix.length + base.length;
+                    if (nextidx < inp.length) { // as long as we don't throw an out of bounds error
+                        if (_isCapital(inp[nextidx]) || _isLower(inp[nextidx])) continue; 
+                    
+                        // check that the following character is not a letter
                         // for example, `cLasp` shouldn't be recognized as `cL`
-                        // return [inp.slice(startidx, nextidx), nextidx];
-                        return ['', base, nextidx]; // TODO not hard code this in
+                        // for example, `mol` shouldn't be recognized as `m` because the letter 'o' follows 'm'
                     }
+                    return [prefix, base, nextidx];
                 }
             }
+                
+            
         }
-        return ['', '', startidx];
+
+        return ['', '', startidx]; // what we return if we didn't find anything
             
         // }
     }
@@ -653,7 +657,7 @@ namespace Tokenizers {
      * @returns the QtyUnitList is returned for convenience. However, if this value is discarded, the QtyUnitList is still accessible 
      * as the function mutates the QtyUnitList that was passed in as an argument.
      */
-    export function quantityTknr(inp: string, startidx: num = 0, qul?: QtyUnitList): [string, num, QtyUnitList] {
+    export function quantityTknr(inp: string, startidx: num = 0, qul?: QtyUnitList, base_units?: string[]): [string, num, QtyUnitList] {
         // notice that "mL L g aq kg mol mmol" all can't be formed by chemical symbols
         // However Mg can, but not mg 
         // return ['', 0]; // TODO
@@ -675,7 +679,7 @@ namespace Tokenizers {
                 return ['', startidx, qul];
             }
             let [__, idx3] = whitespaceTknr(inp, idx2);
-            let [si1, si2, idx4] = unitTknr(inp, idx3);
+            let [si1, si2, idx4] = unitTknr(inp, idx3, base_units);
             if (si2 === '') {
                 // if we don't find a SI unit
                 return ['', startidx, qul];
@@ -699,15 +703,15 @@ namespace Tokenizers {
      * @returns the QtyUnitList is returned for convenience. However, if this value is discarded, the QtyUnitList is still accessible 
      * as the function mutates the QtyUnitList that was passed in as an argument.
      */
-    export function quantitiesTknr(inp: string, startidx = 0, qbdr?: QtyUnitList): [string, num, QtyUnitList] {
+    export function quantitiesTknr(inp: string, startidx = 0, qbdr?: QtyUnitList, base_units?: string[]): [string, num, QtyUnitList] {
         if(qbdr === undefined) qbdr = new QtyUnitList();
-        let [qtystr, idx, _] = quantityTknr(inp, startidx, qbdr);
+        let [qtystr, idx, _] = quantityTknr(inp, startidx, qbdr, base_units);
         
         let __ = '';
         while(qtystr && idx < inp.length) {
             // [__, idx] = whitespaceTknr(inp, idx); qtytknr removes whitespace from the beginning
             
-            [qtystr, idx, _] = quantityTknr(inp, idx, qbdr);
+            [qtystr, idx, _] = quantityTknr(inp, idx, qbdr, base_units);
             
         }
         return [inp.slice(startidx, idx), idx, qbdr];
