@@ -45,6 +45,12 @@
     border: solid blue 1px;
 }
 
+#einspector>div.globule.expanded {
+    border: solid blueviolet 1px;
+    height: 10vw;
+    white-space: pre-wrap;
+}
+
 canvas {
     border: solid black 1px;
     /* size: 400px 500px; */
