@@ -31,7 +31,7 @@ function newPhysicsHook(arg1: Matter.Body | Vector, size: Vector, subst: Substan
         });
         
     } else {
-        body0 = arg1 as any;// Matter.Body;
+        body0 = arg1 as Matter.Body;// Matter.Body;
     }
     let body = body0 as WeakPhysHook; //, 'boundsOnly': boolean };//Matter.Body;
     body['size'] = size;

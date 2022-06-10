@@ -8,37 +8,105 @@ $('#einspector').on('matterCreated', function (e, eventInfo) {
 // TODO
 // since we are given mixin creation functions for each phase, we can reflexively discover the attributes that each subclass of substance creates
 // so we can show them in the inspector
-function showSubstanceAttributes(subs) {
-    let subs2 = subs;
-    // subs2.type.
-    let attrs = ['mass', 'volume', 'temperature', 'state', 'mol', 'molarMass'];
-    let s = '\n';
-    for (let attr of attrs) {
-        if (attr in subs) {
-            let result = subs[attr];
-            s += `${attr}: ${subs[attr]}\n`;
+function allKeys(obj) {
+    // https://stackoverflow.com/questions/8024149/is-it-possible-to-get-the-non-enumerable-inherited-property-names-of-an-object
+    // let result = new Set();
+    let result = new Set(Object.keys(obj));
+    while (obj) {
+        let proto = Object.getPrototypeOf(obj);
+        // Since our first-layer object (the direct subclass of Object), SubstGroup, doesn't have any getters or setters, 
+        // it doesn't modify the prototype of Object so if we detect that we are reaching the end, we can avoid putting a whole bunch of 
+        // boilerplate Object prototype stuff.
+        // if proto is null undefined etc.
+        if (proto === null || proto === undefined) {
+            break;
+        }
+        // Object.getOwnPropertyNames(obj)
+        // obj.entries()
+        // .filter((p: string, v: any) => typeof v !== 'function')
+        // .forEach(p => result.add(p));
+        // we add the getters to the object.keys
+        let desc = Object.getOwnPropertyDescriptors(obj);
+        Object.entries(desc)
+            .filter(([key, descriptor]) => typeof descriptor.get === 'function')
+            .forEach(([key]) => { result.add(key); }); //  console.log(key + ' ' + typeof desc[key].get) });
+        obj = proto;
+    }
+    return [...result];
+}
+let cachedAttrs = {};
+function allNewAttributes(obj, oldobj, cache = true) {
+    if (cache) {
+        let name = obj.constructor.name;
+        if (name in cachedAttrs) {
+            return cachedAttrs[name];
         }
     }
-    return s;
-}
-function allKeys(obj) {
-    const getters = Object.entries(Object.getOwnPropertyDescriptors(Object.getPrototypeOf(obj)))
-        .filter(([key, descriptor]) => typeof descriptor.get === 'function')
-        .map(([key]) => key);
-    const protos = Object.keys(Object.getPrototypeOf(obj));
-    return Array.from(new Set(Object.keys(obj).concat(getters, protos)));
-}
-function allNewAttributes(newer, older) {
-    let obj = new older();
-    let oldattr = allKeys(obj);
-    // let newobj = new ((newer.bind)(obj))();
-    //newer.apply(obj);
-    // let newobj = obj;
-    let newobj = new newer();
-    let newattr = allKeys(newobj);
+    let newattr = allKeys(obj);
+    let oldattr;
+    if (oldobj) {
+        oldattr = allKeys(oldobj);
+    }
+    else {
+        let constr2 = obj.constructor.prototype.constructor;
+        oldattr = allKeys(new constr2());
+    }
     let diff = newattr.filter(x => !oldattr.includes(x)); // remove old attributes from the new to get only the new
+    if (cache) {
+        cachedAttrs[obj.constructor.name] = diff;
+    }
     return diff;
 }
+function traceExtensionsOn(obj) {
+    var proto = obj.constructor.prototype;
+    var result = [];
+    while (proto) {
+        let name = proto.constructor.name;
+        if (['Substance', 'SubstGroup', 'Object'].includes(name))
+            break;
+        result.push(proto.constructor);
+        proto = Object.getPrototypeOf(proto);
+    }
+    return result;
+}
+function showSubstanceAttributes(subs) {
+    let exts = traceExtensionsOn(subs);
+    exts.push(Substance);
+    // let s = '';
+    // create a div
+    let div = $('<div>');
+    div.addClass('substance-attributes');
+    for (let ext of exts) {
+        let details = $('<details>');
+        // add .substance-attributes to details
+        details.append($('<summary>').text(ext.name));
+        let attrs = [];
+        if (ext.name in cachedAttrs) {
+            attrs = cachedAttrs[ext.name];
+        }
+        else {
+            attrs = allNewAttributes(new ext()); // automatically caches the attributes
+        }
+        let txt = '';
+        for (let attr of attrs) {
+            let result = subs[attr];
+            txt += `${attr}: ${result}\n`;
+        }
+        details.append($('<code>').text(txt));
+        div.append(details);
+    }
+    return div;
+}
+(function () {
+    cachedAttrs['Substance'] = ['mass', 'volume', 'temperature', 'state'];
+    let s = new Substance();
+    let ms = new MolecularSubstance();
+    allNewAttributes(ms, s);
+    let as = new (AqueousSubstance(ms))();
+    allNewAttributes(as, ms);
+    let gs = new GaseousSubstance();
+    allNewAttributes(gs, ms);
+})();
 $('#einspector').on('substanceCreated', function (e, eventInfo) {
     // originates from tang() in physvis.ts, which itself calls phys() but also adds it to glob.s
     let subs = eventInfo['substance'];
@@ -47,23 +115,28 @@ $('#einspector').on('substanceCreated', function (e, eventInfo) {
     globule.classList.add('globule');
     globule.textContent = subs.physhook.label;
     $('#einspector')[0].append(globule);
-    let createInfobox = document.createElement('code');
-    createInfobox.classList.add('substance-attributes');
-    createInfobox.textContent = showSubstanceAttributes(subs);
-    $(createInfobox).hide();
     let $globule = $(globule);
-    $globule.append(createInfobox);
+    let $div = showSubstanceAttributes(subs);
+    $div.hide();
+    $globule.append($div);
+    $div.on('click', function (e) {
+        // stop propogation
+        e.stopPropagation();
+    });
     // when clicked, show the substance's properties
     $globule.on('click', function () {
         // expand the div
         $globule.toggleClass('expanded');
         if ($globule.hasClass('expanded')) {
-            let $infobox = $globule.children('code.substance-attributes');
-            $infobox.text(showSubstanceAttributes(subs)); // update
-            $infobox.show();
+            let $div = $globule.children('.substance-attributes');
+            // clear all children
+            $div.empty();
+            // set children
+            $div.append(showSubstanceAttributes(subs).children());
+            $div.show();
         }
         else {
-            $globule.children('code.substance-attributes').hide();
+            $globule.children('.substance-attributes').hide();
         }
         // show the substance's properties
     });

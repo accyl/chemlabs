@@ -20,13 +20,18 @@ describe("Parenthesizer", function() {
 });
 
 describe("Formula Tokenizer", function() {
-    it("tracks KMnO4", function() {
+    it("tracks KMnO4 and butanoic acid", function() {
         let atomt = new AtomTracker();
         Tokenizers.formulaTokenizer('KMnO4', 0, atomt);
         expect(atomt.atoms).toEqual(['K', 'Mn', 'O']);
         expect(atomt.qtys).toEqual([1, 1, 4]);
         expect(atomt.atomicNums).toEqual([19, 25, 8]);
         expect(atomt.molarMass()).toBeCloseTo(158.034);
+        atomt = new AtomTracker();
+
+        Tokenizers.formulaTokenizer('CH3CH2CH2COOH', 0, atomt);
+        expect(atomt.atoms).toEqual(["C", "H", "C", "H", "C", "H", "C", "O", "O", "H"]);
+        expect(atomt.qtys).toEqual([1, 3, 1, 2, 1, 2, 1, 1, 1, 1]);
 
     });
 

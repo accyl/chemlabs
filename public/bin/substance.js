@@ -199,6 +199,7 @@ function makeAqueous(x, solventIn) {
         }
     };
 }
+const AqueousSubstance = (solventIn) => makeAqueous(MolecularSubstance, solventIn);
 function makeSpectralAqueous(x, spectra_fIn) {
     return class SpectralAqueousSubstance extends x {
         constructor() {

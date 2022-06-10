@@ -202,6 +202,7 @@ function makeAqueous<T extends Mixin<MolecularSubstance>>(x: T, solventIn: Subst
         }
     }
 }
+const AqueousSubstance = (solventIn: MolecularSubstance) => makeAqueous(MolecularSubstance, solventIn);
 function makeSpectralAqueous<T extends Mixin<AqueousSubstance>>(x: T, spectra_fIn: (wl: num) => num): Mixin<AqueousSubstance> & T {
     return class SpectralAqueousSubstance extends x {
         spectra_f = spectra_fIn;
