@@ -72,7 +72,7 @@ function getCanvasContext(canvas) {
         throw new TypeError("Context is null?");
     return ctxt;
 }
-function Wdispatch(eventName, eventInfo, extraSubcribers = '') {
+function eventDispatch(eventName, eventInfo, extraSubcribers = '') {
     let subscribers = $('.subscribed, .inspector ' + extraSubcribers);
     subscribers.trigger(eventName, eventInfo);
 }

@@ -54,7 +54,7 @@ function newPhysicsHook(arg1, size, subst) {
 }
 function addToWorld(h) {
     Matter.Composite.add(universe.world, h);
-    Wdispatch('matterCreated', { 'matter': h });
+    eventDispatch('matterCreated', { 'matter': h });
 }
 function newBounds(arg1, size, addToGlobal = true) {
     let h = newPhysicsHook(arg1, size, SubstGroup.BOUNDS_ONLY);

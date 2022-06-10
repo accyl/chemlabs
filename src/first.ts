@@ -79,7 +79,7 @@ function getCanvasContext(canvas?: HTMLCanvasElement): CanvasRenderingContext2D 
     return ctxt;
 }
 
-function Wdispatch(eventName: string, eventInfo: any, extraSubcribers = '') {
+function eventDispatch(eventName: string, eventInfo: any, extraSubcribers = '') {
     let subscribers = $('.subscribed, .inspector ' + extraSubcribers);
     subscribers.trigger(eventName, eventInfo);
 }

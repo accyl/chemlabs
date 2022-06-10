@@ -128,8 +128,7 @@ function tang<S extends Substance | SubstGroup>(s: S, addToGlobal=true, pos?: [n
 
 
     }
-    // console.log('disp!')
-    Wdispatch('substanceCreated', { 'substance': s });
+    eventDispatch('substanceCreated', { 'substance': s });
     return ret;
 }
 

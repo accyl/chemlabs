@@ -144,7 +144,8 @@ interface SubstanceConstructor {
 
 
 // we use mixins. see https://www.typescriptlang.org/docs/handbook/mixins.html
-type Mixin<T> = new (...args: any[]) => T;
+type GMixin<T, A> = new (...args: A[]) => T;
+type Mixin<T> = GMixin<T, any>;
 
 interface MolecularSubstance extends Substance {
     molarMass: num;
