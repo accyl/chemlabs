@@ -48,11 +48,13 @@
 #einspector>div.globule.expanded {
     border: solid blueviolet 1px;
     height: 10vw;
-    white-space: pre-wrap;
+    white-space: pre;
+    height: fit-content;
+    /*fit to content*/
 }
 
 #einspector>div.globule.expanded>* {
-    white-space: pre-wrap;
+    white-space: pre;
 }
 
 canvas {
