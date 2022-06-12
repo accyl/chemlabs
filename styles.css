@@ -43,6 +43,7 @@
     width: 95%;
     height: 3vw;
     border: solid blue 1px;
+    cursor: help;
 }
 
 #einspector>div.globule.expanded {
@@ -55,6 +56,7 @@
 
 #einspector>div.globule.expanded>* {
     white-space: pre;
+    cursor: pointer;
 }
 
 canvas {
