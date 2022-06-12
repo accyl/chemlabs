@@ -1,4 +1,6 @@
 /// <reference path="../../node_modules/@types/jquery/index.d.ts" />
+/// <reference path="../substance.ts" />
+
 
 $('#einspector').on('matterCreated', function (e, eventInfo) { 
     // originates from phys() in phys.ts
@@ -90,6 +92,7 @@ function showSubstanceAttributes(subs: Substance): JQuery<HTMLElement> {
     div.addClass('substance-attributes');
     for (let ext of exts) {
         let details = $('<details>');
+        if(ext.name === 'Substance') details.attr('open'); // automatically open Substance
         // add .substance-attributes to details
         details.append($('<summary>').text(ext.name));
 
