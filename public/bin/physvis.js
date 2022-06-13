@@ -67,6 +67,13 @@ class Drawer {
         ctx.globalAlpha = preva;
     }
     drawB(ctx, b) {
+        if (b.parts.length > 1) {
+            for (let j = 1; j < b.parts.length; j++) {
+                let part = b.parts[j];
+                this.drawB(ctx, part);
+            }
+            return;
+        }
         let vs = b.vertices;
         ctx.beginPath();
         ctx.moveTo(vs[0].x, vs[0].y);

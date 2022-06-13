@@ -18,7 +18,8 @@
         "@types/matter-js": "^0.17.7"
     },
     "scripts": {
-        "test": "jasmine-browser-runner runSpecs"
+        "test": "jasmine-browser-runner runSpecs",
+        "deploy": "git subtree push --prefix public origin master"
     },
     "repository": {
         "type": "git",

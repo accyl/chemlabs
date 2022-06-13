@@ -11,6 +11,7 @@ let lastClickedObject = undefined;
 type num = number;
 type tup = Array<number>;
 type tup3 = [num, num, num];
+type bool = boolean;
 // type vec = Vector;
 let _hex = function () {
     function _componentToHex(c: number) {
