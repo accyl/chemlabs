@@ -23,7 +23,7 @@ function newPhysicsHook(arg1, size, subst) {
     if (!subst || subst === SubstGroup.BOUNDS_ONLY) {
         // body['substs'] = SubstGroup.BOUNDS_ONLY;
         // body['substs'] = undefined;
-        body['collisionFilter'] = CollisionFilters.GASLIKE;
+        body['collisionFilter'] = CollisionFilters.BACKGROUND_GAS;
         body['ignoreGravity'] = true;
         body['label'] = 'Bound';
         body['render']['opacity'] = 0.1;
@@ -32,7 +32,7 @@ function newPhysicsHook(arg1, size, subst) {
     else {
         body['substs'] = subst; //coerceToSystem(subst);
         if (subst.substances.length === 1 && subst.s[0].state === 'g') {
-            body['collisionFilter'] = CollisionFilters.GASLIKE;
+            body['collisionFilter'] = CollisionFilters.BACKGROUND_GAS;
             body['zIndex'] = -2;
         }
         else {
@@ -62,7 +62,7 @@ function newBounds(arg1, size, addToGlobal = true) {
         addToWorld(h);
     return h;
 }
-function phys(s, pos, size) {
+function applyPhyshook(s, pos, size) {
     if (!s.physhook) {
         let vec;
         if (pos) {
@@ -81,6 +81,9 @@ function phys(s, pos, size) {
         if (s instanceof Substance) {
             // s.physhook = new PhysicsHook(pos, size);
             s.physhook = newPhysicsHook(vec, vsize, s); //new PhysicsHookNew(vec, vsize);
+            s.physhook.render.fillStyle = s.hexcolor();
+            s.physhook.render.lineWidth = 1;
+            s.physhook.render.strokeStyle = '#888888'; // default
             addToWorld([s.physhook]); //.rect]);
         }
         else if (s === SubstGroup.BOUNDS_ONLY) {
@@ -90,7 +93,7 @@ function phys(s, pos, size) {
             // s.physhook = new PhysicsHook(pos, size);
             s.physhook = newPhysicsHook(vec, vsize, s); // new PhysicsHookNew(vec, vsize);
             for (let subs of s.substances) {
-                phys(subs);
+                applyPhyshook(subs);
             }
         }
         else

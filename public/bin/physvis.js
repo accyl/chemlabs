@@ -4,7 +4,7 @@
 // <reference path='../raw/tut.matter.js'/>
 // import _ from "lodash";
 class Drawer {
-    draw(ctx, s) {
+    drawSubstance(ctx, s) {
         if (s instanceof Substance) {
             // if (s instanceof AqueousSubstance) {
             // ctx.beginPath();
@@ -14,11 +14,11 @@ class Drawer {
             // let preva = ctx.globalAlpha;
             ctx.fillStyle = s.hexcolor();
             if (!s.physhook)
-                s = phys(s);
+                s = applyPhyshook(s);
             if (!s.physhook)
-                throw "broke";
+                throw new Error("No physhook for substance " + s.toString());
             // ctx.globalAlpha = s.physhook.render.opacity ? s.physhook.render.opacity : 1;
-            this.drawB(ctx, s.physhook); //.rect);
+            this.drawBody(ctx, s.physhook, false); //.rect);
             // ctx.fillRect(s.physhook.pos.x, s.physhook.pos.y, s.physhook.size.x, s.physhook.size.y);
             ctx.fillStyle = prevs;
             // ctx.globalAlpha = preva;
@@ -28,10 +28,10 @@ class Drawer {
         else if (s instanceof SubstGroup) {
             s = s;
             for (let sub of s.substances) {
-                this.draw(ctx, sub);
+                this.drawSubstance(ctx, sub);
             }
             for (let subsys of s.subsystems) {
-                this.draw(ctx, subsys);
+                this.drawSubstance(ctx, subsys);
             }
             // ctx.beginPath();
             // ctx.stroke();
@@ -50,29 +50,41 @@ class Drawer {
         else
             throw "Somehow passed arg was neither substance nor system? " + s;
     }
-    drawC(ctx, cs) {
+    drawComposite(ctx, cs, formatChildren = true) {
         // ctx.stroke();
         let prev = ctx.strokeStyle;
         ctx.strokeStyle = '#888888';
         let preva = ctx.globalAlpha;
         for (let b of Matter.Composite.allBodies(cs)) {
-            // @ts-ignore
             if ('substs' in b && b['substs'])
-                continue; // skip it to avoid duplicates
+                continue; // skip all substances to avoid duplicates
             if (b.render.opacity)
                 ctx.globalAlpha = b.render.opacity;
-            this.drawB(ctx, b);
+            this.drawBody(ctx, b, formatChildren);
         }
         ctx.strokeStyle = prev;
         ctx.globalAlpha = preva;
     }
-    drawB(ctx, b) {
+    drawBody(ctx, b, format = true) {
         if (b.parts.length > 1) {
             for (let j = 1; j < b.parts.length; j++) {
                 let part = b.parts[j];
-                this.drawB(ctx, part);
+                this.drawBody(ctx, part, format);
             }
             return;
+        }
+        let prevf, preva, prevs;
+        if (format) {
+            // fillstyle, opacity, strokestyle according to body.render
+            prevf = ctx.fillStyle;
+            preva = ctx.globalAlpha;
+            prevs = ctx.strokeStyle;
+            if (b.render.fillStyle)
+                ctx.fillStyle = b.render.fillStyle;
+            if (b.render.opacity)
+                ctx.globalAlpha = b.render.opacity;
+            if (b.render.strokeStyle)
+                ctx.strokeStyle = b.render.strokeStyle;
         }
         let vs = b.vertices;
         ctx.beginPath();
@@ -84,6 +96,14 @@ class Drawer {
         ctx.closePath();
         ctx.stroke();
         ctx.fill();
+        if (format) {
+            if (prevf)
+                ctx.fillStyle = prevf;
+            if (preva)
+                ctx.globalAlpha = preva;
+            if (prevs)
+                ctx.strokeStyle = prevs;
+        }
     }
 }
 let canvas = document.getElementById('canvas');
@@ -118,10 +138,10 @@ class Global extends SubstGroup {
 }
 const glob = new Global();
 universe.glob = glob;
-phys(glob, [0, 0], [canvas.width, canvas.height]);
+applyPhyshook(glob, [0, 0], [canvas.width, canvas.height]);
 let b = newBounds({ x: canvas.width / 4, y: canvas.height / 4 }, { x: canvas.width / 2, y: canvas.height / 2 }); // canvas.width/2, y:canvas.height/2});
-function tang(s, addToGlobal = true, pos, size) {
-    let ret = phys(s);
+function tangify(s, addToGlobal = true, pos, size) {
+    let ret = applyPhyshook(s);
     if (addToGlobal) {
         if (ret instanceof Substance) {
             // glob.substances.push(ret);
@@ -141,8 +161,8 @@ function redraw(t) {
     let ctx = getCanvasContext();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = '#000000';
-    drawer.drawC(ctx, universe.world);
-    drawer.draw(ctx, glob);
+    drawer.drawComposite(ctx, universe.world);
+    drawer.drawSubstance(ctx, glob);
 }
 function updateZIndex() {
     // basically, move gases towards the front of the so they're drawn behind solids
@@ -162,5 +182,5 @@ function updateZIndex() {
             redraw();
         requestAnimationFrame(func);
     };
-    window.requestAnimationFrame(func);
+    // window.requestAnimationFrame(func);
 })();

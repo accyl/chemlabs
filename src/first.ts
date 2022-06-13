@@ -13,17 +13,21 @@ type tup = Array<number>;
 type tup3 = [num, num, num];
 type bool = boolean;
 // type vec = Vector;
-let _hex = function () {
-    function _componentToHex(c: number) {
-        var hex = Math.round(Math.min(c, 255)).toString(16);
-        return hex.length == 1 ? "0" + hex : hex;
+function _componentToHex(c: number) {
+    var hex = Math.round(Math.min(c, 255)).toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+}
+function _hex(r: num | num[], g?: num, b?: num, ...extras: num[]): string {
+    if(Array.isArray(r)) {
+        if(r.length !== 3) throw new Error("RGB array must be 3, but instead it is " + r.length);
+        return _hex(r[0], r[1], r[2], ...extras);
     }
-    let hex = function (r: num, g: num, b: num, ...extras: num[]) {
-        return "#" + _componentToHex(r) + _componentToHex(g) + _componentToHex(b);
-    }
-    return hex;
-}();
+    if(g === undefined || b === undefined) throw new TypeError("Must provide r, g, and b");
+    return "#" + _componentToHex(r) + _componentToHex(g) + _componentToHex(b);
+
+}
 function _rgb(hex: string): [num,num,num] {
+    if(hex.startsWith('#')) hex = hex.substring(1);
     var bigint = parseInt(hex, 16);
     var r = (bigint >> 16) & 255;
     var g = (bigint >> 8) & 255;
@@ -52,8 +56,11 @@ class CollisionFilters {
     static readonly SOLID = new CollisionFilters(1, 0xFFFFFFFF);
     static readonly MOUSE = new CollisionFilters(2, 0xFFFFFFFF);
     static readonly WALL = new CollisionFilters(4, 0xFFFFFFFF);
-    static readonly GASLIKE = new CollisionFilters(8, 2 + 4); // only collide with walls and the mouse constraint
-    
+    static readonly BEAKER = new CollisionFilters(8, 0xFFFFFFFF);
+    static readonly GASLIKE = new CollisionFilters(16, 2 + 4 + 8); // only collide with walls, beakers, and the mouse constraint (allow it to be draggable)
+    static readonly BEAKER_PHANTOM = new CollisionFilters(32, 2 + 4 + 8); // this is a phantom object that acts as the glass screen of the beaker, but can't be interacted with by a mouse
+    static readonly BACKGROUND_GAS = new CollisionFilters(16, 2 + 4); // only collide with walls, beakers, and the mouse constraint (allow it to be draggable)
+
 
 }
 enum ScreenState {

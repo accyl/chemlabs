@@ -22,7 +22,7 @@ namespace Tokenizers {
         }
     }
 }
-let W = function (inp: string, display = true): Substance {
+const tungsten = function (inp: string, display = true): Substance {
     let subst;
     let [chem, qty] = Tokenizers.WStringTknr(inp);
     // form.formula
@@ -44,7 +44,7 @@ let W = function (inp: string, display = true): Substance {
     }
     // } else {
     if (display) {
-        tang(subst);
+        tangify(subst);
         updateZIndex();
         redraw();
         return subst;
@@ -58,3 +58,4 @@ let W = function (inp: string, display = true): Substance {
     // although by definition it won't always work - see no
     // or hga - HGa
 } as { (inp: string, display?: boolean): Substance; c: (inp: string) => SubstanceMaker | undefined; };
+const W = tungsten;

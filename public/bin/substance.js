@@ -23,7 +23,7 @@ class SubstanceType {
          * */
         /*
         molar_absorptivity = [1, 1, 1]; */
-        this.rgb = [255, 255, 255];
+        this.rgb = '#FFFFFF'; // [255, 255, 255];
         this.state = "g";
         this.molarMass = -1;
     }
@@ -115,12 +115,13 @@ class Substance extends SubstGroup {
     set temperature(T) {
         __classPrivateFieldSet(this, _T, T);
     }
-    color(background = [255, 255, 255]) {
-        return this.type.rgb;
-    }
+    // color(background: tup = [255, 255, 255]): tup {
+    //     return this.type.rgb;
+    // }
     hexcolor(background = [255, 255, 255]) {
-        let c = this.color(background);
-        return _hex(...c);
+        // let c = this.color(background) as tup3;
+        return this.type.rgb;
+        // return _hex(...c);
     }
     toString() {
         return `${this.type.chemicalFormula} ${this.mass}g`;
@@ -206,8 +207,8 @@ function makeSpectralAqueous(x, spectra_fIn) {
             super(...arguments);
             this.spectra_f = spectra_fIn;
         }
-        color(background = [255, 255, 255], l = 1) {
-            return rgb_from_spectrum(x => f_daylight(x) * transmittance(this.spectra_f(x), this.concentration));
+        hexcolor(background = [255, 255, 255], l = 1) {
+            return _hex(rgb_from_spectrum(x => f_daylight(x) * transmittance(this.spectra_f(x), this.concentration)));
         }
     };
 }

@@ -24,7 +24,7 @@ var Tokenizers;
     }
     Tokenizers.WStringTknr = WStringTknr;
 })(Tokenizers || (Tokenizers = {}));
-let W = function (inp, display = true) {
+const tungsten = function (inp, display = true) {
     let subst;
     let [chem, qty] = Tokenizers.WStringTknr(inp);
     // form.formula
@@ -47,7 +47,7 @@ let W = function (inp, display = true) {
     }
     // } else {
     if (display) {
-        tang(subst);
+        tangify(subst);
         updateZIndex();
         redraw();
         return subst;
@@ -62,3 +62,4 @@ let W = function (inp, display = true) {
     // although by definition it won't always work - see no
     // or hga - HGa
 };
+const W = tungsten;

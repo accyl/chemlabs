@@ -1,6 +1,6 @@
 function addDefault() {
     let sub = W.c('KMnO4')!.form();
-    tang(sub);
+    tangify(sub);
 
     let sub2 = W('KMnO4');
     // sub2.physhook!.pos = {x:10, y:0};

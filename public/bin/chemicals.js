@@ -13,7 +13,7 @@ chemicals.saveCustom = function (atomt) {
         chemicalFormula: atomt.formula,
         molarMass: atomt.molarMass(),
         newAtomTracker: atomt,
-        rgb: [250, 250, 250],
+        rgb: "#F8F8F8",
         density: undefined
     };
     let phase = atomt.state;
@@ -34,7 +34,7 @@ chemicals.saveCustom = function (atomt) {
         let rgb = ptable[anum].rgb;
         if (rgb) {
             // all.rgb = 
-            all.rgb = _rgb(rgb);
+            all.rgb = rgb; // _rgb(rgb);
         }
     }
     let state = { state: phase };
@@ -49,7 +49,7 @@ chemicals.set('H2O', function () {
     let l = new SubstanceMaker('l');
     l.density = 999.8395;
     l.specificHeatCapacity = 4.184;
-    l.rgb = [0xF0, 0xF0, 0xFF];
+    l.rgb = '#F0F0FF'; // [0xF0, 0xF0, 0xFF];
     let g = new SubstanceMaker('g', l);
     g.specificHeatCapacity = 2.080;
     let s = new SubstanceMaker('s', l);
@@ -79,7 +79,7 @@ chemicals.set('KMnO4', function () {
     aq.molarMass = 158.034; // g/mol
     let s = new SubstanceMaker('s', aq);
     // s.state = 's';
-    s.rgb = [0x9F, 0x00, 0xFF];
+    s.rgb = '#9F00FF'; // [0x9F,0x00,0xFF];
     s.density = 2700;
     // aq.getWithArgs = function (args: ComputedQty): ProtoChemical {
     //     if (args.state === "aq") return aq;

@@ -39,7 +39,7 @@ function newPhysicsHook(arg1: Matter.Body | Vector, size: Vector, subst: Substan
     if(!subst || subst === SubstGroup.BOUNDS_ONLY) {
         // body['substs'] = SubstGroup.BOUNDS_ONLY;
         // body['substs'] = undefined;
-        body['collisionFilter'] = CollisionFilters.GASLIKE;
+        body['collisionFilter'] = CollisionFilters.BACKGROUND_GAS;
         body['ignoreGravity'] = true;
         body['label'] = 'Bound';
         body['render']['opacity'] = 0.1;
@@ -48,7 +48,7 @@ function newPhysicsHook(arg1: Matter.Body | Vector, size: Vector, subst: Substan
     } else {
         body['substs'] = subst; //coerceToSystem(subst);
         if (subst.substances.length === 1 && subst.s[0].state === 'g') {
-            body['collisionFilter'] = CollisionFilters.GASLIKE;
+            body['collisionFilter'] = CollisionFilters.BACKGROUND_GAS;
             body['zIndex'] = -2;
 
         } else {
@@ -81,7 +81,7 @@ function newBounds(arg1: Matter.Body | Vector, size: Vector, addToGlobal=true) {
     return h;
 }
 
-function phys<S extends Substance | SubstGroup>(s: S, pos?: [num, num], size?: [num, num],): S {
+function applyPhyshook<S extends Substance | SubstGroup>(s: S, pos?: [num, num], size?: [num, num],): S {
     if (!s.physhook) {
         let vec;
         if (pos) {
@@ -98,6 +98,10 @@ function phys<S extends Substance | SubstGroup>(s: S, pos?: [num, num], size?: [
         if (s instanceof Substance) {
             // s.physhook = new PhysicsHook(pos, size);
             s.physhook = newPhysicsHook(vec, vsize, s); //new PhysicsHookNew(vec, vsize);
+            s.physhook.render.fillStyle = s.hexcolor();
+            s.physhook.render.lineWidth = 1;
+            s.physhook.render.strokeStyle = '#888888'; // default
+
             addToWorld([s.physhook]); //.rect]);
 
         } else if (s === SubstGroup.BOUNDS_ONLY) {
@@ -108,7 +112,7 @@ function phys<S extends Substance | SubstGroup>(s: S, pos?: [num, num], size?: [
             s.physhook = newPhysicsHook(vec, vsize, s); // new PhysicsHookNew(vec, vsize);
 
             for (let subs of s.substances) {
-                phys(subs);
+                applyPhyshook(subs);
             }
 
 

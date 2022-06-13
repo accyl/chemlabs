@@ -4,17 +4,23 @@ let __ = undefined;
 let gvar = {};
 let lastClickedObject = undefined;
 // type vec = Vector;
-let _hex = function () {
-    function _componentToHex(c) {
-        var hex = Math.round(Math.min(c, 255)).toString(16);
-        return hex.length == 1 ? "0" + hex : hex;
+function _componentToHex(c) {
+    var hex = Math.round(Math.min(c, 255)).toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+}
+function _hex(r, g, b, ...extras) {
+    if (Array.isArray(r)) {
+        if (r.length !== 3)
+            throw new Error("RGB array must be 3, but instead it is " + r.length);
+        return _hex(r[0], r[1], r[2], ...extras);
     }
-    let hex = function (r, g, b, ...extras) {
-        return "#" + _componentToHex(r) + _componentToHex(g) + _componentToHex(b);
-    };
-    return hex;
-}();
+    if (g === undefined || b === undefined)
+        throw new TypeError("Must provide r, g, and b");
+    return "#" + _componentToHex(r) + _componentToHex(g) + _componentToHex(b);
+}
 function _rgb(hex) {
+    if (hex.startsWith('#'))
+        hex = hex.substring(1);
     var bigint = parseInt(hex, 16);
     var r = (bigint >> 16) & 255;
     var g = (bigint >> 8) & 255;
@@ -45,7 +51,10 @@ class CollisionFilters {
 CollisionFilters.SOLID = new CollisionFilters(1, 0xFFFFFFFF);
 CollisionFilters.MOUSE = new CollisionFilters(2, 0xFFFFFFFF);
 CollisionFilters.WALL = new CollisionFilters(4, 0xFFFFFFFF);
-CollisionFilters.GASLIKE = new CollisionFilters(8, 2 + 4); // only collide with walls and the mouse constraint
+CollisionFilters.BEAKER = new CollisionFilters(8, 0xFFFFFFFF);
+CollisionFilters.GASLIKE = new CollisionFilters(16, 2 + 4 + 8); // only collide with walls, beakers, and the mouse constraint (allow it to be draggable)
+CollisionFilters.BEAKER_PHANTOM = new CollisionFilters(32, 2 + 4 + 8); // this is a phantom object that acts as the glass screen of the beaker, but can't be interacted with by a mouse
+CollisionFilters.BACKGROUND_GAS = new CollisionFilters(16, 2 + 4); // only collide with walls, beakers, and the mouse constraint (allow it to be draggable)
 var ScreenState;
 (function (ScreenState) {
     ScreenState[ScreenState["PAUSED"] = 0] = "PAUSED";

@@ -11,7 +11,7 @@ class SubstanceType {
      * */
     /*
     molar_absorptivity = [1, 1, 1]; */
-    rgb: tup = [255, 255, 255];
+    rgb='#FFFFFF'; // [255, 255, 255];
     state = "g";
     static NONE = new SubstanceType();
     molarMass: number = -1;
@@ -109,12 +109,13 @@ class Substance extends SubstGroup {
         a.push(this);
         this.substances = a;
     }
-    color(background: tup = [255, 255, 255]): tup {
-        return this.type.rgb;
-    }
+    // color(background: tup = [255, 255, 255]): tup {
+    //     return this.type.rgb;
+    // }
     hexcolor(background: tup = [255, 255, 255]): string {
-        let c = this.color(background) as tup3;
-        return _hex(...c);
+        // let c = this.color(background) as tup3;
+        return this.type.rgb;
+        // return _hex(...c);
     }
     toString() {
         return `${this.type.chemicalFormula} ${this.mass}g`;
@@ -206,8 +207,8 @@ const AqueousSubstance = (solventIn: MolecularSubstance) => makeAqueous(Molecula
 function makeSpectralAqueous<T extends Mixin<AqueousSubstance>>(x: T, spectra_fIn: (wl: num) => num): Mixin<AqueousSubstance> & T {
     return class SpectralAqueousSubstance extends x {
         spectra_f = spectra_fIn;
-        color(background: tup = [255, 255, 255], l: num = 1) {
-            return rgb_from_spectrum(x => f_daylight(x) * transmittance(this.spectra_f(x), this.concentration));
+        hexcolor(background: tup = [255, 255, 255], l: num = 1) {
+            return _hex(rgb_from_spectrum(x => f_daylight(x) * transmittance(this.spectra_f(x), this.concentration)));
         }
     }
 }
@@ -283,7 +284,7 @@ class SubstanceMaker extends SubstanceType {
         return new this.#substConstr(this);
     }
 
-    static fromJson(all: any, defaul: JsonChemical, altStates?: JsonChemical[], freeze = true): SubstanceMaker { //sObj?: any, lObj?: any, gObj?: any, aqObj?: any){
+    static fromJson(all: {}, defaul: JsonChemical, altStates?: JsonChemical[], freeze = true): SubstanceMaker { //sObj?: any, lObj?: any, gObj?: any, aqObj?: any){
         // TODO
         // any such function that constructs from JSON must be able to customize the constructor
         // For example using a spectralA

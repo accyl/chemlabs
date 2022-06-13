@@ -47,38 +47,35 @@ var internal;
     ground.collisionFilter = lwall.collisionFilter = rwall.collisionFilter = ceil.collisionFilter = CollisionFilters.WALL;
     // add all of the bodies to the world
     Composite.add(engine.world, [/*boxA, boxB, */ ground, lwall, rwall, ceil]);
-    // create a renderer
-    var render = Render.create({
-        // element: document.body,
-        canvas: canva,
-        engine: engine,
-        options: {
-            width: canva.width,
-            height: canva.height,
-            background: 'transparent',
-            wireframes: false,
-            showAngleIndicator: false,
-            showConvexHulls: true
-        }
-    });
     /**
      * The real interior width of the beaker = 300 - 40/2 - 40/2 = 260
      * @param x x-position
      * @param y y-position
-     * @param w width
-     * @param h height
+     * @param w exterior width
+     * @param h exterior height
      * @param thick thickness of the beaker
      * @returns
      */
     function makeBeaker(x = 250, y = 250, w = 270, h = 350, thick = 40) {
-        let beakerLeft = Bodies.rectangle(x, y, thick, h, { ignoreGravity: true, });
-        let beakerRight = Bodies.rectangle(x + w, y, thick, h, { ignoreGravity: true });
+        let beakerLeft = Bodies.rectangle(x, y, thick, h);
+        let beakerRight = Bodies.rectangle(x + w, y, thick, h);
         // let rect1 = Bodies.rectangle(300, 300, 200, 40, { ignoreGravity: true } as any) as PhysicsHook;
-        let beakerFloor = Bodies.rectangle(x + w / 2, y + h / 2 - thick / 2, w, thick, { ignoreGravity: true });
+        let beakerFloor = Bodies.rectangle(x + w / 2, y + h / 2 - thick / 2, w - thick + 10, thick); // small overlap of 5 to ensure there isn't a gap
+        /*
+        let beakerCover = Bodies.rectangle(x + w/2, y, w, h) as PhysicsHook;
+        // beakerCover.collisionFilter = CollisionFilters.BACKGROUND_GAS;
+        beakerCover.render.opacity = 0.1;
+        beakerCover.render.fillStyle = '0xFFFFFF';*/
+        // beakerLeft.collisionFilter = beakerRight.collisionFilter = beakerFloor.collisionFilter = CollisionFilters.BEAKER;
+        beakerLeft.render.fillStyle = beakerRight.render.fillStyle = beakerFloor.render.fillStyle = '#F0F8FF';
+        beakerLeft.render.opacity = beakerRight.render.opacity = beakerFloor.render.opacity = 0.9;
         var beaker = Matter.Body.create({
             parts: [beakerLeft, beakerRight, beakerFloor],
             label: "Beaker"
         });
+        beaker.render.lineWidth = 5;
+        beaker.render.strokeStyle = 'black';
+        beaker.collisionFilter = CollisionFilters.BEAKER;
         return beaker;
     }
     let beaker = makeBeaker();
@@ -86,8 +83,6 @@ var internal;
     beaker.inverseInertia = 0;
     // beaker.ignoreGravity = true;
     Composite.add(engine.world, [beaker]);
-    // run the renderer
-    // Render.run(render);
     var mouse = Matter.Mouse.create(canva);
     // TODO mouse.pixelRatio
     // create runner
@@ -129,7 +124,24 @@ var internal;
         debugBody(body);
     });
     // run the engine
-    // Render.setPixelRatio(render, 'auto');
+    // run the renderer
+    // create a renderer
+    var render = Render.create({
+        // element: document.body,
+        canvas: canva,
+        context: getCanvasContext(canva),
+        engine: engine,
+        options: {
+            width: canva.width,
+            height: canva.height,
+            background: 'transparent',
+            wireframes: false,
+            showAngleIndicator: false,
+            showConvexHulls: true
+        }
+    });
+    Render.run(render);
+    // Render.setPixelRatio(render, 'auto' as any);
     Runner.run(runner, engine);
     // prettier-ignore
 })(internal || (internal = {}));
