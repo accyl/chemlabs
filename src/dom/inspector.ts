@@ -80,19 +80,27 @@ function traceExtensionsOn(obj: Substance): (new () => any)[] {
         proto = Object.getPrototypeOf(proto);
     }
 
+
     return result;
 }
 
 function showSubstanceAttributes(subs: Substance): JQuery<HTMLElement> {
     let exts = traceExtensionsOn(subs);
     exts.push(Substance);
+
+    // let's also append the substancetype info
+    exts.push(SubstanceType);
+
     // let s = '';
     // create a div
     let div = $('<div>');
     div.addClass('substance-attributes');
     for (let ext of exts) {
-        let details = $('<details>');
-        if(ext.name === 'Substance') details.attr('open'); // automatically open Substance
+        let details = ext.name === 'Substance' ? $('<details open>') : $('<details>');
+         // automatically open Substance
+
+        let target = subs as {};
+        if(ext.name === 'SubstanceType') target = subs.type;
         // add .substance-attributes to details
         details.append($('<summary>').text(ext.name));
 
@@ -104,7 +112,7 @@ function showSubstanceAttributes(subs: Substance): JQuery<HTMLElement> {
         }
         let txt = '';
         for (let attr of attrs) {
-            let result = (subs as any)[attr];
+            let result = (target as any)[attr];
             txt += `${attr}: ${result}\n`;
         }
         details.append($('<code>').text(txt));
@@ -115,6 +123,7 @@ function showSubstanceAttributes(subs: Substance): JQuery<HTMLElement> {
 }
 (function() {
     cachedAttrs['Substance'] = ['mass', 'volume', 'temperature', 'state'];
+    cachedAttrs['SubstanceType'] = ['chemicalFormula', 'density', 'rgb', 'specificHeatCapacity'];
     let s = new Substance();
     let ms = new MolecularSubstance();
     allNewAttributes(ms, s);

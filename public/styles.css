@@ -50,6 +50,7 @@
     border: solid blueviolet 1px;
     height: 10vw;
     white-space: pre;
+    padding-bottom: 5px;
     height: fit-content;
     /*fit to content*/
 }
