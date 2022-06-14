@@ -32,7 +32,7 @@ function newPhysicsHook(arg1, size, subst) {
     else {
         body['substs'] = subst; //coerceToSystem(subst);
         if (subst.substances.length === 1 && subst.s[0].state === 'g') {
-            body['collisionFilter'] = CollisionFilters.BACKGROUND_GAS;
+            body['collisionFilter'] = CollisionFilters.GASLIKE;
             body['zIndex'] = -2;
         }
         else {

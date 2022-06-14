@@ -13,7 +13,7 @@ var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (
     privateMap.set(receiver, value);
     return value;
 };
-var _m, _v, _T, _statemap, _substConstr;
+var _m, _v, _T;
 class SubstanceType {
     constructor() {
         this.specificHeatCapacity = 0; // J/(g-K)
@@ -39,7 +39,7 @@ SubstanceType.NONE = new SubstanceType();
  * @param x
  * @deprecated
  */
-function coerceToSystem(x) {
+function coerceToSubstGroup(x) {
     // if(!x) return undefined;
     let a = x;
     if ('substances' in x && 'equilibria' in x && 'subsystems' in x)
@@ -215,8 +215,7 @@ function makeSpectralAqueous(x, spectra_fIn) {
 class SubstanceMaker extends SubstanceType {
     constructor(state, standardState, constructor = MolecularSubstance) {
         super();
-        _statemap.set(this, new Map());
-        _substConstr.set(this, void 0);
+        this._statemap = new Map();
         if (standardState) {
             this.standardState = standardState;
         }
@@ -227,7 +226,7 @@ class SubstanceMaker extends SubstanceType {
             this.standardState.pushNewState(this, this.state);
             this.state = state;
         }
-        __classPrivateFieldSet(this, _substConstr, constructor);
+        this._substConstr = constructor;
     }
     getStandardState() {
         return this.standardState;
@@ -237,13 +236,13 @@ class SubstanceMaker extends SubstanceType {
         let standard = this.getStandardState();
         if (state === standard.state)
             return standard;
-        let ret = state ? __classPrivateFieldGet(this.getStandardState(), _statemap).get(state) : undefined;
+        let ret = state ? this.getStandardState()._statemap.get(state) : undefined;
         return ret;
     }
     pushNewState(chemical, condition) {
         let state = condition instanceof ComputedQty ? condition.state : condition;
         if (state && this.getWithArgs(state) === undefined) {
-            __classPrivateFieldGet(this.getStandardState(), _statemap).set(state, chemical);
+            this.getStandardState()._statemap.set(state, chemical);
         }
     }
     /**
@@ -262,7 +261,7 @@ class SubstanceMaker extends SubstanceType {
         if (orig === undefined) {
             // perhaps a state isn't set
             let atomTracker = new AtomTracker(this.getStandardState());
-            atomTracker.state = this.state;
+            atomTracker.state = qty.state ? qty.state : this.state;
             orig = chemicals.saveCustom(atomTracker);
         }
         let ret = orig.form();
@@ -285,7 +284,7 @@ class SubstanceMaker extends SubstanceType {
      * @returns
      */
     form() {
-        return new (__classPrivateFieldGet(this, _substConstr))(this);
+        return new this._substConstr(this);
     }
     static fromJson(all, defaul, altStates, freeze = true) {
         // TODO
@@ -322,7 +321,6 @@ class SubstanceMaker extends SubstanceType {
         return main;
     }
 }
-_statemap = new WeakMap(), _substConstr = new WeakMap();
 SubstanceMaker.NONE = new SubstanceMaker();
 // class AqueousSubstanceImpl extends makeMolecular(Substance) implements AqueousSubstance {
 //     solvent: Substance;

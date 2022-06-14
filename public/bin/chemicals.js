@@ -9,11 +9,21 @@ const chemicals = new Map();
  */
 chemicals.saveCustom = function (atomt) {
     let formula = atomt.formula;
+    // first we check that we don't already have one
+    let already = chemicals.get(formula);
+    if (already) {
+        let withstate = already.getWithArgs(atomt.state);
+        if (withstate) {
+            return withstate;
+        }
+        // if we get to this point, then there is an already existing chemical, but not of the right state
+    }
+    // if we get to this point, then we need to create a new chemical
     let all = {
         chemicalFormula: atomt.formula,
         molarMass: atomt.molarMass(),
         newAtomTracker: atomt,
-        rgb: "#F8F8F8",
+        rgb: "#F7F7F7",
         density: undefined
     };
     let phase = atomt.state;
@@ -38,8 +48,14 @@ chemicals.saveCustom = function (atomt) {
         }
     }
     let state = { state: phase };
-    let proto = chemicalFromJson(all, state);
-    chemicals.set(formula, proto);
+    let proto = chemicalFromJson(all, state, undefined, false);
+    if (already) {
+        proto.standardState = already;
+        already.pushNewState(proto, atomt.state);
+    }
+    else {
+        chemicals.set(formula, proto);
+    }
     return proto;
 };
 function chemicalFromJson(all, defaul, altStates, freeze = true) {

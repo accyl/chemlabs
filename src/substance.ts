@@ -28,7 +28,7 @@ class SubstanceType {
  * @param x 
  * @deprecated
  */
-function coerceToSystem(x: Substance | SubstGroup): SubstGroup {
+function coerceToSubstGroup(x: Substance | SubstGroup): SubstGroup {
     // if(!x) return undefined;
     let a = x as any;
     if ('substances' in x && 'equilibria' in x && 'subsystems' in x) return x;
@@ -214,9 +214,9 @@ function makeSpectralAqueous<T extends Mixin<AqueousSubstance>>(x: T, spectra_fI
 }
 class SubstanceMaker extends SubstanceType {
     static NONE = new SubstanceMaker();
-    #statemap = new Map() as Map<string, SubstanceMaker>;
+    _statemap = new Map() as Map<string, SubstanceMaker>;
     standardState: SubstanceMaker;
-    #substConstr: SubstanceConstructor;
+    _substConstr: SubstanceConstructor;
     constructor(state?: string, standardState?: SubstanceMaker, constructor: SubstanceConstructor = MolecularSubstance) {
         super();
         if (standardState) {
@@ -228,7 +228,7 @@ class SubstanceMaker extends SubstanceType {
             this.standardState.pushNewState(this, this.state);
             this.state = state;
         }
-        this.#substConstr = constructor;
+        this._substConstr = constructor;
     }
     getStandardState(): SubstanceMaker {
         return this.standardState;
@@ -237,13 +237,13 @@ class SubstanceMaker extends SubstanceType {
         let state = args instanceof ComputedQty ? args.state : args;
         let standard = this.getStandardState();
         if (state === standard.state) return standard;
-        let ret = state ? this.getStandardState().#statemap.get(state) : undefined;
+        let ret = state ? this.getStandardState()._statemap.get(state) : undefined;
         return ret;
     }
     pushNewState(chemical: SubstanceMaker, condition: ComputedQty | string) {
         let state = condition instanceof ComputedQty ? condition.state : condition;
         if (state && this.getWithArgs(state) === undefined) {
-            this.getStandardState().#statemap.set(state, chemical);
+            this.getStandardState()._statemap.set(state, chemical);
         }
     }
 
@@ -262,7 +262,7 @@ class SubstanceMaker extends SubstanceType {
         if(orig === undefined) {
             // perhaps a state isn't set
             let atomTracker = new AtomTracker(this.getStandardState());
-            atomTracker.state = this.state;
+            atomTracker.state = qty.state ? qty.state : this.state;
             orig = chemicals.saveCustom(atomTracker);
         }
         let ret = orig.form();
@@ -281,7 +281,7 @@ class SubstanceMaker extends SubstanceType {
      * @returns 
      */
     form(): Substance {
-        return new this.#substConstr(this);
+        return new this._substConstr(this);
     }
 
     static fromJson(all: {}, defaul: JsonChemical, altStates?: JsonChemical[], freeze = true): SubstanceMaker { //sObj?: any, lObj?: any, gObj?: any, aqObj?: any){

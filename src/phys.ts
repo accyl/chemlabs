@@ -48,7 +48,7 @@ function newPhysicsHook(arg1: Matter.Body | Vector, size: Vector, subst: Substan
     } else {
         body['substs'] = subst; //coerceToSystem(subst);
         if (subst.substances.length === 1 && subst.s[0].state === 'g') {
-            body['collisionFilter'] = CollisionFilters.BACKGROUND_GAS;
+            body['collisionFilter'] = CollisionFilters.GASLIKE;
             body['zIndex'] = -2;
 
         } else {
