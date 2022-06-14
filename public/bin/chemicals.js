@@ -2,12 +2,12 @@
 /// <reference path='substance.ts'/>
 const chemicals = new Map();
 /**
- * dynamically creates a new chemical entry with the specified ChemicalBuilder chemical and which
- * exposes the ProtoChemical with which you can create massed substances
- * @param atomt ChemicalBuilder that the chemical composition of the new substance
- * @returns the ProtoChemical, which can at any time be accessed through $c(key: string)
+ * dynamically creates a new chemical entry with the specified AtomTracker chemical and which
+ * exposes the SubstanceMaker with which you can create massed substances
+ * @param atomt AtomTracker that the chemical composition of the new substance
+ * @returns the SubstanceMaker, which can at any time be accessed through $c(key: string)
  */
-chemicals.saveCustom = function (atomt) {
+chemicals.createMaker = function (atomt) {
     let formula = atomt.formula;
     // first we check that we don't already have one
     let already = chemicals.get(formula);
@@ -57,6 +57,17 @@ chemicals.saveCustom = function (atomt) {
         chemicals.set(formula, proto);
     }
     return proto;
+};
+/**
+ *
+ * @param qty
+ * @param model
+ * @returns
+ */
+chemicals.createMakerFromQty = function (qty, model) {
+    let atomTracker = new AtomTracker(model.getStandardState());
+    atomTracker.state = qty.state ? qty.state : model.state;
+    return chemicals.createMaker(atomTracker);
 };
 function chemicalFromJson(all, defaul, altStates, freeze = true) {
     return SubstanceMaker.fromJson(all, defaul, altStates, freeze);

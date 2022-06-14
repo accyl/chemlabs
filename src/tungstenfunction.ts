@@ -31,7 +31,7 @@ const tungsten = function (inp: string, display = true): Substance {
     if (chemicals.has(formula)) {
         protos = chemicals.get(formula);
     } else {
-        protos = chemicals.saveCustom(chem);
+        protos = chemicals.createMaker(chem);
         console.log(`formula ${formula} not found in list of chemicals. autogenerating...`);
     }
     if (protos) {
