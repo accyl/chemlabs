@@ -34,7 +34,7 @@ chemicals.createMaker = function (atomt: AtomTracker): SubstanceMaker {
         newAtomTracker: atomt,
         rgb: "#F7F7F7", // [250, 250, 250],
         density: undefined
-    };
+    } as unknown as SubstanceType;
     let phase = atomt.state;
     if (!phase && atomt.atoms.length == 1) {
         // a substance comprised of a single atom
@@ -53,7 +53,7 @@ chemicals.createMaker = function (atomt: AtomTracker): SubstanceMaker {
         let rgb = ptable[anum].rgb;
         if (rgb) {
             // all.rgb = 
-            all.rgb = rgb; // _rgb(rgb);
+            all.rgb = '#' + rgb; // _rgb(rgb);
         }
     }
     let state = { state: phase };

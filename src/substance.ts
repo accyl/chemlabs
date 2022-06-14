@@ -112,7 +112,14 @@ class Substance extends SubstGroup {
     // color(background: tup = [255, 255, 255]): tup {
     //     return this.type.rgb;
     // }
-    hexcolor(background: tup = [255, 255, 255]): string {
+    /**
+     * Must return a css valid hex code color,
+     * thus it must start with a '#' and then a hexadecimal color encoding
+     * ie. #FFF839
+     * @param background 
+     * @returns 
+     */
+    hexcolor(background: string = '#FFFFFF'): string {
         // let c = this.color(background) as tup3;
         return this.type.rgb;
         // return _hex(...c);

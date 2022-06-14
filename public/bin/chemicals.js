@@ -44,7 +44,7 @@ chemicals.createMaker = function (atomt) {
         let rgb = ptable[anum].rgb;
         if (rgb) {
             // all.rgb = 
-            all.rgb = rgb; // _rgb(rgb);
+            all.rgb = '#' + rgb; // _rgb(rgb);
         }
     }
     let state = { state: phase };
