@@ -22,7 +22,7 @@ namespace Tokenizers {
         }
     }
 }
-const tungsten = function (inp: string, display = true): Substance {
+const tungstenCreate = function (inp: string, display = true): Substance {
     let subst;
     let [chem, qty] = Tokenizers.WStringTknr(inp);
     // form.formula
@@ -57,5 +57,30 @@ const tungsten = function (inp: string, display = true): Substance {
     // example kmno4. 
     // although by definition it won't always work - see no
     // or hga - HGa
-} as { (inp: string, display?: boolean): Substance; c: (inp: string) => SubstanceMaker | undefined; };
-const W = tungsten;
+} as { (inp: string, display?: boolean): Substance; g: (inp: string) => SubstanceMaker | undefined; };
+/**
+ * W c = Tungsten create
+ */
+const Wc = tungstenCreate;
+
+/**
+ * Find all elements that match the selector
+ * @param selector 
+ * If selector is a number, it is interpreted as the index.
+ * @returns 
+ */
+function tungstenFind(selector: num | string): Substance[] {
+    if(typeof selector === 'number') {
+        return [glob.s[selector]];
+    } else {
+        let [chem, qty] = Tokenizers.WStringTknr(selector);
+        let out = glob.s.filter(s => s.type.chemicalFormula === chem.formula);
+        let cqty = qty.computed();
+        if(cqty.mass !== undefined) out = out.filter(s => s.mass === cqty.mass);
+        if(cqty.vol !== undefined) out = out.filter(s => s.volume === cqty.vol);
+        if(cqty.state !== undefined) out = out.filter(s => s.state === cqty.state);
+        if(cqty.mol !== undefined) out = out.filter(s => 'mol' in s && (s as MolecularSubstance).mol === cqty.mol);
+        return out;
+    }
+}
+const Wf = tungstenFind;

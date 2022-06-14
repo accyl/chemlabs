@@ -112,7 +112,7 @@ chemicals.set('H2O', function(){
 }());
 chemicals.set('KMnO4', function(){
     // molar mass: 158.033949
-    let aq = new SubstanceMaker('aq', undefined, makeSpectralAqueous(makeAqueous(makeMolecular(Substance), W("H2O 1L", false)), spectra_kmno4_f));
+    let aq = new SubstanceMaker('aq', undefined, makeSpectralAqueous(makeAqueous(makeMolecular(Substance), Wc("H2O 1L", false)), spectra_kmno4_f));
     aq.state = "aq";
     // aq.molar_absorptivity = [0.8, 1.75, 0.45];
     // aq.molar_absorptivity = [2042.60286, 3341.11468, 1167.20163];
@@ -154,7 +154,7 @@ chemicals.set('H2', function () {
     };
     return SubstanceMaker.fromJson(all, g, [l]);
 }());
-W.c = function(key: string): SubstanceMaker | undefined {
+Wc.g = function(key: string): SubstanceMaker | undefined {
     return chemicals.get(key);
 }
 // new method above

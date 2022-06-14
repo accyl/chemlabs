@@ -1,8 +1,8 @@
 "use strict";
 function addDefault() {
-    let sub = W.c('KMnO4').form();
+    let sub = Wc.g('KMnO4').form();
     tangify(sub);
-    let sub2 = W('KMnO4');
+    let sub2 = Wc('KMnO4');
     // sub2.physhook!.pos = {x:10, y:0};
     redraw();
 }
@@ -80,7 +80,7 @@ function onCommandButton() {
     // let [formula, quantity] = grandUnifiedTknr(txt);
     // console.log(formula);
     // console.log(quantity);
-    let s = W(txt);
+    let s = Wc(txt);
     console.log(s);
     return s;
 }
