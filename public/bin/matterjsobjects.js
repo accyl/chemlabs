@@ -1,8 +1,14 @@
 "use strict";
 /// <reference path='first.ts'/>
 // / <reference path='../public/libs/matter.min.js'/>
-var internal;
-(function (internal) {
+var MatterObjects;
+(function (MatterObjects) {
+    MatterObjects.idMap = new Map();
+    MatterObjects.idMap.addAll = function (bodies) {
+        for (let body of bodies) {
+            MatterObjects.idMap.set(body.label, body);
+        }
+    };
     // module aliases
     var Engine = Matter.Engine, Render = Matter.Render, Runner = Matter.Runner, Bodies = Matter.Bodies, Composite = Matter.Composite;
     // custom modification that checks
@@ -46,6 +52,7 @@ var internal;
     ceil.zIndex = -999;
     ground.collisionFilter = lwall.collisionFilter = rwall.collisionFilter = ceil.collisionFilter = CollisionFilters.WALL;
     // add all of the bodies to the world
+    MatterObjects.idMap.addAll([ground, lwall, rwall, ceil]);
     Composite.add(engine.world, [/*boxA, boxB, */ ground, lwall, rwall, ceil]);
     /**
      * The real interior width of the beaker = 300 - 40/2 - 40/2 = 260
@@ -144,4 +151,4 @@ var internal;
     // Render.setPixelRatio(render, 'auto' as any);
     Runner.run(runner, engine);
     // prettier-ignore
-})(internal || (internal = {}));
+})(MatterObjects || (MatterObjects = {}));

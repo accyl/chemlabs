@@ -1,3 +1,3 @@
- - Add textures to shapes https://github.com/liabru/matter-js/issues/497 https://brm.io/matter-js/demo/#sprites
+ - Add textures to shapes https://github.com/liabru/matter-js/issues/497 https://brm.io/matter-js/demo/#sprites https://github.com/liabru/matter-js/blob/master/examples/sprites.js
  - Clarify Substance / SubstGroup
  - Make Beaker
