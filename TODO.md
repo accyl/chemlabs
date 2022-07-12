@@ -1,3 +1,5 @@
  - Add textures to shapes https://github.com/liabru/matter-js/issues/497 https://brm.io/matter-js/demo/#sprites https://github.com/liabru/matter-js/blob/master/examples/sprites.js
  - Clarify Substance / SubstGroup
  - Make Beaker
+ - add html-like classList, id, and relevant querySelector to subclass of Matter.Body
+ - in query function Wf(), if we find a special character like #.>[] then we switch to querySelectorMode and parse everything within the [] as a Wc query. otherwise Wf searches as if it was a Wc query.

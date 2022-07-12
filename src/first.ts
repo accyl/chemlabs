@@ -66,7 +66,7 @@ class CollisionFilters {
 enum ScreenState {
     PAUSED, RUNNING, CREDITS
 }
-let universe = {} as { engine: Matter.Engine, world: Matter.World, runner: Matter.Runner, paused: Boolean, screenstate: ScreenState, glob: Global};
+let universe = {beakers: [] as Beaker[]} as { engine: Matter.Engine, world: Matter.World, runner: Matter.Runner, paused: Boolean, screenstate: ScreenState, glob: Global, beakers: Beaker[]};
 universe.paused = false;
 
 function getCanvas(): HTMLCanvasElement {

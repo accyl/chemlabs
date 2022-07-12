@@ -45,62 +45,51 @@ namespace MatterObjects {
     canva.width = 1000;
     canva.height = 600;
 
+    /**
+     * 
+     * @param x top-left corner
+     * @param y top-left corner
+     * @param w 
+     * @param h 
+     * @param thick 
+     * @returns 
+     */
+    function makeWalls(x = 0, y = 0, w = 1000, h = 600, thick = 200) {
+        let left  = Bodies.rectangle(x    , y+h/2, thick, h    , { label: 'ground' }) as PhysicsHook;
+        let right = Bodies.rectangle(x+w  , y+h/2, thick, h    , { label: 'lwall' }) as PhysicsHook;
+        let floor = Bodies.rectangle(x+w/2, y+h  , w    , thick, { label: 'rwall' }) as PhysicsHook; // small overlap of 5 to ensure there isn't a gap
+        let ceil  = Bodies.rectangle(x+w/2, y    , w    , thick, { label: 'ceil' }) as PhysicsHook;
+        floor.collisionFilter = left.collisionFilter = right.collisionFilter = ceil.collisionFilter = CollisionFilters.WALL;
+        floor.zIndex = left.zIndex = right.zIndex = ceil.zIndex = -999;
+        floor.mass = left.mass = right.mass = ceil.mass = Infinity;
+        floor.isStatic = left.isStatic = right.isStatic = ceil.isStatic = true;
+        floor.render.fillStyle = left.render.fillStyle = right.render.fillStyle = ceil.render.fillStyle = '#000';
+        return [left, right, floor, ceil];
+    }
 
     // create two boxes and a ground
     // var boxA = Bodies.rectangle(400, 200, 80, 80);
     // var boxB = Bodies.rectangle(450, 50, 80, 80);
-    var ground = Bodies.rectangle(500, 610, 1000, 60, { isStatic: true }) as PhysicsHook;
-    ground.label = 'ground'; ground.zIndex = -999; 
-    var lwall = Bodies.rectangle(0, 0, 60, 1500, { isStatic: true }) as PhysicsHook;
-    lwall.label = 'lwall'; lwall.zIndex = -999;
-    var rwall = Bodies.rectangle(canva.width, 0, 60, 2000, { isStatic: true }) as PhysicsHook;
-    rwall.label = 'rwall'; rwall.zIndex = -999;
-    var ceil = Bodies.rectangle(500, 0, 1000, 60, { isStatic: true }) as PhysicsHook;
-    ceil.label = 'ceil'; ceil.zIndex = -999;
-    ground.collisionFilter = lwall.collisionFilter = rwall.collisionFilter = ceil.collisionFilter = CollisionFilters.WALL;
+
+    // var ground = Bodies.rectangle(500, 610, 1000, 60, { isStatic: true, label: 'ground' }) as PhysicsHook;
+    // var lwall = Bodies.rectangle(0, 0, 60, 1500, { isStatic: true, label: 'lwall' }) as PhysicsHook;
+    // var rwall = Bodies.rectangle(canva.width, 0, 60, 2000, { isStatic: true, label: 'rwall' }) as PhysicsHook;
+    // var ceil = Bodies.rectangle(500, 0, 1000, 60, { isStatic: true, label: 'ceil'}) as PhysicsHook;
+    
+    // ground.collisionFilter = lwall.collisionFilter = rwall.collisionFilter = ceil.collisionFilter = CollisionFilters.WALL;
+    // ground.zIndex = lwall.zIndex = rwall.zIndex = ceil.zIndex = -999;
+    // ground.mass = lwall.mass = rwall.mass = ceil.mass = Infinity;
+    let [lwall, rwall, ground, ceil] = makeWalls(-90, -90, 1000 + 90 * 2, 600 + 90 * 2, 200);
     // add all of the bodies to the world
     idMap.addAll([ground, lwall, rwall, ceil]);
-    Composite.add(engine.world, [/*boxA, boxB, */ground, lwall, rwall, ceil]);
+    Composite.add(engine.world, [ground, lwall, rwall, ceil]);
 
 
 
-    /**
-     * The real interior width of the beaker = 300 - 40/2 - 40/2 = 260
-     * @param x x-position
-     * @param y y-position
-     * @param w exterior width
-     * @param h exterior height
-     * @param thick thickness of the beaker
-     * @returns 
-     */
-    function makeBeaker(x=250, y=250, w=270, h=350, thick=40) {
-        let beakerLeft = Bodies.rectangle(x, y, thick, h) as PhysicsHook;
-        let beakerRight = Bodies.rectangle(x + w, y, thick, h) as PhysicsHook;
-        // let rect1 = Bodies.rectangle(300, 300, 200, 40, { ignoreGravity: true } as any) as PhysicsHook;
-        let beakerFloor = Bodies.rectangle(x + w / 2, y + h / 2 - thick / 2, w - thick + 10, thick) as PhysicsHook; // small overlap of 5 to ensure there isn't a gap
-        /*
-        let beakerCover = Bodies.rectangle(x + w/2, y, w, h) as PhysicsHook;
-        // beakerCover.collisionFilter = CollisionFilters.BACKGROUND_GAS;
-        beakerCover.render.opacity = 0.1;
-        beakerCover.render.fillStyle = '0xFFFFFF';*/
-        // beakerLeft.collisionFilter = beakerRight.collisionFilter = beakerFloor.collisionFilter = CollisionFilters.BEAKER;
 
-        beakerLeft.render.fillStyle = beakerRight.render.fillStyle = beakerFloor.render.fillStyle = '#F0F8FF';
-
-        beakerLeft.render.opacity = beakerRight.render.opacity = beakerFloor.render.opacity = 0.9;
-        var beaker = Matter.Body.create({
-            parts: [beakerLeft, beakerRight, beakerFloor], // , beakerCover],
-            label: "Beaker"
-        });
-        beaker.render.lineWidth = 5;
-        beaker.render.strokeStyle = 'black';
-        beaker.collisionFilter = CollisionFilters.BEAKER;
-        return beaker;
-    }
     
-    let beaker = makeBeaker() as PhysicsHook;
-    beaker.inertia = Infinity;
-    beaker.inverseInertia = 0;
+    let beaker = makeBeaker() as Beaker;
+
 
     // beaker.ignoreGravity = true;
     Composite.add(engine.world, [beaker]);
@@ -115,7 +104,7 @@ namespace MatterObjects {
     var runner = Runner.create();
     universe.runner = runner;
 
-    var mouseConstraint = Matter.MouseConstraint.create(engine, { //Create Constraint
+    export var mouseConstraint = Matter.MouseConstraint.create(engine, { //Create Constraint
         // @ts-ignore
         canvas: canva,
         mouse: mouse,
@@ -152,6 +141,49 @@ namespace MatterObjects {
     Matter.Events.on(mouseConstraint, "startdrag", (event) => {
         let body = event.body;
         debugBody(body);
+    });
+
+
+
+    Matter.Events.on(MatterObjects.mouseConstraint, 'enddrag', (released) => {
+        // max speed limit
+        let maxSpeed = 50;
+        let Body = Matter.Body;
+        let body = released.body as Matter.Body;
+        if (!body) return;
+        console.log(body);
+
+        if (body.velocity.x > maxSpeed) {
+            Body.setVelocity(body, { x: maxSpeed, y: body.velocity.y });
+        }
+        if (body.velocity.x < -maxSpeed) {
+            Body.setVelocity(body, { x: -maxSpeed, y: body.velocity.y });
+        }
+        if (body.velocity.y > maxSpeed) {
+            Body.setVelocity(body, { x: body.velocity.x, y: maxSpeed });
+        }
+        if (body.velocity.y < -maxSpeed) {
+            Body.setVelocity(body, { x: -body.velocity.x, y: -maxSpeed });
+        }
+        // Matter.Body.setVelocity(released.body.velocity.x = Math.min(released.body.velocity.x, 10);
+        setTimeout(() => {
+            // after 5 seconds, check that we're still in world
+            // we can also cheaply check if we're in a beaker and then cheaply update the beaker
+            if (!isBodyInWorld(body)) {
+                // teleport it back to 0, 0
+                Matter.Body.setPosition(body, { x: 100, y: 100 });
+                Matter.Body.setVelocity(body, { x: 0, y: 0 });
+            }
+
+            for(let beaker of universe.beakers) {
+                if (Beaker.isBodyInBeaker(body, beaker)) {
+                    beaker.addTracked(body);
+                    console.log('tracked!');
+                }
+            }
+
+
+        }, 2000); // after 2 seconds
     });
 
     // run the engine

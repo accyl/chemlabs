@@ -71,15 +71,22 @@ function applyPhyshook(s, pos, size) {
         else {
             vec = { 'x': 100, 'y': 100 };
         }
-        let vsize;
+        let vsize = undefined;
         if (size) {
             vsize = { 'x': size[0], 'y': size[1] };
         }
-        else {
-            vsize = { 'x': 100, 'y': 100 };
-        }
         if (s instanceof Substance) {
             // s.physhook = new PhysicsHook(pos, size);
+            if (vsize === undefined) {
+                // we assign size based on volume. 
+                // TODO go from cubic volume calculation to sqrt volume calculation. both ways are viable
+                // clamp each dimension to be between [10, 1000]
+                // thus 1 L => 100x100
+                vsize = {
+                    'x': Math.max(7, Math.min(100 * Math.cbrt(s.volume), 500)),
+                    'y': Math.max(7, Math.min(100 * Math.cbrt(s.volume), 500))
+                };
+            }
             s.physhook = newPhysicsHook(vec, vsize, s); //new PhysicsHookNew(vec, vsize);
             s.physhook.render.fillStyle = s.hexcolor();
             s.physhook.render.lineWidth = 1;
@@ -90,7 +97,9 @@ function applyPhyshook(s, pos, size) {
             assert(false, "Use newBounds()!");
         }
         else if (s instanceof SubstGroup) {
-            // s.physhook = new PhysicsHook(pos, size);
+            // if it's not a base substance, we use the default size. 
+            if (vsize === undefined)
+                vsize = { 'x': 100, 'y': 100 };
             s.physhook = newPhysicsHook(vec, vsize, s); // new PhysicsHookNew(vec, vsize);
             for (let subs of s.substances) {
                 applyPhyshook(subs);

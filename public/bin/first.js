@@ -61,7 +61,7 @@ var ScreenState;
     ScreenState[ScreenState["RUNNING"] = 1] = "RUNNING";
     ScreenState[ScreenState["CREDITS"] = 2] = "CREDITS";
 })(ScreenState || (ScreenState = {}));
-let universe = {};
+let universe = { beakers: [] };
 universe.paused = false;
 function getCanvas() {
     let canvas = document.getElementById("canvas");
