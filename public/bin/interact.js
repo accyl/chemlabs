@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class RateExpression {
     constructor() {
         this.reactants = [];
@@ -16,14 +17,18 @@ class RateExpression {
     }
 }
 class BoundRateExpr extends RateExpression {
-    constructor(k, rxt) {
+    constructor(k, reactants) {
         super();
         this.brx = [];
-        this.reactants = rxt;
+        this.reactants = reactants;
         this.k = k;
     }
-    bindReactants(...sub) {
-        this.brx.push(...sub);
+    bindReactants(...substances) {
+        this.brx.push(...substances);
+    }
+    bindBeaker(beaker) {
+        // TODO
+        // greedy method: bind all of the reactants and products of the beaker
     }
     R() {
         return super.R(this.brx);
@@ -300,3 +305,139 @@ class InteractionGroup {
 //     }
 // }
 // }
+// for N total substances
+// B = elements in beaker
+// TE = total number of eqb
+// K = number of first-layer keys
+// in all cases, TE / K = E = length of average Equilibrium[]
+// 1-MAP = Map<SubstanceType, Equilibrium[]>
+// K = N
+// E = TE / N
+// keys: N keys each with E entries, so N "buckets"
+// memory: TE
+// retrieval: O(B * E) = O(B * TE / N)
+// retrieval per additional substance: O(B * E) = O(B * TE / N)
+// 2-MAP = Map<[SubstanceType, SubstanceType], Equilibrium[]>:
+// each key is a pair of two reactants, being sorted using any arbitrary but definitive comparison function
+// keys: N**2/2 keys
+// E = TE / N**2/2 = 2TE / N**2
+// memory: TE
+// retrieval: O(B**2 / 2 * E) = O(B**2 * TE / N**2) = O(TE * B**2 / N**2)
+// B**2 / N**2 = (B / N)**2. Since B <= N, (B/N) <= 1, so B**2 / N**2 <= B/N so this will always be faster than 1-MAP
+// but the memory setup is more complicated and there is probably a larger constant factor
+// the reason why we can't extend this to 3+ keys is because many reactions only have 2 reactants => only 2 keys
+// so then we would have to backcheck.
+// (in fact some reactions have only 1 reactant, but those I will treat differently)
+// at that point it would be basically just a gigantic hashmap
+//
+// retrieval per additional substance: O(B * E) = O(2B * TE / N**2)
+// O(2B * TE / N**2) ?< O(B * TE / N) => O(2 / N) < O(1) => true if N > 2. So this will essentially always be faster than 1-MAP
+// Arguments based on avreage E depends on if all buckets are close to same size.
+// in fact average E is the best case (based on binary search argument)
+// Aka low variability, all buckets close to the same size = best case, good
+// n-BINARY SEARCHES for n=B
+// this corresponds to a real database
+// for a binary search, expected is the same as worst case
+// Retrieval: O(
+// log(TE) * log(TE/N) * log(TE/N**2) * ... * log(TE/N**B)
+// ) = O(
+// (TE + log(1)) * (TE + log(1/N) * (TE + log(1/N**2)))
+// )
+// Additional substance:
+// O(log(TE / E) * E = (log(TE) - E) * E
+// database search for any matching power set
+// SELECT reaction_id, rxt1, K FROM eqbs WHERE 
+// eqbs.rxt1 IN (beaker1, beaker2, ...) 
+// AND eqbs.rxt2 IN (beaker1, beaker2, ...)
+// AND (eqbs.rxt3 IN (beaker1, beaker2, ...) OR rxt3 IS NULL)
+// AND (eqbs.rxt4 IN (beaker1, beaker2, ...) OR rxt4 IS NULL) 
+// ...
+class TungstenDatabase {
+    static compare(a, b) {
+        if (a.type < b.type) {
+            return -1;
+        }
+        else if (a.type > b.type) {
+            return 1;
+        }
+        else {
+            return 0;
+        }
+    }
+}
+class DatabaseHashMap {
+    constructor(eqbs) {
+        this.eqbmap = new Map();
+        for (let eqb of eqbs) {
+            // find the rarest reactant
+            let RARESTreactant = eqb.reactants[0];
+            // TODO I might have to hard code it
+            // but we MUST find the rarest reactant so we don't store like 6000 entries for H2O
+            // and every time we try to look up some reaction involving water we have to search through 6000 
+            // random entries
+            let entry = this.eqbmap.get(RARESTreactant);
+            if (entry == undefined) {
+                entry = [eqb];
+                this.eqbmap.set(RARESTreactant, entry);
+            }
+            else {
+                entry.push(eqb);
+            }
+        }
+    }
+    // TODO this might be improved by a massive tree.
+    // for a tree with 2 layers, the data structure would be Map<SubstanceType, Map<SubstanceType, Equilibrium[]>>
+    // for a tree with n layers, the data structure would be 
+    // type TREE = Map<SubstanceType, TREE> | Equilibrium[];
+    // TODO or perhaps afte rthe first layer we use a binary tree to improve on search time
+    // Map<SubstanceType, BinaryTree<Equilibrium>>
+    determineRarity(reactant) {
+        // TODO I think we should calculate this, then cache the values, then use the cache
+        // then periodically recalculate assuming that the relative rarity won't drastically change
+        // and that they will instead approach some constant and remain stable.
+        // for now let's just hardcode some constants
+        if (['H2O', 'CO2', 'O2', 'H2', 'N2',].includes(reactant.chemicalFormula)) {
+            return 0;
+        }
+        if (reactant.chemicalFormula.length === 1) {
+            // monoatomic molecule
+            return 1;
+        }
+        if (reactant.chemicalFormula.length === 2 && '0' <= reactant.chemicalFormula[1] && reactant.chemicalFormula[1] <= '9') {
+            // diatom, or s8 or something simple
+            return 2;
+        }
+        return reactant.chemicalFormula.length * Math.sqrt(reactant.molarMass); // penalize large complex molecules, and molecules with large molar masses
+    }
+    equilibriaByReactants(reactants) {
+        let filtered = [];
+        for (let rxt of reactants) {
+            let eqbs = this.eqbmap.get(rxt.type);
+            eqbs = eqbs ? eqbs : [];
+            for (let eqb of eqbs) {
+                // if all of reactants are present
+                if (reactants.reduce((acc, rxt) => acc && eqb.reactants.indexOf(rxt.type) >= 0, true)) {
+                    filtered.push(eqb);
+                }
+            }
+        }
+        return filtered;
+    }
+}
+class EquilibriumAssigner {
+    constructor(beaker) {
+        this.beaker = beaker;
+    }
+    findEquilibria() {
+    }
+    uponNewReactant(reactant) {
+        // ugh
+        // if we store multiple copies of each eqb, then we wouldn't have to reiterate through all possibilities
+        // but since we don't store multiple copies of each eqb, we would have to store multiple copies of each reactant
+        // unless we use a binary tree
+        // then it would be much faster, because 
+        // with all of the other reactants we would only
+        // have to search for our new reactant
+        // as well as all of the immediate possibiltiies
+    }
+}

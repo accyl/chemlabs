@@ -3,6 +3,8 @@
 class SubstanceType {
     // dependent on the state of the subst.
     // intrinsic, intensive properties go here like density
+    id = -1;
+
     density?: number; // g/mL
     specificHeatCapacity: number = 0; // J/(g-K)
     chemicalFormula = "";
@@ -31,10 +33,10 @@ class SubstanceType {
 function coerceToSubstGroup(x: Substance | SubstGroup): SubstGroup {
     // if(!x) return undefined;
     let a = x as any;
-    if ('substances' in x && 'equilibria' in x && 'subsystems' in x) return x;
-    if ('substances' in x || 'equilibria' in x || 'subsystems' in x) throw "partially initialized substance/system hybrid: " + x;
+    if ('substances' in x && 'subsystems' in x) return x;
+    if ('substances' in x || 'subsystems' in x) throw "partially initialized substance/system hybrid: " + x;
     a['substances'] = [a];
-    a['equilibria'] = [];
+    // a['equilibria'] = [];
     a['subsystems'] = [];
     a.getSubstance = function () { return a; }
     return a;

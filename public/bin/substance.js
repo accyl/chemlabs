@@ -16,6 +16,9 @@ var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (
 var _m, _v, _T;
 class SubstanceType {
     constructor() {
+        // dependent on the state of the subst.
+        // intrinsic, intensive properties go here like density
+        this.id = -1;
         this.specificHeatCapacity = 0; // J/(g-K)
         this.chemicalFormula = "";
         /**
@@ -42,12 +45,12 @@ SubstanceType.NONE = new SubstanceType();
 function coerceToSubstGroup(x) {
     // if(!x) return undefined;
     let a = x;
-    if ('substances' in x && 'equilibria' in x && 'subsystems' in x)
+    if ('substances' in x && 'subsystems' in x)
         return x;
-    if ('substances' in x || 'equilibria' in x || 'subsystems' in x)
+    if ('substances' in x || 'subsystems' in x)
         throw "partially initialized substance/system hybrid: " + x;
     a['substances'] = [a];
-    a['equilibria'] = [];
+    // a['equilibria'] = [];
     a['subsystems'] = [];
     a.getSubstance = function () { return a; };
     return a;

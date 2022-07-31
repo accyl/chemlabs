@@ -64,7 +64,10 @@ function allBodiesWithinViewport(bodies?: Matter.Body[], inside = true) {
     else return bodies.filter(body => !Matter.Bounds.contains(internal.tempViewportBound, body.position));
     // all bodies outside viewport - AKA, they teleported out (probably because of user intervention)
 }
-type Beaker = Matter.Body & {_tracked: Set<Matter.Body>, addTracked: (body: Matter.Body) => void};
+
+/// <reference path="interact.ts"/>
+
+type Beaker = Matter.Body & {_substances: Set<Substance>, _tracked: Set<Matter.Body>, addTracked: (body: Matter.Body) => void, equilibriumAssigner?: EquilibriumAssigner};
 
 /**
  * The real interior width of the beaker = w - thick/2 - thick/2
@@ -107,9 +110,15 @@ function makeBeaker(x = 250, y = 250, w = 270, h = 350, thick = 40): Beaker {
     let beaker = bod as Beaker;
 
     beaker._tracked = new Set();
+    beaker._substances = new Set();
     beaker.addTracked = function (body: Matter.Body) {
+        if('substs' in body) {
+            // we're dealing with a substance
+            beaker._substances.add((body as PhysicsHook).substs as Substance);
+        }
         this._tracked.add(body);
     };
+    beaker.equilibriumAssigner = undefined;
     universe.beakers.push(beaker);
 
 

@@ -96,9 +96,15 @@ function makeBeaker(x = 250, y = 250, w = 270, h = 350, thick = 40) {
     bod.inverseInertia = 0;
     let beaker = bod;
     beaker._tracked = new Set();
+    beaker._substances = new Set();
     beaker.addTracked = function (body) {
+        if ('substs' in body) {
+            // we're dealing with a substance
+            beaker._substances.add(body.substs);
+        }
         this._tracked.add(body);
     };
+    beaker.equilibriumAssigner = undefined;
     universe.beakers.push(beaker);
     return beaker;
 }

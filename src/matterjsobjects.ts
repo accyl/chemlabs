@@ -151,7 +151,7 @@ namespace MatterObjects {
         let Body = Matter.Body;
         let body = released.body as Matter.Body;
         if (!body) return;
-        console.log(body);
+        // console.log(body);
 
         if (body.velocity.x > maxSpeed) {
             Body.setVelocity(body, { x: maxSpeed, y: body.velocity.y });
@@ -178,7 +178,7 @@ namespace MatterObjects {
             for(let beaker of universe.beakers) {
                 if (Beaker.isBodyInBeaker(body, beaker)) {
                     beaker.addTracked(body);
-                    console.log('tracked!');
+                    // console.log('tracked!');
                 }
             }
 
