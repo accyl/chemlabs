@@ -61,7 +61,7 @@ const tungstenCreate = function (inp: string, display = true): Substance {
 /**
  * W c = Tungsten create
  */
-const Wc = tungstenCreate;
+const $Wc = tungstenCreate;
 
 /**
  * Find all elements that match the selector
@@ -83,4 +83,8 @@ function tungstenFind(selector: num | string): Substance[] {
         return out;
     }
 }
-const Wf = tungstenFind;
+const $Wf = tungstenFind;
+
+const $Wg = function(args: string) {
+    return chemicals.get(args);
+}

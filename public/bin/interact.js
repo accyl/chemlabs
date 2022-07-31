@@ -1,5 +1,4 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 class RateExpression {
     constructor() {
         this.reactants = [];
@@ -352,7 +351,7 @@ class InteractionGroup {
 // AND (eqbs.rxt3 IN (beaker1, beaker2, ...) OR rxt3 IS NULL)
 // AND (eqbs.rxt4 IN (beaker1, beaker2, ...) OR rxt4 IS NULL) 
 // ...
-class TungstenDatabase {
+class InteractionsDatabase {
     static compare(a, b) {
         if (a.type < b.type) {
             return -1;
@@ -370,7 +369,7 @@ class DatabaseHashMap {
         this.eqbmap = new Map();
         for (let eqb of eqbs) {
             // find the rarest reactant
-            let RARESTreactant = eqb.reactants[0];
+            let RARESTreactant = eqb.reactants.reduce((a, b) => this.determineRarity(a) < this.determineRarity(b) ? a : b);
             // TODO I might have to hard code it
             // but we MUST find the rarest reactant so we don't store like 6000 entries for H2O
             // and every time we try to look up some reaction involving water we have to search through 6000 
@@ -396,18 +395,6 @@ class DatabaseHashMap {
         // then periodically recalculate assuming that the relative rarity won't drastically change
         // and that they will instead approach some constant and remain stable.
         // for now let's just hardcode some constants
-        if (['H2O', 'CO2', 'O2', 'H2', 'N2',].includes(reactant.chemicalFormula)) {
-            return 0;
-        }
-        if (reactant.chemicalFormula.length === 1) {
-            // monoatomic molecule
-            return 1;
-        }
-        if (reactant.chemicalFormula.length === 2 && '0' <= reactant.chemicalFormula[1] && reactant.chemicalFormula[1] <= '9') {
-            // diatom, or s8 or something simple
-            return 2;
-        }
-        return reactant.chemicalFormula.length * Math.sqrt(reactant.molarMass); // penalize large complex molecules, and molecules with large molar masses
     }
     equilibriaByReactants(reactants) {
         let filtered = [];

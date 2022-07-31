@@ -65,7 +65,7 @@ const tungstenCreate = function (inp, display = true) {
 /**
  * W c = Tungsten create
  */
-const Wc = tungstenCreate;
+const $Wc = tungstenCreate;
 /**
  * Find all elements that match the selector
  * @param selector
@@ -91,4 +91,7 @@ function tungstenFind(selector) {
         return out;
     }
 }
-const Wf = tungstenFind;
+const $Wf = tungstenFind;
+const $Wg = function (args) {
+    return chemicals.get(args);
+};

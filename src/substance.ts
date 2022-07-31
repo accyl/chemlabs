@@ -21,6 +21,25 @@ class SubstanceType {
         console.warn("unimplemented equals in chem.ts ChemicalType!");
         return this == x;
     }
+
+    rarity?: number;
+
+    finalize(freeze=false) {
+        if(this.rarity === undefined) {
+            if (['H2O', 'CO2', 'O2', 'H2', 'N2'].includes(this.chemicalFormula)) {
+                this.rarity = 0;
+            }
+            if (this.chemicalFormula.length === 1) {
+                this.rarity = 1; // monoatomic
+            }
+            if (this.chemicalFormula.length === 2 && '0' <= this.chemicalFormula[1] && this.chemicalFormula[1] <= '9') {
+                this.rarity = 2; // diatomic or s8 or something simple
+            }
+            if (this.rarity === undefined) this.rarity = Math.sqrt(this.chemicalFormula.length) * Math.log10(Math.max(this.molarMass, 1)) + 2; // penalize complex molecules with many different atoms, and large molecules with high molar mass
+
+        }
+        if(freeze) Object.freeze(this);
+    }
 }
 
 
@@ -322,11 +341,10 @@ class SubstanceMaker extends SubstanceType {
         //     let o = main.stateMap.get(x);
         //     return o === undefined ? main : o;
         // }
-        if (freeze) {
-            for (let x of subs) {
-                Object.freeze(x);
-            }
+        for (let x of subs) {
+            x.finalize(freeze);
         }
+        
         return main;
     }
 }

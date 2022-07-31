@@ -1,4 +1,3 @@
-import { EqualityOperator } from "typescript";
 
 class RateExpression {
     reactants: SubstanceType[] = [];
@@ -371,7 +370,7 @@ class InteractionGroup {
 
 
 
-abstract class TungstenDatabase {
+abstract class InteractionsDatabase {
     abstract equilibriaByReactants(reactants: Substance[]): Equilibrium[]; 
     static compare(a: Substance, b: Substance): number {
         if(a.type < b.type) {
@@ -383,7 +382,7 @@ abstract class TungstenDatabase {
         }
     }
 }
-class DatabaseHashMap implements TungstenDatabase {
+class DatabaseHashMap implements InteractionsDatabase {
 
     eqbmap: Map<SubstanceType, Equilibrium[]> = new Map();
 
@@ -400,24 +399,12 @@ class DatabaseHashMap implements TungstenDatabase {
         // then periodically recalculate assuming that the relative rarity won't drastically change
         // and that they will instead approach some constant and remain stable.
         // for now let's just hardcode some constants
-        if (['H2O', 'CO2', 'O2', 'H2', 'N2', ].includes(reactant.chemicalFormula)) {
-            return 0;
-        }
-        if (reactant.chemicalFormula.length === 1) {
-            // monoatomic molecule
-            return 1;
-        }
-        if(reactant.chemicalFormula.length === 2 && '0' <= reactant.chemicalFormula[1] && reactant.chemicalFormula[1] <= '9') {
-            // diatom, or s8 or something simple
-            return 2;
-        }
-        return reactant.chemicalFormula.length * Math.sqrt(reactant.molarMass); // penalize large complex molecules, and molecules with large molar masses
-    }
+            }
 
     constructor(eqbs: Equilibrium[]) {
         for(let eqb of eqbs) {
             // find the rarest reactant
-            let RARESTreactant = eqb.reactants[0]; 
+            let RARESTreactant = eqb.reactants.reduce((a, b) => this.determineRarity(a) < this.determineRarity(b) ? a : b); 
             // TODO I might have to hard code it
             // but we MUST find the rarest reactant so we don't store like 6000 entries for H2O
             // and every time we try to look up some reaction involving water we have to search through 6000 

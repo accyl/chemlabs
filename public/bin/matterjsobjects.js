@@ -1,6 +1,6 @@
 "use strict";
 /// <reference path='first.ts'/>
-// / <reference path='../public/libs/matter.min.js'/>
+/// <reference types='../node_modules/@types/matter-js'/>
 var MatterObjects;
 (function (MatterObjects) {
     MatterObjects.idMap = new Map();

@@ -104,15 +104,15 @@ chemicals.set('H2O', function(){
     g.chemicalFormula = l.chemicalFormula = s.chemicalFormula = "H2O";
     g.molarMass = l.molarMass = s.molarMass = 18.01528; // g/mol;
 
-    Object.freeze(g);
-    Object.freeze(l);
-    Object.freeze(s);
+    g.finalize(true);
+    l.finalize(true);
+    s.finalize(true);
 
     return l;
 }());
 chemicals.set('KMnO4', function(){
     // molar mass: 158.033949
-    let aq = new SubstanceMaker('aq', undefined, makeSpectralAqueous(makeAqueous(makeMolecular(Substance), Wc("H2O 1L", false)), spectra_kmno4_f));
+    let aq = new SubstanceMaker('aq', undefined, makeSpectralAqueous(makeAqueous(makeMolecular(Substance), $Wc("H2O 1L", false)), spectra_kmno4_f));
     aq.state = "aq";
     // aq.molar_absorptivity = [0.8, 1.75, 0.45];
     // aq.molar_absorptivity = [2042.60286, 3341.11468, 1167.20163];
@@ -137,8 +137,8 @@ chemicals.set('KMnO4', function(){
     //     return aq; // default condition, for if a state is omitted
 
     // }
-    Object.freeze(s); 
-    Object.freeze(aq); // lock 
+    s.finalize(true); 
+    aq.finalize(true); // lock 
     return aq;
 }());
 
@@ -154,7 +154,7 @@ chemicals.set('H2', function () {
     };
     return SubstanceMaker.fromJson(all, g, [l]);
 }());
-Wc.g = function(key: string): SubstanceMaker | undefined {
+$Wc.g = function(key: string): SubstanceMaker | undefined {
     return chemicals.get(key);
 }
 // new method above

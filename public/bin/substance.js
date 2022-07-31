@@ -1,19 +1,17 @@
 "use strict";
 // <reference path='phys/physold.ts'/>
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, privateMap) {
-    if (!privateMap.has(receiver)) {
-        throw new TypeError("attempted to get private field on non-instance");
-    }
-    return privateMap.get(receiver);
+var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, privateMap, value) {
-    if (!privateMap.has(receiver)) {
-        throw new TypeError("attempted to set private field on non-instance");
-    }
-    privateMap.set(receiver, value);
-    return value;
+var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 };
-var _m, _v, _T;
+var _Substance_m, _Substance_v, _Substance_T;
 class SubstanceType {
     constructor() {
         // dependent on the state of the subst.
@@ -33,6 +31,23 @@ class SubstanceType {
     equals(x) {
         console.warn("unimplemented equals in chem.ts ChemicalType!");
         return this == x;
+    }
+    finalize(freeze = false) {
+        if (this.rarity === undefined) {
+            if (['H2O', 'CO2', 'O2', 'H2', 'N2'].includes(this.chemicalFormula)) {
+                this.rarity = 0;
+            }
+            if (this.chemicalFormula.length === 1) {
+                this.rarity = 1; // monoatomic
+            }
+            if (this.chemicalFormula.length === 2 && '0' <= this.chemicalFormula[1] && this.chemicalFormula[1] <= '9') {
+                this.rarity = 2; // diatomic or s8 or something simple
+            }
+            if (this.rarity === undefined)
+                this.rarity = Math.sqrt(this.chemicalFormula.length) * Math.log10(Math.max(this.molarMass, 1)) + 2; // penalize complex molecules with many different atoms, and large molecules with high molar mass
+        }
+        if (freeze)
+            Object.freeze(this);
     }
 }
 SubstanceType.NONE = new SubstanceType();
@@ -90,9 +105,9 @@ class Substance extends SubstGroup {
         super();
         this.subsystems = [];
         // mol = 0; 
-        _m.set(this, 1);
-        _v.set(this, 1);
-        _T.set(this, 273.15);
+        _Substance_m.set(this, 1);
+        _Substance_v.set(this, 1);
+        _Substance_T.set(this, 273.15);
         this.type = type ? type : SubstanceType.NONE;
         this.state = type ? type.state : "";
         let a = [];
@@ -101,22 +116,22 @@ class Substance extends SubstGroup {
     }
     getSubstance(key) { return this; }
     get mass() {
-        return __classPrivateFieldGet(this, _m);
+        return __classPrivateFieldGet(this, _Substance_m, "f");
     }
     set mass(m) {
-        __classPrivateFieldSet(this, _m, m);
+        __classPrivateFieldSet(this, _Substance_m, m, "f");
     }
     get volume() {
-        return __classPrivateFieldGet(this, _v);
+        return __classPrivateFieldGet(this, _Substance_v, "f");
     }
     set volume(volume) {
-        __classPrivateFieldSet(this, _v, volume);
+        __classPrivateFieldSet(this, _Substance_v, volume, "f");
     }
     get temperature() {
-        return __classPrivateFieldGet(this, _T);
+        return __classPrivateFieldGet(this, _Substance_T, "f");
     }
     set temperature(T) {
-        __classPrivateFieldSet(this, _T, T);
+        __classPrivateFieldSet(this, _Substance_T, T, "f");
     }
     // color(background: tup = [255, 255, 255]): tup {
     //     return this.type.rgb;
@@ -161,7 +176,7 @@ class Substance extends SubstGroup {
             this.concentration = kval;
     }
 }
-_m = new WeakMap(), _v = new WeakMap(), _T = new WeakMap();
+_Substance_m = new WeakMap(), _Substance_v = new WeakMap(), _Substance_T = new WeakMap();
 function makeMolecular(s) {
     return class MolecularSubstance extends s {
         constructor() {
@@ -322,10 +337,8 @@ class SubstanceMaker extends SubstanceType {
         //     let o = main.stateMap.get(x);
         //     return o === undefined ? main : o;
         // }
-        if (freeze) {
-            for (let x of subs) {
-                Object.freeze(x);
-            }
+        for (let x of subs) {
+            x.finalize(freeze);
         }
         return main;
     }

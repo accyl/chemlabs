@@ -49,3 +49,7 @@ or rgb_from_spectrum_concen(spectra_f, concen) will yield the desired results.
 
 
 
+## Build process
+
+Run the command: `npm install`
+To fix the error in equations.ts, change the index.d.ts in nerdamer to evaluate(x: any);
