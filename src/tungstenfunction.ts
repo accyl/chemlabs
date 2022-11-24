@@ -28,10 +28,10 @@ const tungstenCreate = function (inp: string, display = true): Substance {
     // form.formula
     let formula = chem.formula;
     let protos = undefined;
-    if (chemicals.has(formula)) {
-        protos = chemicals.get(formula);
+    if (chemicals.hasFormula(formula)) {
+        protos = chemicals.getFromFormula(formula);
     } else {
-        protos = chemicals.createMaker(chem);
+        protos = chemicals.setFromTracker(chem);
         console.log(`formula ${formula} not found in list of chemicals. autogenerating...`);
     }
     if (protos) {
@@ -86,5 +86,5 @@ function tungstenFind(selector: num | string): Substance[] {
 const $Wf = tungstenFind;
 
 const $Wg = function(args: string) {
-    return chemicals.get(args);
+    return chemicals.getFromFormula(args);
 }

@@ -12,6 +12,9 @@ type num = number;
 type tup = Array<number>;
 type tup3 = [num, num, num];
 type bool = boolean;
+
+type JsonChemical = { state: string };
+
 // type vec = Vector;
 function _componentToHex(c: number) {
     var hex = Math.round(Math.min(c, 255)).toString(16);

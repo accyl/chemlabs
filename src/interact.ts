@@ -1,3 +1,16 @@
+// use preexisting data sources
+/*
+https://webbook.nist.gov/
+https://kinetics.nist.gov/kinetics/welcome.jsp
+https://academic.oup.com/nar/article/50/D1/D603/6445959
+python equilibriator-api
+Gibbs: https://chemistry.stackexchange.com/questions/27421/where-to-find-data-for-gibbs-energy-enthalpy-and-entropy
+
+K Value:
+https://pubs.acs.org/doi/10.1021/jacs.1c09820
+https://open-reaction-database.org/client/search
+
+ */
 
 class RateExpression {
     reactants: SubstanceType[] = [];
@@ -87,7 +100,7 @@ class Equilibrium extends BalancedRxn {
     static fromJson(x: {K:num, rx:SubstanceType[], px:SubstanceType[], coeff:num[]}) {
         return new Equilibrium(x.rx, x.px, x.coeff, x.K);
     }
-    plugReactants(reactants: Substance[]) {
+    multiplyReactants(reactants: Substance[]) {
         let Rs = 1;
         for (let i=0;i<reactants.length;i++) {
             let rxt = reactants[i];
@@ -96,7 +109,7 @@ class Equilibrium extends BalancedRxn {
         }
         return Rs;
     }
-    plugProducts(products: Substance[]) {
+    multiplyProducts(products: Substance[]) {
         let Ps = 1;
         let offset = this.reactants.length;
         for (let i = 0; i < products.length; i++) {
@@ -107,7 +120,7 @@ class Equilibrium extends BalancedRxn {
         return Ps;
     }
     Q(reactants: Substance[], products: Substance[]) {
-        return this.plugReactants(reactants) / this.plugProducts(products);
+        return this.multiplyReactants(reactants) / this.multiplyProducts(products);
     }
     /**
      * @param all Input substances
@@ -372,6 +385,7 @@ class InteractionGroup {
 
 abstract class InteractionsDatabase {
     abstract equilibriaByReactants(reactants: Substance[]): Equilibrium[]; 
+    abstract storeEquilibrium(eqb: Equilibrium): void;
     static compare(a: Substance, b: Substance): number {
         if(a.type < b.type) {
             return -1;
@@ -399,24 +413,36 @@ class DatabaseHashMap implements InteractionsDatabase {
         // then periodically recalculate assuming that the relative rarity won't drastically change
         // and that they will instead approach some constant and remain stable.
         // for now let's just hardcode some constants
-            }
-
+    }
+    findRarest(reactants: SubstanceType[]) {
+        return reactants.reduce((a, b) => this.determineRarity(a) < this.determineRarity(b) ? a : b); 
+    }
     constructor(eqbs: Equilibrium[]) {
         for(let eqb of eqbs) {
             // find the rarest reactant
-            let RARESTreactant = eqb.reactants.reduce((a, b) => this.determineRarity(a) < this.determineRarity(b) ? a : b); 
+            let rarest = this.findRarest(eqb.reactants);
             // TODO I might have to hard code it
             // but we MUST find the rarest reactant so we don't store like 6000 entries for H2O
             // and every time we try to look up some reaction involving water we have to search through 6000 
             // random entries
 
-            let entry = this.eqbmap.get(RARESTreactant);
+            let entry = this.eqbmap.get(rarest);
             if(entry == undefined) {
                 entry = [eqb];
-                this.eqbmap.set(RARESTreactant, entry);
+                this.eqbmap.set(rarest, entry);
             } else {
                 entry.push(eqb);
             }
+        }
+    }
+    storeEquilibrium(eqb: Equilibrium): void {
+        let rarest = this.findRarest(eqb.reactants);
+        let entry = this.eqbmap.get(rarest);
+        if(entry == undefined) {
+            entry = [eqb];
+            this.eqbmap.set(rarest, entry);
+        } else {
+            entry.push(eqb);
         }
     }
     equilibriaByReactants(reactants: Substance[]): Equilibrium[] {

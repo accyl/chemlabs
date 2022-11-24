@@ -1,0 +1,18 @@
+canonical: Canonical smiles https://pubchem.ncbi.nlm.nih.gov/compound/Carbon-dioxide#section=InChI
+
+https://en.wikipedia.org/wiki/Standard_electrode_potential_(data_page)
+
+sfEnthalpy: https://sistemas.eel.usp.br/docentes/arquivos/5817712/TDQ%20I/R-standard_enthalpy_of_formation.pdf
+
+sfGibbs: https://en.wikipedia.org/wiki/Standard_Gibbs_free_energy_of_formation
+
+sEntropy: https://www.mrbigler.com/misc/energy-of-formation.PDF
+https://chem.libretexts.org/Bookshelves/Introductory_Chemistry/Introductory_Chemistry_(CK-12)/20%3A_Entropy_and_Free_Energy/20.02%3A_Standard_Entropy
+
+All: https://www.drjez.com/uco/ChemTools/Standard%20Thermodynamic%20Values.pdf
+https://www.engineeringtoolbox.com/standard-state-enthalpy-formation-definition-value-Gibbs-free-energy-entropy-molar-heat-capacity-d_1978.html
+http://fptl.ru/biblioteka/spravo4niki/dean.pdf
+http://chemistry-reference.com/standard%20thermodynamic%20values.pdf
+
+Gibbs reference: https://chem.libretexts.org/Bookshelves/Physical_and_Theoretical_Chemistry_Textbook_Maps/Physical_Chemistry_(LibreTexts)/22%3A_Helmholtz_and_Gibbs_Energies/22.07%3A_The_Gibbs-Helmholtz_Equation
+

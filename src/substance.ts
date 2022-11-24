@@ -240,43 +240,69 @@ function makeSpectralAqueous<T extends Mixin<AqueousSubstance>>(x: T, spectra_fI
         }
     }
 }
+
 class SubstanceMaker extends SubstanceType {
-    static NONE = new SubstanceMaker();
+    // static NONE = new ProtoSubstance();
     _statemap = new Map() as Map<string, SubstanceMaker>;
-    standardState: SubstanceMaker;
+    STPSelf: SubstanceMaker;
     _substConstr: SubstanceConstructor;
-    constructor(state?: string, standardState?: SubstanceMaker, constructor: SubstanceConstructor = MolecularSubstance) {
+    
+    constructor(state: string, stpself?: SubstanceMaker, constructor: SubstanceConstructor = MolecularSubstance) {
         super();
-        if (standardState) {
-            this.standardState = standardState;
-        } else {
-            this.standardState = this;
-        }
-        if (state) {
-            this.standardState.pushNewState(this, this.state);
-            this.state = state;
+        this.STPSelf = stpself ? stpself : this; // default value for `stpself` is `this` if `stpself` is omitted.
+
+        this.state = state;
+        if (state !== '') {
+            this.STPSelf.registerNonSTPSelf(this, state); 
+            // ^ that function is a bit of a misnomer; it's ok if this = STPSelf. 
+            // a better name would be pushNotNecessarilySTPSelf see the comments
         }
         this._substConstr = constructor;
     }
-    getStandardState(): SubstanceMaker {
-        return this.standardState;
+    getSTPSelf(): SubstanceMaker {
+        return this.STPSelf;
     }
-    getWithArgs(args: ComputedQty | string): SubstanceMaker | undefined {
+    /**
+     * This is a bit of a misnomer because
+     * you can actually retrieve the STP self from this function.
+     * What I mean is that you can get versions of the
+     * substance itself that could be STP, but not necessarily.
+     * A better name would be getNotNecessarilySTPSelf,
+     * but that's a bit long.
+     * @param args 
+     * @returns 
+     */
+    getNonSTPSelf(args: ComputedQty | string): SubstanceMaker | undefined {
         let state = args instanceof ComputedQty ? args.state : args;
-        let standard = this.getStandardState();
+        let standard = this.getSTPSelf();
         if (state === standard.state) return standard;
-        let ret = state ? this.getStandardState()._statemap.get(state) : undefined;
+        let ret = state ? this.getSTPSelf()._statemap.get(state) : undefined;
         return ret;
     }
-    pushNewState(chemical: SubstanceMaker, condition: ComputedQty | string) {
+
+
+    registerNotNecessarilySTPSelf(chemical: SubstanceMaker, condition: ComputedQty | string) {
         let state = condition instanceof ComputedQty ? condition.state : condition;
-        if (state && this.getWithArgs(state) === undefined) {
-            this.getStandardState()._statemap.set(state, chemical);
+        let map = this.getSTPSelf()._statemap;
+        if(state && !map.has(state)) {
+            map.set(state, chemical);
         }
+        // if (state && this.getNonSTPSelf(state) === undefined) {
+        //     this.getSTPSelf()._statemap.set(state, chemical);
+        // }
     }
+    /**
+     * This is quite a bit of a misnomer because
+     * you are required to push the STP self to this function.
+     * A better name would be pushNotNecessarilySTPSelf, 
+     * but that is a bit of a mouthful.
+     * @param args 
+     * @returns 
+     */
+    registerNonSTPSelf = this.registerNotNecessarilySTPSelf;
 
     /**
-     * Makes a substance with the specifiied amount
+     * Makes a substance with the specified amount
      * @param qty 
      * @param state 
      * @returns 
@@ -286,11 +312,11 @@ class SubstanceMaker extends SubstanceType {
         if (state) qty.state = state;
         // return qty.formFrom(this);
         ///**
-        let orig = this.getWithArgs(qty);
+        let orig = this.getNonSTPSelf(qty);
         if(orig === undefined) {
             // perhaps a state isn't set
             // then we create a new substancemaker
-            orig = chemicals.createMakerFromQty(qty, this);
+            orig = chemicals.setWithNewState(this, state);
         }
         let ret = orig.form();
         if (qty.mass) ret.mass = qty.mass;
@@ -323,7 +349,7 @@ class SubstanceMaker extends SubstanceType {
         altStates = altStates ? altStates : [] as JsonChemical[];
         // if(constructed) assert(constructed.length === 1 + altStates.length);
 
-        let main = Object.assign(new SubstanceMaker(), defaul, all) as SubstanceMaker & JsonChemical; // & { stateMap: any };
+        let main = Object.assign(new SubstanceMaker(defaul.state), defaul, all) as SubstanceMaker & JsonChemical; // & { stateMap: any };
         // main.stateMap = new Map() as Map<string, ProtoChemical>;
 
         let subs = [];
@@ -334,7 +360,7 @@ class SubstanceMaker extends SubstanceType {
             subs.push(sub);
         }
         for (let sub of subs) {
-            main.pushNewState(sub, sub.state);
+            main.registerNonSTPSelf(sub, sub.state);
         }
         // main.stateMap.set(sub.state, sub);
         // main._getWithArgs = function (x) {

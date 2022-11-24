@@ -1,78 +1,149 @@
 "use strict";
 /// <reference path='substance.ts'/>
-const chemicals = new Map();
-/**
- * dynamically creates a new chemical entry with the specified AtomTracker chemical and which
- * exposes the SubstanceMaker with which you can create massed substances
- * @param atomt AtomTracker that the chemical composition of the new substance
- * @returns the SubstanceMaker, which can at any time be accessed through $c(key: string)
- */
-chemicals.createMaker = function (atomt) {
-    let formula = atomt.formula;
-    // first we check that we don't already have one
-    let already = chemicals.get(formula);
-    if (already) {
-        let withstate = already.getWithArgs(atomt.state);
-        if (withstate) {
-            return withstate;
-        }
-        // if we get to this point, then there is an already existing chemical, but not of the right state
+class ChemicalsDatabaseImpl {
+    constructor() {
+        this.canonicalMap = new Map();
+        this.chemicalsMap = new Map();
+        // new method below
     }
-    // if we get to this point, then we need to create a new chemical
-    let all = {
-        chemicalFormula: atomt.formula,
-        molarMass: atomt.molarMass(),
-        newAtomTracker: atomt,
-        rgb: "#F7F7F7",
-        density: undefined
-    };
-    let phase = atomt.state;
-    if (!phase && atomt.atoms.length == 1) {
-        // a substance comprised of a single atom
-        let anum = atomt.atomicNums[0];
-        switch (ptable[anum].phase) {
-            case 'Solid':
-                phase = 's';
-                break;
-            case 'Liquid':
-                phase = 'l';
-                break;
-            case 'Gas':
-                phase = 'g';
-                break;
-        }
-        let rgb = ptable[anum].rgb;
-        if (rgb) {
-            // all.rgb = 
-            all.rgb = '#' + rgb; // _rgb(rgb);
+    /**
+     * Will always return the substance in STP state.
+     * @param canonical
+     * @returns
+     */
+    getFromCanonical(canonical) {
+        // throw new Error("Method not implemented.");
+        return this.chemicalsMap.get(canonical);
+    }
+    toCanonical(formula) {
+        return this.canonicalMap.get(formula);
+    }
+    /**
+     * Will always return the substance in STP state.
+     * @param formula
+     * @returns
+     */
+    getFromFormula(formula) {
+        let canonical = this.toCanonical(formula);
+        if (canonical) {
+            return this.chemicalsMap.get(canonical);
         }
     }
-    let state = { state: phase };
-    let proto = chemicalFromJson(all, state, undefined, false);
-    if (already) {
-        proto.standardState = already;
-        already.pushNewState(proto, atomt.state);
+    pasteAll() {
+        throw new Error("Method not implemented.");
     }
-    else {
-        chemicals.set(formula, proto);
+    pasteChanges() {
+        throw new Error("Method not implemented.");
     }
-    return proto;
-};
-/**
- *
- * @param qty
- * @param model
- * @returns
- */
-chemicals.createMakerFromQty = function (qty, model) {
-    let atomTracker = new AtomTracker(model.getStandardState());
-    atomTracker.state = qty.state ? qty.state : model.state;
-    return chemicals.createMaker(atomTracker);
-};
-function chemicalFromJson(all, defaul, altStates, freeze = true) {
-    return SubstanceMaker.fromJson(all, defaul, altStates, freeze);
+    loadAll(paste) {
+        throw new Error("Method not implemented.");
+    }
+    setFromCanonical(canon, model) {
+        this.chemicalsMap.set(canon, model);
+        this.canonicalMap.set(model.chemicalFormula, canon);
+    }
+    setFromFormula(form, model) {
+        let canon = this.formToInChI(form);
+        if (canon) {
+            this.canonicalMap.set(form, canon);
+            this.chemicalsMap.set(canon, model);
+        }
+    }
+    formToInChI(form) {
+        // here we have two options. 
+        // 1. we cache a bunch of formulas and files, and we can just look them up
+        // 2. we force the user to provide the exact structure of the molecule, which
+        // we then can use InChI.js to convert to the canonical form
+        // 3. we use a web service to get the canonical form
+        throw new Error("Method not implemented.");
+    }
+    hasFormula(form) {
+        return this.canonicalMap.has(form);
+    }
+    hasCanonical(canon) {
+        return this.chemicalsMap.has(canon);
+    }
+    /**
+     * dynamically creates a new chemical entry with the specified AtomTracker chemical and which
+     * exposes the ProtoSubstance with which you can create massed substances
+     *
+     * If an exact substance already exists, the previous one is returned.
+     * @param atomt AtomTracker that the chemical composition of the new substance
+     * @returns the ProtoSubstance, which can at any time be accessed through $c(key: string)
+     */
+    setFromTracker(atomt) {
+        let formula = atomt.formula;
+        // first we check that we don't already have one
+        let already = this.getFromFormula(formula); // chemicals.get(formula);
+        if (already) {
+            let withstate = already.getNonSTPSelf(atomt.state);
+            if (withstate) {
+                return withstate;
+            }
+            // if we get to this point, then there is an already existing chemical, but not of the right state
+        }
+        // if we get to this point, then we need to create a new chemical
+        let all = {
+            chemicalFormula: atomt.formula,
+            molarMass: atomt.molarMass(),
+            newAtomTracker: atomt,
+            rgb: "#F7F7F7",
+            density: undefined
+        };
+        let phase = atomt.state;
+        if (!phase && atomt.atoms.length == 1) {
+            // a substance comprised of a single atom
+            let anum = atomt.atomicNums[0];
+            switch (ptable[anum].phase) {
+                case 'Solid':
+                    phase = 's';
+                    break;
+                case 'Liquid':
+                    phase = 'l';
+                    break;
+                case 'Gas':
+                    phase = 'g';
+                    break;
+            }
+            let rgb = ptable[anum].rgb;
+            if (rgb) {
+                // all.rgb = 
+                all.rgb = '#' + rgb; // _rgb(rgb);
+            }
+        }
+        let state = { state: phase };
+        let proto = SubstanceMaker.fromJson(all, state, undefined, false);
+        if (already) {
+            proto.STPSelf = already;
+            already.registerNonSTPSelf(proto, atomt.state);
+        }
+        else {
+            chemicals.setFromFormula(formula, proto);
+        }
+        return proto;
+    }
+    /**
+     * Saves the protosubstance, but updated with the new quantity's state,
+     * into the database.
+     * @param qty
+     * @param model
+     * @returns It should return a protosubstance with the same properties
+     * as the one passed in, but with the new state.
+     * It should be equivalent to the one returned by $c(key: string)
+     */
+    setWithNewState(model, state) {
+        let atomTracker = new AtomTracker(model.getSTPSelf());
+        atomTracker.state = state ? state : model.state;
+        let result = chemicals.setFromTracker(atomTracker);
+        assert(result === chemicals.getFromFormula(model.chemicalFormula));
+        return result;
+    }
 }
-chemicals.set('H2O', function () {
+const chemicals = new ChemicalsDatabaseImpl();
+chemicals.setFromCanonical('1S/H2O/h1H2', function () {
+    // source: https://pubchem.ncbi.nlm.nih.gov/compound/Water#section=IUPAC-Name
+    // CAS: 7732-18-5
+    // InChI: InChI=1S/H2O/h1H2
     let l = new SubstanceMaker('l');
     l.density = 999.8395;
     l.specificHeatCapacity = 4.184;
@@ -89,7 +160,10 @@ chemicals.set('H2O', function () {
     s.finalize(true);
     return l;
 }());
-chemicals.set('KMnO4', function () {
+chemicals.setFromCanonical('1S/K.Mn.4O/q+1;;;;;-1', function () {
+    // source: https://pubchem.ncbi.nlm.nih.gov/compound/Potassium-permanganate
+    // InChI=1S/K.Mn.4O/q+1;;;;;-1
+    // CAS: 7722-64-7
     // molar mass: 158.033949
     let aq = new SubstanceMaker('aq', undefined, makeSpectralAqueous(makeAqueous(makeMolecular(Substance), $Wc("H2O 1L", false)), spectra_kmno4_f));
     aq.state = "aq";
@@ -117,7 +191,7 @@ chemicals.set('KMnO4', function () {
     aq.finalize(true); // lock 
     return aq;
 }());
-chemicals.set('H2', function () {
+chemicals.setFromCanonical('1S/H2/h1H', function () {
     let g = { state: "g" };
     let l = { state: "l", density: 70.85 }; // g/L
     let all = {
@@ -128,7 +202,7 @@ chemicals.set('H2', function () {
     return SubstanceMaker.fromJson(all, g, [l]);
 }());
 $Wc.g = function (key) {
-    return chemicals.get(key);
+    return chemicals.getFromFormula(key);
 };
 // new method above
 // old method below
