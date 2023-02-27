@@ -13,10 +13,10 @@ https://open-reaction-database.org/client/search
  */
 
 class RateExpression {
-    reactants: SubstanceType[] = [];
+    reactants: ChemType[] = [];
     powers: num[] = [];
     k: num = 1; // rate 
-    R(orderedReactants: Substance[]) {
+    R(orderedReactants: ChemComponent[]) {
         assert(orderedReactants.length === this.reactants.length && this.reactants.length == this.powers.length);
         let tot = 1;
         for (let i = 0; i < this.reactants.length; i++) {
@@ -28,13 +28,13 @@ class RateExpression {
 }
 type RateExpr = RateExpression;
 class BoundRateExpr extends RateExpression{
-    brx: Substance[] = [];
-    constructor(k: num, reactants: SubstanceType[]) {
+    brx: ChemComponent[] = [];
+    constructor(k: num, reactants: ChemType[]) {
         super();
         this.reactants = reactants;
         this.k = k;
     }
-    bindReactants(...substances: Substance[]) {
+    bindReactants(...substances: ChemComponent[]) {
         this.brx.push(...substances);
     }
     bindBeaker(beaker: Beaker) {
@@ -49,31 +49,31 @@ class BoundRateExpr extends RateExpression{
     }
 }
 class BalancedRxn {
-    reactants: SubstanceType[] = [];
-    products: SubstanceType[] = [];
+    reactants: ChemType[] = [];
+    products: ChemType[] = [];
     coefficients: num[] = []; // reactants, then products
-    constructor(rxt: SubstanceType[], px: SubstanceType[], coeff: num[]) {
+    constructor(rxt: ChemType[], px: ChemType[], coeff: num[]) {
         this.reactants = rxt;
         this.products = px;
         this.coefficients = coeff;
     }
-    chemicalEntry(index: num): [SubstanceType, num] {
+    chemicalEntry(index: num): [ChemType, num] {
         let chem = index >= this.reactants.length ? this.products[index - this.reactants.length] : this.reactants[index];
         let coeff = this.coefficients[index];
         return [chem, coeff];
     }
-    forEach(callback: (chem: SubstanceType, coeff: num)=> void) {
+    forEach(callback: (chem: ChemType, coeff: num)=> void) {
         this.forEachReactant(callback);
         this.forEachProduct(callback);
         
     }
-    forEachReactant(callback: (chem: SubstanceType, coeff: num) => void) {
+    forEachReactant(callback: (chem: ChemType, coeff: num) => void) {
         let i = 0;
         for (; i < this.reactants.length; i++) {
             callback(this.reactants[i], this.coefficients[i]);
         }
     }
-    forEachProduct(callback: (chem: SubstanceType, coeff: num) => void) {
+    forEachProduct(callback: (chem: ChemType, coeff: num) => void) {
         let j = 0;
         for (; j < this.products.length; j++) {
             callback(this.products[j], this.coefficients[j + this.reactants.length]);
@@ -90,17 +90,17 @@ class Equilibrium extends BalancedRxn {
     // K = exp(-RT/ΔG°)
     // Ecell = Ecell° - RT/(nF)*lnQ
     K = 1;
-    constructor(rxt: SubstanceType[], px: SubstanceType[], coeff: num[], K: num) {
+    constructor(rxt: ChemType[], px: ChemType[], coeff: num[], K: num) {
         super(rxt, px, coeff);
         this.K = K;
     }
     toJson() {
         return {'K': this.K, 'rx': this.reactants, 'px': this.products, 'coeff': this.coefficients};
     }
-    static fromJson(x: {K:num, rx:SubstanceType[], px:SubstanceType[], coeff:num[]}) {
+    static fromJson(x: {K:num, rx:ChemType[], px:ChemType[], coeff:num[]}) {
         return new Equilibrium(x.rx, x.px, x.coeff, x.K);
     }
-    multiplyReactants(reactants: Substance[]) {
+    multiplyReactants(reactants: ChemComponent[]) {
         let Rs = 1;
         for (let i=0;i<reactants.length;i++) {
             let rxt = reactants[i];
@@ -109,7 +109,7 @@ class Equilibrium extends BalancedRxn {
         }
         return Rs;
     }
-    multiplyProducts(products: Substance[]) {
+    multiplyProducts(products: ChemComponent[]) {
         let Ps = 1;
         let offset = this.reactants.length;
         for (let i = 0; i < products.length; i++) {
@@ -119,14 +119,14 @@ class Equilibrium extends BalancedRxn {
         }
         return Ps;
     }
-    Q(reactants: Substance[], products: Substance[]) {
+    Q(reactants: ChemComponent[], products: ChemComponent[]) {
         return this.multiplyReactants(reactants) / this.multiplyProducts(products);
     }
     /**
      * @param all Input substances
      * @returns The input substances get split into reactants and products, respectively
      */
-    partition(all: Substance[]): [Substance[], Substance[]] {
+    partition(all: ChemComponent[]): [ChemComponent[], ChemComponent[]] {
         let rxt = [];
         let px = [];
         for (let subst of all) {
@@ -138,7 +138,7 @@ class Equilibrium extends BalancedRxn {
         }
         return [rxt, px];
     }
-    plug(all: Substance[]) {
+    plug(all: ChemComponent[]) {
         this.Q(...this.partition(all));
     }
 
@@ -150,8 +150,8 @@ type Eqb = Equilibrium;
  */
 class BoundEqb {
     eqb: Eqb;
-    brx: Substance[] = [];
-    bpx: Substance[] = [];
+    brx: ChemComponent[] = [];
+    bpx: ChemComponent[] = [];
     constructor(eqb: Eqb) {
         this.eqb = eqb;
     }
@@ -161,13 +161,13 @@ class BoundEqb {
     // constructor(K: num, rxt: ChemicalType[], px: ChemicalType[]) {
     //     super(K, rxt, px);
     // }
-    bindReactants(...sub: Substance[]) {
+    bindReactants(...sub: ChemComponent[]) {
         this.brx.push(...sub);
     }
-    bindProducts(...sub: Substance[]) {
+    bindProducts(...sub: ChemComponent[]) {
         this.bpx.push(...sub);
     }
-    bind(all: Substance[]) {
+    bind(all: ChemComponent[]) {
         let [rx, px] = this.eqb.partition(all);
         this.bindReactants(...rx);
         this.bindProducts(...px);
@@ -196,7 +196,7 @@ class BoundEqb {
         // let deduct = forward ? this.brx : this.bpx; // if it's forward, then deduct from reactants. otherwise, deduct from products
         let minr = Number.POSITIVE_INFINITY;
         let eqb = this.eqb;
-        let findLR = function (chem: Substance, coeff: num) {
+        let findLR = function (chem: ChemComponent, coeff: num) {
             minr = Math.min(minr, chem.kValue / eqb.coefficients[coeff]);
         }; // finds the limit reagent
         if (forward) {
@@ -268,17 +268,17 @@ class BoundEqb {
         // dloss/dstep = 2(Q_step - K) * dQ_step/dstep
         // dQ_step/dstep = A TOTAL MESS
     }
-    forEach(callback: (chem: Substance, coeff: num) => void) {
+    forEach(callback: (chem: ChemComponent, coeff: num) => void) {
         this.forEachReactant(callback);
         this.forEachProduct(callback);
     }
-    forEachReactant(callback: (chem: Substance, coeff: num) => void) {
+    forEachReactant(callback: (chem: ChemComponent, coeff: num) => void) {
         let i = 0;
         for (; i < this.brx.length; i++) {
             callback(this.brx[i], this.eqb.coefficients[i]);
         }
     }
-    forEachProduct(callback: (chem: Substance, coeff: num) => void) {
+    forEachProduct(callback: (chem: ChemComponent, coeff: num) => void) {
         let j = 0;
         for (; j < this.bpx.length; j++) {
             callback(this.bpx[j], this.eqb.coefficients[j + this.brx.length]);
@@ -286,9 +286,9 @@ class BoundEqb {
     }
 }
 class InteractionGroup {
-    substs: Substance[] = [];
+    substs: ChemComponent[] = [];
     beqbs: BoundEqb[] = [];
-    constructor(substs: Substance[], eqbs: Equilibrium[]) {
+    constructor(substs: ChemComponent[], eqbs: Equilibrium[]) {
         this.substs = substs;
         for(let eqb of eqbs) {
             let beqb = new BoundEqb(eqb);
@@ -384,9 +384,9 @@ class InteractionGroup {
 
 
 abstract class InteractionsDatabase {
-    abstract equilibriaByReactants(reactants: Substance[]): Equilibrium[]; 
+    abstract equilibriaByReactants(reactants: ChemComponent[]): Equilibrium[]; 
     abstract storeEquilibrium(eqb: Equilibrium): void;
-    static compare(a: Substance, b: Substance): number {
+    static compare(a: ChemComponent, b: ChemComponent): number {
         if(a.type < b.type) {
             return -1;
         } else if (a.type > b.type) {
@@ -398,7 +398,7 @@ abstract class InteractionsDatabase {
 }
 class DatabaseHashMap implements InteractionsDatabase {
 
-    eqbmap: Map<SubstanceType, Equilibrium[]> = new Map();
+    eqbmap: Map<ChemType, Equilibrium[]> = new Map();
 
     // TODO this might be improved by a massive tree.
     // for a tree with 2 layers, the data structure would be Map<SubstanceType, Map<SubstanceType, Equilibrium[]>>
@@ -408,13 +408,13 @@ class DatabaseHashMap implements InteractionsDatabase {
     // TODO or perhaps afte rthe first layer we use a binary tree to improve on search time
     // Map<SubstanceType, BinaryTree<Equilibrium>>
 
-    determineRarity(reactant: SubstanceType) {
+    determineRarity(reactant: ChemType) {
         // TODO I think we should calculate this, then cache the values, then use the cache
         // then periodically recalculate assuming that the relative rarity won't drastically change
         // and that they will instead approach some constant and remain stable.
         // for now let's just hardcode some constants
     }
-    findRarest(reactants: SubstanceType[]) {
+    findRarest(reactants: ChemType[]) {
         return reactants.reduce((a, b) => this.determineRarity(a) < this.determineRarity(b) ? a : b); 
     }
     constructor(eqbs: Equilibrium[]) {
@@ -445,7 +445,7 @@ class DatabaseHashMap implements InteractionsDatabase {
             entry.push(eqb);
         }
     }
-    equilibriaByReactants(reactants: Substance[]): Equilibrium[] {
+    equilibriaByReactants(reactants: ChemComponent[]): Equilibrium[] {
         let filtered: Equilibrium[] = [];
         for(let rxt of reactants) {
             let eqbs = this.eqbmap.get(rxt.type);
@@ -484,7 +484,7 @@ class EquilibriumAssigner {
     findEquilibria() {
 
     }
-    uponNewReactant(reactant: Substance) {
+    uponNewReactant(reactant: ChemComponent) {
         // ugh
         // if we store multiple copies of each eqb, then we wouldn't have to reiterate through all possibilities
         // but since we don't store multiple copies of each eqb, we would have to store multiple copies of each reactant

@@ -97,10 +97,10 @@ function onCommandButton() {
 function debugBody(body: Matter.Body) {
     let paste = document.getElementsByClassName('db-vw-paste')[0];
     if('substs' in body) {
-        let ph = body as Matter.Body & {'substs': SubstGroup};
+        let ph = body as Matter.Body & {'substs': ChemComponents};
         let ret = '';
-        if(!(ph.substs instanceof SubstGroup)) throw "substs field isn't a system?";
-        let ss = ph.substs as SubstGroup;
+        if(!(ph.substs instanceof ChemComponents)) throw "substs field isn't a system?";
+        let ss = ph.substs as ChemComponents;
         lastClickedObject = ss;
         for(let s of ss.substances) {
             ret += `${s.type.chemicalFormula} (${s.state ? s.state : 'state unknown'}) ${s.mass}g ${s.volume}L ${s.temperature}K \n`;

@@ -66,16 +66,16 @@ class AtomTracker {
     formula: string = '';
     state: string = '';
     // qty: string = '';
-    constructor(input?: SubstanceMaker | string | undefined) {
+    constructor(input?: ChemPrototype | string | undefined) {
         if(!input) return;
         if(typeof input === 'string') {
             Tokenizers.formulaTokenizer(input, 0, this);
-        } else if(input instanceof SubstanceMaker) {
+        } else if(input instanceof ChemPrototype) {
             this.formula = input.chemicalFormula;
             this.state = input.state;
             if('newAtomTracker' in input) {
                 // if the AtomTracker was cached, then we can save some compute and copy over the cached values
-                let tracker = (input as SubstanceMaker & {'newAtomTracker': AtomTracker}).newAtomTracker;
+                let tracker = (input as ChemPrototype & {'newAtomTracker': AtomTracker}).newAtomTracker;
                 this.atoms = tracker.atoms;
                 this.qtys = tracker.qtys;
                 this.atomicNums = tracker.atomicNums;

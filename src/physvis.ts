@@ -7,8 +7,8 @@
 
 
 class Drawer {
-    drawSubstance(ctx: CanvasRenderingContext2D, s: Substance | SubstGroup) {
-        if (s instanceof Substance) {
+    drawSubstance(ctx: CanvasRenderingContext2D, s: ChemComponent | ChemComponents) {
+        if (s instanceof ChemComponent) {
             // if (s instanceof AqueousSubstance) {
                 // ctx.beginPath();
                 // ctx.stroke();
@@ -27,8 +27,8 @@ class Drawer {
 
                 return;
             // }
-        } else if (s instanceof SubstGroup) {
-            s = s as SubstGroup;
+        } else if (s instanceof ChemComponents) {
+            s = s as ChemComponents;
 
             for (let sub of s.substances) {
                 this.drawSubstance(ctx, sub);
@@ -108,11 +108,11 @@ class Drawer {
 let canvas = document.getElementById('canvas') as HTMLCanvasElement;
 let ctx = canvas.getContext('2d');
 
-class Global extends SubstGroup {
+class Global extends ChemComponents {
     solids_i=0;
     gases_i=0;
     liquids_i=0;
-    addSubst(s: Substance) {
+    addSubst(s: ChemComponent) {
         // if(s.state === 'g') {
         //     this.substances.splice(this.gases_i, 0, s); // insert at index of gases_idx
         //     this.gases_i++;
@@ -135,15 +135,15 @@ universe.glob = glob;
 applyPhyshook(glob, [0, 0], [canvas.width, canvas.height]);
 let b = newBounds({ x: canvas.width / 4, y: canvas.height / 4 }, { x: canvas.width / 2, y: canvas.height / 2 }); // canvas.width/2, y:canvas.height/2});
 
-function tangify<S extends Substance | SubstGroup>(s: S, addToGlobal=true, pos?: [num, num, num], size?: [num, num, num],): S {
+function tangify<S extends ChemComponent | ChemComponents>(s: S, addToGlobal=true, pos?: [num, num, num], size?: [num, num, num],): S {
     let ret = applyPhyshook(s);
 
 
     if(addToGlobal) {
-        if (ret instanceof Substance) {
+        if (ret instanceof ChemComponent) {
             // glob.substances.push(ret);
             glob.addSubst(ret);
-        } else if (ret instanceof SubstGroup) {
+        } else if (ret instanceof ChemComponents) {
             glob.subsystems.push(ret);
         } else throw "s " + ret + "not instanceof System nor Substance!";
 

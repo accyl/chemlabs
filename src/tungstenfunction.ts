@@ -22,7 +22,7 @@ namespace Tokenizers {
         }
     }
 }
-const tungstenCreate = function (inp: string, display = true): Substance {
+const tungstenCreate = function (inp: string, display = true): ChemComponent {
     let subst;
     let [chem, qty] = Tokenizers.WStringTknr(inp);
     // form.formula
@@ -57,7 +57,7 @@ const tungstenCreate = function (inp: string, display = true): Substance {
     // example kmno4. 
     // although by definition it won't always work - see no
     // or hga - HGa
-} as { (inp: string, display?: boolean): Substance; g: (inp: string) => SubstanceMaker | undefined; };
+} as { (inp: string, display?: boolean): ChemComponent; g: (inp: string) => ChemPrototype | undefined; };
 /**
  * W c = Tungsten create
  */
@@ -69,7 +69,7 @@ const $Wc = tungstenCreate;
  * If selector is a number, it is interpreted as the index.
  * @returns 
  */
-function tungstenFind(selector: num | string): Substance[] {
+function tungstenFind(selector: num | string): ChemComponent[] {
     if(typeof selector === 'number') {
         return [glob.s[selector]];
     } else {
