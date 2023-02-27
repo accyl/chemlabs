@@ -11,7 +11,7 @@ let idealGasLaw = nerdamer('P*V=n*R*T');
 
 interface Law extends nerdamer.Expression {}
 
-abstract class DynamicLaw<S extends Substance> {
+abstract class DynamicLaw<S extends ChemComponent> {
     /** 
      * Return the number of non-constant variables. 
      * This should be equal to getters(arbitrarySubstance).getKeys().length()
@@ -140,7 +140,7 @@ abstract class DynamicLaw<S extends Substance> {
         
     }
 }
-abstract class CompactLaw<S extends Substance> extends DynamicLaw<S> {
+abstract class CompactLaw<S extends ChemComponent> extends DynamicLaw<S> {
     varCount: num = 0;
     abstract law: Law;
     nerdnameToFieldname: Record<string, string>;
@@ -194,7 +194,7 @@ class MolecularLaw<S extends MolecularSubstance> extends CompactLaw<S>{
         super.setter(s, key, value);
     }
 }
-class DensityLaw<S extends Substance & {density: number}> extends CompactLaw<S>{
+class DensityLaw<S extends ChemComponent & {density: number}> extends CompactLaw<S>{
 
     law: Law = nerdamer('m=rho*V');
     varCount = 3;

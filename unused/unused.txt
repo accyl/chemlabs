@@ -1,0 +1,87 @@
+// # from substances.ts
+
+// /**
+//  * Coerce a substance into basically being a unit system
+//  * Not needed since Substances are already SubstGroups
+//  * @param x 
+//  * @deprecated
+//  */
+// function coerceToSubstGroup(x: ChemComponent | ChemComponents): ChemComponents {
+//     // if(!x) return undefined;
+//     let a = x as any;
+//     if ('substances' in x && 'subsystems' in x) return x;
+//     if ('substances' in x || 'subsystems' in x) throw "partially initialized substance/system hybrid: " + x;
+//     a['substances'] = [a];
+//     // a['equilibria'] = [];
+//     a['subsystems'] = [];
+//     a.getSubstance = function () { return a; }
+//     return a;
+// }
+
+/*
+var handler = {
+    get: function(target, name) {
+        if (name in target) {
+            return target[name];
+        }
+        if (name == 'length') {
+            return Infinity;
+        }
+        return name * name;
+    }
+};
+var p = new Proxy({}, handler);
+
+p[4]; //returns 16, which is the square of 4.
+*/
+
+
+// class AqueousSubstanceImpl extends makeMolecular(Substance) implements AqueousSubstance {
+//     solvent: Substance;
+//     constructor(solutetype: SubstanceType, solvent: Substance) {
+//         super(solutetype);
+//         this.solvent = solvent;
+//     }
+//     get concentration() {
+//         return this.mol / (this.solvent.volume); // TODO: usually this.volume will be negligible.
+//     }
+//     set concentration(val) {
+//         this.mol = val * this.solvent.volume;
+//     }
+//     set volume(val: num) {
+//         // they probably want to change the solvent volume
+//         this.solvent.volume = val;
+//     }
+//     get volume() {
+//         return this.solvent.volume;
+//     }
+//     /*
+//     absorbance(length_traveled: num=1): tup {
+//         // A = ε * l * ç
+//         // ε = molar absorptivity
+//         // l = length traveled
+//         // ç = concentration
+//         // here we generalize molar_absorptivity
+//         return this.type.molar_absorptivity.map(x => x * length_traveled * this.concentration);
+//         // A = -log(T) = log(1/transmittance) = -log (transmittance) = -log(%light passing through / total light)
+//         // -A = log(T) T = 10^(-A)
+//     }
+//     transmittance(length_traveled: num=1): tup {
+//         return this.type.molar_absorptivity.map(x => Math.pow(10, -x * length_traveled * this.concentration / 100)); // / 100000));
+//     }
+//     color(background: tup = [255, 255, 255], l: num = 1) {
+//         return this.transmittance(l).map((x, i) => x * background[i]); // we assume that we're plotting it against a white
+//     }*/
+
+// }
+// class SpectralAqueousSubstance extends AqueousSubstanceImpl {
+//     spectra_f;
+//     constructor(solute: SubstanceType, solvent: Substance, spectra_f: (wl: num)=>num) {
+//         super(solute, solvent);
+//         this.spectra_f = spectra_f;
+
+//     }
+//     color(background: tup = [255, 255, 255], l: num = 1) {
+//         return rgb_from_spectrum(x => f_daylight(x) * transmittance(this.spectra_f(x), this.concentration));
+//     }
+// }

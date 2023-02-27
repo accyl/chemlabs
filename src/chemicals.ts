@@ -9,12 +9,12 @@ type Canonical = string;
  * javascript chemoinformatics: kekule.js
  */
 interface ChemicalsMap { // extends Map<string, ProtoSubstance>
-    setFromTracker(chem: AtomTracker): SubstanceMaker;
+    setFromTracker(chem: AtomTracker): ChemPrototype;
     // updateWithNewState(qty: ComputedQty, model: ProtoSubstance): ProtoSubstance;
-    getFromCanonical(canon: Canonical): SubstanceMaker | undefined;
-    getFromFormula(form: string): SubstanceMaker | undefined;
-    setFromCanonical(canon: Canonical, model: SubstanceMaker): void;
-    setFromFormula(form: string, model: SubstanceMaker): void;
+    getFromCanonical(canon: Canonical): ChemPrototype | undefined;
+    getFromFormula(form: string): ChemPrototype | undefined;
+    setFromCanonical(canon: Canonical, model: ChemPrototype): void;
+    setFromFormula(form: string, model: ChemPrototype): void;
     hasFormula(form: string): boolean;
     hasCanonical(canon: Canonical): boolean;
     /**
@@ -47,13 +47,12 @@ class ChemicalsDatabaseImpl implements ChemicalsMap{
      * @param canonical 
      * @returns 
      */
-    getFromCanonical(canonical: Canonical): SubstanceMaker | undefined {
-        // throw new Error("Method not implemented.");
+    getFromCanonical(canonical: Canonical): ChemPrototype | undefined {
 
         return this.chemicalsMap.get(canonical);
     }
     canonicalMap: Map<string, Canonical> = new Map();
-    chemicalsMap: Map<Canonical, SubstanceMaker> = new Map();
+    chemicalsMap: Map<Canonical, ChemPrototype> = new Map();
     toCanonical(formula: string): Canonical | undefined {
         return this.canonicalMap.get(formula);
     }
@@ -77,11 +76,11 @@ class ChemicalsDatabaseImpl implements ChemicalsMap{
     loadAll(paste: string): void {
         throw new Error("Method not implemented.");
     }
-    setFromCanonical(canon: string, model: SubstanceMaker): void {
+    setFromCanonical(canon: string, model: ChemPrototype): void {
         this.chemicalsMap.set(canon, model);
         this.canonicalMap.set(model.chemicalFormula, canon);
     }
-    setFromFormula(form: string, model: SubstanceMaker): void {
+    setFromFormula(form: string, model: ChemPrototype): void {
         let canon = this.formToInChI(form);
         if (canon) {
             this.canonicalMap.set(form, canon);
@@ -112,7 +111,7 @@ class ChemicalsDatabaseImpl implements ChemicalsMap{
      * @param atomt AtomTracker that the chemical composition of the new substance
      * @returns the ProtoSubstance, which can at any time be accessed through $c(key: string)
      */
-    setFromTracker(atomt: AtomTracker): SubstanceMaker {
+    setFromTracker(atomt: AtomTracker): ChemPrototype {
         let formula = atomt.formula;
 
         // first we check that we don't already have one
@@ -133,7 +132,7 @@ class ChemicalsDatabaseImpl implements ChemicalsMap{
             newAtomTracker: atomt,
             rgb: "#F7F7F7", // [250, 250, 250],
             density: undefined
-        } as unknown as SubstanceType;
+        } as unknown as ChemType;
         let phase = atomt.state;
         if (!phase && atomt.atoms.length == 1) {
             // a substance comprised of a single atom
@@ -156,7 +155,7 @@ class ChemicalsDatabaseImpl implements ChemicalsMap{
             }
         }
         let state = { state: phase };
-        let proto = SubstanceMaker.fromJson(all, state, undefined, false);
+        let proto = ChemPrototype.fromJson(all, state, undefined, false);
         if(already) {
             proto.STPSelf = already;
             already.registerNonSTPSelf(proto, atomt.state);
@@ -175,7 +174,7 @@ class ChemicalsDatabaseImpl implements ChemicalsMap{
      * as the one passed in, but with the new state.
      * It should be equivalent to the one returned by $c(key: string)
      */
-    setWithNewState(model: SubstanceMaker, state?: string): SubstanceMaker {
+    setWithNewState(model: ChemPrototype, state?: string): ChemPrototype {
         let atomTracker = new AtomTracker(model.getSTPSelf());
         atomTracker.state = state ? state : model.state;
         
@@ -193,15 +192,15 @@ chemicals.setFromCanonical('1S/H2O/h1H2', function () { // 'H2O'
     // InChI: InChI=1S/H2O/h1H2
 
 
-    let l = new SubstanceMaker('l');
+    let l = new ChemPrototype('l');
     l.density = 999.8395;
     l.specificHeatCapacity = 4.184;
     l.rgb = '#F0F0FF'; // [0xF0, 0xF0, 0xFF];
 
-    let g = new SubstanceMaker('g', l);
+    let g = new ChemPrototype('g', l);
     g.specificHeatCapacity = 2.080;
 
-    let s = new SubstanceMaker('s', l);
+    let s = new ChemPrototype('s', l);
     s.density = 916.8; // ice
     s.specificHeatCapacity = 2.05;
 
@@ -219,7 +218,7 @@ chemicals.setFromCanonical('1S/K.Mn.4O/q+1;;;;;-1', function () { // 'KMnO4'
     // InChI=1S/K.Mn.4O/q+1;;;;;-1
     // CAS: 7722-64-7
     // molar mass: 158.033949
-    let aq = new SubstanceMaker('aq', undefined, makeSpectralAqueous(makeAqueous(makeMolecular(Substance), $Wc("H2O 1L", false)), spectra_kmno4_f));
+    let aq = new ChemPrototype('aq', undefined, makeSpectralAqueous(makeAqueous(makeMolecular(ChemComponent), $Wc("H2O 1L", false)), spectra_kmno4_f));
     aq.state = "aq";
     // aq.molar_absorptivity = [0.8, 1.75, 0.45];
     // aq.molar_absorptivity = [2042.60286, 3341.11468, 1167.20163];
@@ -234,7 +233,7 @@ chemicals.setFromCanonical('1S/K.Mn.4O/q+1;;;;;-1', function () { // 'KMnO4'
     aq.chemicalFormula = "KMnO4";
     aq.molarMass = 158.034; // g/mol
 
-    let s = new SubstanceMaker('s', aq);
+    let s = new ChemPrototype('s', aq);
     // s.state = 's';
     s.rgb = '#9F00FF'; // [0x9F,0x00,0xFF];
     s.density = 2700;
@@ -259,9 +258,9 @@ chemicals.setFromCanonical('1S/H2/h1H', function () { // H2
         molarMass: 2.016,
         rgb: [250, 250, 255]
     };
-    return SubstanceMaker.fromJson(all, g, [l]);
+    return ChemPrototype.fromJson(all, g, [l]);
 }());
-$Wc.g = function(key: string): SubstanceMaker | undefined {
+$Wc.g = function(key: string): ChemPrototype | undefined {
     return chemicals.getFromFormula(key);
 }
 // new method above

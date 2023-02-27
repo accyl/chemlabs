@@ -47,9 +47,6 @@ namespace Beaker {
         return Matter.Bounds.contains(beaker.bounds, body.position)
             && Matter.Vertices.contains(beaker.vertices, body.position);
     }
-        
-
-
 }
 
 function isBodyInWorld(body: Matter.Body) {
@@ -67,7 +64,7 @@ function allBodiesWithinViewport(bodies?: Matter.Body[], inside = true) {
 
 /// <reference path="interact.ts"/>
 
-type Beaker = Matter.Body & {_substances: Set<Substance>, _tracked: Set<Matter.Body>, addTracked: (body: Matter.Body) => void, equilibriumAssigner?: EquilibriumAssigner};
+type Beaker = Matter.Body & {_substances: Set<ChemComponent>, _tracked: Set<Matter.Body>, addTracked: (body: Matter.Body) => void, equilibriumAssigner?: EquilibriumAssigner};
 
 /**
  * The real interior width of the beaker = w - thick/2 - thick/2
@@ -114,7 +111,7 @@ function makeBeaker(x = 250, y = 250, w = 270, h = 350, thick = 40): Beaker {
     beaker.addTracked = function (body: Matter.Body) {
         if('substs' in body) {
             // we're dealing with a substance
-            beaker._substances.add((body as PhysicsHook).substs as Substance);
+            beaker._substances.add((body as PhysicsHook).substs as ChemComponent);
         }
         this._tracked.add(body);
     };

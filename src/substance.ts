@@ -1,6 +1,7 @@
 // <reference path='phys/physold.ts'/>
-
-class SubstanceType {
+// <reference path='cheminfoproxy.ts'/>
+class ChemType {
+    exact: bool = false;
     // dependent on the state of the subst.
     // intrinsic, intensive properties go here like density
     id = -1;
@@ -8,19 +9,11 @@ class SubstanceType {
     density?: number; // g/mL
     specificHeatCapacity: number = 0; // J/(g-K)
     chemicalFormula = "";
-    /** 
-     * I was wrong. You can't use spectral data for only 3 specific wavelengths to predict rgb
-     * */
-    /*
-    molar_absorptivity = [1, 1, 1]; */
     rgb='#FFFFFF'; // [255, 255, 255];
     state = "g";
-    static NONE = new SubstanceType();
     molarMass: number = -1;
-    equals(x: any) {
-        console.warn("unimplemented equals in chem.ts ChemicalType!");
-        return this == x;
-    }
+
+    static NONE = new ChemType();
 
     rarity?: number;
 
@@ -41,32 +34,27 @@ class SubstanceType {
         if(freeze) Object.freeze(this);
     }
 }
-
-
-/**
- * Coerce a substance into basically being a unit system
- * Not needed since Substances are already SubstGroups
- * @param x 
- * @deprecated
- */
-function coerceToSubstGroup(x: Substance | SubstGroup): SubstGroup {
-    // if(!x) return undefined;
-    let a = x as any;
-    if ('substances' in x && 'subsystems' in x) return x;
-    if ('substances' in x || 'subsystems' in x) throw "partially initialized substance/system hybrid: " + x;
-    a['substances'] = [a];
-    // a['equilibria'] = [];
-    a['subsystems'] = [];
-    a.getSubstance = function () { return a; }
-    return a;
+interface ChemExact {
+    inchl: string;
+}
+class ChemTypeExact extends ChemType implements ChemExact {
+    inchl: string;
+    constructor(inchl: string) {
+        super();
+        this.inchl = inchl;
+        this.exact = true;
+        // from 
+        ChemInfo.initializeChemType(this);
+    }
 }
 
-class SubstGroup {
-    static readonly BOUNDS_ONLY = new SubstGroup(); // pass this to newPhysicsHook to have a bounds-only physhook
+
+class ChemComponents {
+    static readonly BOUNDS_ONLY = new ChemComponents(); // pass this to newPhysicsHook to have a bounds-only physhook
     physhook?: PhysicsHook;
 
-    substances: Substance[] = [];
-    subsystems: SubstGroup[] = [];
+    substances: ChemComponent[] = [];
+    subsystems: ChemComponents[] = [];
     get s() { return this.substances; }
     getSubstance(key = 0) {
         return this.substances[key];
@@ -75,28 +63,13 @@ class SubstGroup {
         return `[${"" + this.substances}]`;
     }
 }
-/*
-var handler = {
-    get: function(target, name) {
-        if (name in target) {
-            return target[name];
-        }
-        if (name == 'length') {
-            return Infinity;
-        }
-        return name * name;
-    }
-};
-var p = new Proxy({}, handler);
 
-p[4]; //returns 16, which is the square of 4.
-*/
-class Substance extends SubstGroup {
+class ChemComponent extends ChemComponents {
     // loc: Locatable = Locatable.NONE;
     physhook?: PhysicsHook;
     // add some stuff to coerce it into technically being a system with only 1 thing in it
-    readonly substances: Substance[];
-    readonly subsystems: SubstGroup[] = [];
+    readonly substances: ChemComponent[];
+    readonly subsystems: ChemComponents[] = [];
     getSubstance(key: number) {return this;}
     // mol = 0; 
     #m = 1;
@@ -120,11 +93,11 @@ class Substance extends SubstGroup {
     set temperature(T) {
         this.#T = T;
     }
-    type: SubstanceType;
+    type: ChemType;
     state?: string; // State of Matter
-    constructor(type?: SubstanceType) {
+    constructor(type?: ChemType) {
         super();
-        this.type = type ? type : SubstanceType.NONE;
+        this.type = type ? type : ChemType.NONE;
         this.state = type ? type.state : "";
         let a = [];
         a.push(this);
@@ -148,7 +121,7 @@ class Substance extends SubstGroup {
     toString() {
         return `${this.type.chemicalFormula} ${this.mass}g`;
     }
-    isChemicalType(test: SubstanceType) {
+    isChemicalType(test: ChemType) {
         return this.type === test;
     }
     get kValue() { 
@@ -168,7 +141,7 @@ class Substance extends SubstGroup {
     }
 }
 interface SubstanceConstructor {
-    new(proto: SubstanceMaker): Substance;
+    new(proto: ChemPrototype): ChemComponent;
 }
 
 
@@ -176,11 +149,11 @@ interface SubstanceConstructor {
 type GMixin<T, A> = new (...args: A[]) => T;
 type Mixin<T> = GMixin<T, any>;
 
-interface MolecularSubstance extends Substance {
+interface MolecularSubstance extends ChemComponent {
     molarMass: num;
     mol: num;
 }
-function makeMolecular<T extends Mixin<Substance>>(s: T): Mixin<MolecularSubstance> & T {
+function makeMolecular<T extends Mixin<ChemComponent>>(s: T): Mixin<MolecularSubstance> & T {
     return class MolecularSubstance extends s {
         get molarMass() { return this.type.molarMass; }
         set molarMass(m) { this.type.molarMass = m; }
@@ -193,7 +166,7 @@ function makeMolecular<T extends Mixin<Substance>>(s: T): Mixin<MolecularSubstan
         }
     }
 }
-const MolecularSubstance = makeMolecular(Substance);
+const MolecularSubstance = makeMolecular(ChemComponent);
 interface GaseousSubstance extends MolecularSubstance {
     pressure: num;
 }
@@ -206,10 +179,10 @@ function makeGaseous<T extends Mixin<MolecularSubstance>>(x: T): Mixin<GaseousSu
 const GaseousSubstance = makeGaseous(MolecularSubstance);
 
 interface AqueousSubstance {
-    solvent: Substance;
+    solvent: ChemComponent;
     concentration: num;
 }
-function makeAqueous<T extends Mixin<MolecularSubstance>>(x: T, solventIn: Substance): Mixin<AqueousSubstance> & T {
+function makeAqueous<T extends Mixin<MolecularSubstance>>(x: T, solventIn: ChemComponent): Mixin<AqueousSubstance> & T {
     return class AqueousSubstance extends x {
         solvent=solventIn;
         get concentration() {
@@ -241,13 +214,13 @@ function makeSpectralAqueous<T extends Mixin<AqueousSubstance>>(x: T, spectra_fI
     }
 }
 
-class SubstanceMaker extends SubstanceType {
+class ChemPrototype extends ChemType {
     // static NONE = new ProtoSubstance();
-    _statemap = new Map() as Map<string, SubstanceMaker>;
-    STPSelf: SubstanceMaker;
+    _statemap = new Map() as Map<string, ChemPrototype>;
+    STPSelf: ChemPrototype;
     _substConstr: SubstanceConstructor;
     
-    constructor(state: string, stpself?: SubstanceMaker, constructor: SubstanceConstructor = MolecularSubstance) {
+    constructor(state: string, stpself?: ChemPrototype, constructor: SubstanceConstructor = MolecularSubstance) {
         super();
         this.STPSelf = stpself ? stpself : this; // default value for `stpself` is `this` if `stpself` is omitted.
 
@@ -259,7 +232,7 @@ class SubstanceMaker extends SubstanceType {
         }
         this._substConstr = constructor;
     }
-    getSTPSelf(): SubstanceMaker {
+    getSTPSelf(): ChemPrototype {
         return this.STPSelf;
     }
     /**
@@ -272,7 +245,7 @@ class SubstanceMaker extends SubstanceType {
      * @param args 
      * @returns 
      */
-    getNonSTPSelf(args: ComputedQty | string): SubstanceMaker | undefined {
+    getNonSTPSelf(args: ComputedQty | string): ChemPrototype | undefined {
         let state = args instanceof ComputedQty ? args.state : args;
         let standard = this.getSTPSelf();
         if (state === standard.state) return standard;
@@ -280,8 +253,7 @@ class SubstanceMaker extends SubstanceType {
         return ret;
     }
 
-
-    registerNotNecessarilySTPSelf(chemical: SubstanceMaker, condition: ComputedQty | string) {
+    registerNotNecessarilySTPSelf(chemical: ChemPrototype, condition: ComputedQty | string) {
         let state = condition instanceof ComputedQty ? condition.state : condition;
         let map = this.getSTPSelf()._statemap;
         if(state && !map.has(state)) {
@@ -333,11 +305,11 @@ class SubstanceMaker extends SubstanceType {
      * Shortcut for getting one with default args
      * @returns 
      */
-    form(): Substance {
+    form(): ChemComponent {
         return new this._substConstr(this);
     }
 
-    static fromJson(all: {}, defaul: JsonChemical, altStates?: JsonChemical[], freeze = true): SubstanceMaker { //sObj?: any, lObj?: any, gObj?: any, aqObj?: any){
+    static fromJson(all: {}, defaul: JsonChemical, altStates?: JsonChemical[], freeze = true): ChemPrototype { //sObj?: any, lObj?: any, gObj?: any, aqObj?: any){
         // TODO
         // any such function that constructs from JSON must be able to customize the constructor
         // For example using a spectralA
@@ -349,14 +321,14 @@ class SubstanceMaker extends SubstanceType {
         altStates = altStates ? altStates : [] as JsonChemical[];
         // if(constructed) assert(constructed.length === 1 + altStates.length);
 
-        let main = Object.assign(new SubstanceMaker(defaul.state), defaul, all) as SubstanceMaker & JsonChemical; // & { stateMap: any };
+        let main = Object.assign(new ChemPrototype(defaul.state), defaul, all) as ChemPrototype & JsonChemical; // & { stateMap: any };
         // main.stateMap = new Map() as Map<string, ProtoChemical>;
 
         let subs = [];
         subs.push(main);
 
         for (let alt of altStates) {
-            let sub = Object.assign(new SubstanceMaker(alt.state, main), alt, all);
+            let sub = Object.assign(new ChemPrototype(alt.state, main), alt, all);
             subs.push(sub);
         }
         for (let sub of subs) {
@@ -374,52 +346,4 @@ class SubstanceMaker extends SubstanceType {
         return main;
     }
 }
-// class AqueousSubstanceImpl extends makeMolecular(Substance) implements AqueousSubstance {
-//     solvent: Substance;
-//     constructor(solutetype: SubstanceType, solvent: Substance) {
-//         super(solutetype);
-//         this.solvent = solvent;
-//     }
-//     get concentration() {
-//         return this.mol / (this.solvent.volume); // TODO: usually this.volume will be negligible.
-//     }
-//     set concentration(val) {
-//         this.mol = val * this.solvent.volume;
-//     }
-//     set volume(val: num) {
-//         // they probably want to change the solvent volume
-//         this.solvent.volume = val;
-//     }
-//     get volume() {
-//         return this.solvent.volume;
-//     }
-//     /*
-//     absorbance(length_traveled: num=1): tup {
-//         // A = ε * l * ç
-//         // ε = molar absorptivity
-//         // l = length traveled
-//         // ç = concentration
-//         // here we generalize molar_absorptivity
-//         return this.type.molar_absorptivity.map(x => x * length_traveled * this.concentration);
-//         // A = -log(T) = log(1/transmittance) = -log (transmittance) = -log(%light passing through / total light)
-//         // -A = log(T) T = 10^(-A)
-//     }
-//     transmittance(length_traveled: num=1): tup {
-//         return this.type.molar_absorptivity.map(x => Math.pow(10, -x * length_traveled * this.concentration / 100)); // / 100000));
-//     }
-//     color(background: tup = [255, 255, 255], l: num = 1) {
-//         return this.transmittance(l).map((x, i) => x * background[i]); // we assume that we're plotting it against a white
-//     }*/
 
-// }
-// class SpectralAqueousSubstance extends AqueousSubstanceImpl {
-//     spectra_f;
-//     constructor(solute: SubstanceType, solvent: Substance, spectra_f: (wl: num)=>num) {
-//         super(solute, solvent);
-//         this.spectra_f = spectra_f;
-
-//     }
-//     color(background: tup = [255, 255, 255], l: num = 1) {
-//         return rgb_from_spectrum(x => f_daylight(x) * transmittance(this.spectra_f(x), this.concentration));
-//     }
-// }

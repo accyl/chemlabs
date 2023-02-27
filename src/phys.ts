@@ -11,7 +11,7 @@ interface PhysicsHook extends Matter.Body{
     size: Vector;
     // pos: Vector;
     // vel: Vector;
-    substs?: SubstGroup;
+    substs?: ChemComponents;
     ignoreGravity?: boolean;
     zIndex: num
     // area: num; 10 area = 1 mL
@@ -19,9 +19,9 @@ interface PhysicsHook extends Matter.Body{
 enum PhysicsHookBehavior {
     FREE, BEAKER, CONSTRAINED
 }
-type WeakPhysHook = Matter.Body & { size: Vector, 
-rect: Matter.Body, substs: SubstGroup | undefined, ignoreGravity?:boolean, zIndex:num };
-function newPhysicsHook(arg1: Matter.Body | Vector, size: Vector, subst: Substance | SubstGroup): PhysicsHook {
+type WeakPhysicsHook = Matter.Body & { size: Vector, 
+rect: Matter.Body, substs: ChemComponents | undefined, ignoreGravity?:boolean, zIndex:num };
+function newPhysicsHook(arg1: Matter.Body | Vector, size: Vector, subst: ChemComponent | ChemComponents): PhysicsHook {
     let body0: Matter.Body;
     if ('x' in arg1 && 'y' in arg1) {
         // Vector
@@ -33,10 +33,10 @@ function newPhysicsHook(arg1: Matter.Body | Vector, size: Vector, subst: Substan
     } else {
         body0 = arg1 as Matter.Body;// Matter.Body;
     }
-    let body = body0 as WeakPhysHook; //, 'boundsOnly': boolean };//Matter.Body;
+    let body = body0 as WeakPhysicsHook; //, 'boundsOnly': boolean };//Matter.Body;
     body['size'] = size;
     body['rect'] = body0;
-    if(!subst || subst === SubstGroup.BOUNDS_ONLY) {
+    if(!subst || subst === ChemComponents.BOUNDS_ONLY) {
         // body['substs'] = SubstGroup.BOUNDS_ONLY;
         // body['substs'] = undefined;
         body['collisionFilter'] = CollisionFilters.BACKGROUND_GAS;
@@ -76,12 +76,12 @@ function addToWorld(h: PhysicsHook | PhysicsHook[]) {
     eventDispatch('matterCreated', {'matter': h});
 }
 function newBounds(arg1: Matter.Body | Vector, size: Vector, addToGlobal=true) {
-    let h = newPhysicsHook(arg1, size, SubstGroup.BOUNDS_ONLY);
+    let h = newPhysicsHook(arg1, size, ChemComponents.BOUNDS_ONLY);
     if(addToGlobal) addToWorld(h);
     return h;
 }
 
-function applyPhyshook<S extends Substance | SubstGroup>(s: S, pos?: [num, num], size?: [num, num],): S {
+function applyPhyshook<S extends ChemComponent | ChemComponents>(s: S, pos?: [num, num], size?: [num, num],): S {
     if (!s.physhook) {
         let vec;
         if (pos) {
@@ -93,7 +93,7 @@ function applyPhyshook<S extends Substance | SubstGroup>(s: S, pos?: [num, num],
         if (size) {
             vsize = { 'x': size[0], 'y': size[1] };
         }
-        if (s instanceof Substance) {
+        if (s instanceof ChemComponent) {
             // s.physhook = new PhysicsHook(pos, size);
             if(vsize === undefined) {
                 // we assign size based on volume. 
@@ -111,9 +111,9 @@ function applyPhyshook<S extends Substance | SubstGroup>(s: S, pos?: [num, num],
 
             addToWorld([s.physhook]); //.rect]);
 
-        } else if (s === SubstGroup.BOUNDS_ONLY) {
+        } else if (s === ChemComponents.BOUNDS_ONLY) {
             assert(false, "Use newBounds()!");
-        } else if (s instanceof SubstGroup) {
+        } else if (s instanceof ChemComponents) {
 
             // if it's not a base substance, we use the default size. 
             if(vsize === undefined) vsize = { 'x': 100, 'y': 100 };

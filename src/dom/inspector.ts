@@ -42,7 +42,7 @@ function allKeys(obj: any) {
     return [...result];
 }
 let cachedAttrs = {} as { [key: string]: string[] };
-function allNewAttributes<NEW extends Substance, OLD extends Substance>(obj: NEW, oldobj?: OLD, cache = true) {
+function allNewAttributes<NEW extends ChemComponent, OLD extends ChemComponent>(obj: NEW, oldobj?: OLD, cache = true) {
 
     if (cache) {
         let name = obj.constructor.name;
@@ -66,7 +66,7 @@ function allNewAttributes<NEW extends Substance, OLD extends Substance>(obj: NEW
     return diff;
 
 }
-function traceExtensionsOn(obj: Substance): (new () => any)[] {
+function traceExtensionsOn(obj: ChemComponent): (new () => any)[] {
 
     var proto = obj.constructor.prototype;
     var result = [];
@@ -84,12 +84,12 @@ function traceExtensionsOn(obj: Substance): (new () => any)[] {
     return result;
 }
 
-function showSubstanceAttributes(subs: Substance): JQuery<HTMLElement> {
+function showSubstanceAttributes(subs: ChemComponent): JQuery<HTMLElement> {
     let exts = traceExtensionsOn(subs);
-    exts.push(Substance);
+    exts.push(ChemComponent);
 
     // let's also append the substancetype info
-    exts.push(SubstanceType);
+    exts.push(ChemType);
 
     // let s = '';
     // create a div
@@ -124,7 +124,7 @@ function showSubstanceAttributes(subs: Substance): JQuery<HTMLElement> {
 (function() {
     cachedAttrs['Substance'] = ['mass', 'volume', 'temperature', 'state'];
     cachedAttrs['SubstanceType'] = ['chemicalFormula', 'density', 'rgb', 'specificHeatCapacity'];
-    let s = new Substance();
+    let s = new ChemComponent();
     let ms = new MolecularSubstance();
     allNewAttributes(ms, s);
     let as = new (AqueousSubstance(ms))();
@@ -137,7 +137,7 @@ function showSubstanceAttributes(subs: Substance): JQuery<HTMLElement> {
 
 $('#einspector').on('substanceCreated', function (e, eventInfo) { 
     // originates from tang() in physvis.ts, which itself calls phys() but also adds it to glob.s
-    let subs = eventInfo['substance'] as Substance;
+    let subs = eventInfo['substance'] as ChemComponent;
     console.log('observed appendage of ' + subs.toString() + ' to the glob');
     let globule = document.createElement('div');
     globule.classList.add('globule');
@@ -175,5 +175,5 @@ $('#einspector').on('substanceCreated', function (e, eventInfo) {
 });
 
 $('#einspector').on('substanceUpdated', function (e, eventInfo) { 
-    let subs = eventInfo['substance'] as Substance;
+    let subs = eventInfo['substance'] as ChemComponent;
 });
