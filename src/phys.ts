@@ -1,4 +1,8 @@
 // <reference path='../../raw/matter.min.js'/>
+
+import Matter from "matter-js";
+import { ChemComponent, ChemComponents } from "./substance";
+
 /** 
  * Bridge between matter.js and the rest of my code
  *  
@@ -6,7 +10,7 @@
 type Vector = Matter.Vector;
 
 
-interface PhysicsHook extends Matter.Body{
+export interface PhysicsHook extends Matter.Body{
     // rect: Matter.Body;
     size: Vector;
     // pos: Vector;
@@ -16,12 +20,12 @@ interface PhysicsHook extends Matter.Body{
     zIndex: num
     // area: num; 10 area = 1 mL
 }
-enum PhysicsHookBehavior {
+export enum PhysicsHookBehavior {
     FREE, BEAKER, CONSTRAINED
 }
-type WeakPhysicsHook = Matter.Body & { size: Vector, 
+export type WeakPhysicsHook = Matter.Body & { size: Vector, 
 rect: Matter.Body, substs: ChemComponents | undefined, ignoreGravity?:boolean, zIndex:num };
-function newPhysicsHook(arg1: Matter.Body | Vector, size: Vector, subst: ChemComponent | ChemComponents): PhysicsHook {
+export function newPhysicsHook(arg1: Matter.Body | Vector, size: Vector, subst: ChemComponent | ChemComponents): PhysicsHook {
     let body0: Matter.Body;
     if ('x' in arg1 && 'y' in arg1) {
         // Vector
@@ -71,17 +75,17 @@ function newPhysicsHook(arg1: Matter.Body | Vector, size: Vector, subst: ChemCom
     return body as any;
 }
 
-function addToWorld(h: PhysicsHook | PhysicsHook[]) {
+export function addToWorld(h: PhysicsHook | PhysicsHook[]) {
     Matter.Composite.add(universe.world, h);
     eventDispatch('matterCreated', {'matter': h});
 }
-function newBounds(arg1: Matter.Body | Vector, size: Vector, addToGlobal=true) {
+export function newBounds(arg1: Matter.Body | Vector, size: Vector, addToGlobal=true) {
     let h = newPhysicsHook(arg1, size, ChemComponents.BOUNDS_ONLY);
     if(addToGlobal) addToWorld(h);
     return h;
 }
 
-function applyPhyshook<S extends ChemComponent | ChemComponents>(s: S, pos?: [num, num], size?: [num, num],): S {
+export function applyPhyshook<S extends ChemComponent | ChemComponents>(s: S, pos?: [num, num], size?: [num, num],): S {
     if (!s.physhook) {
         let vec;
         if (pos) {
@@ -131,7 +135,7 @@ function applyPhyshook<S extends ChemComponent | ChemComponents>(s: S, pos?: [nu
     return s;
 }
 
-function changePhyshookBehavior(x: PhysicsHook, b: PhysicsHookBehavior){
+export function changePhyshookBehavior(x: PhysicsHook, b: PhysicsHookBehavior){
     let subst = assert(x.substs, "PhysicsHook must contain a substs in order to change that substance's behavior!");
     if(b === PhysicsHookBehavior.BEAKER) {
         x['collisionFilter'] = CollisionFilters.SOLID;

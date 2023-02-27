@@ -12,6 +12,8 @@ https://open-reaction-database.org/client/search
 
  */
 
+import { ChemComponent } from "./substance";
+
 class RateExpression {
     reactants: ChemType[] = [];
     powers: num[] = [];

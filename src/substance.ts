@@ -1,6 +1,16 @@
 // <reference path='phys/physold.ts'/>
+
+import { chemicals } from "./chemicals";
+import { ChemInfo } from "./cheminfoproxy";
+import { f_daylight } from "./color/color";
+import { rgb_from_spectrum } from "./color/colormodels";
+import { transmittance } from "./color/colortest";
+import { ComputedQty } from "./command";
+import { toHex } from "./first";
+import { PhysicsHook } from "./phys";
+
 // <reference path='cheminfoproxy.ts'/>
-class ChemType {
+export class ChemType {
     exact: bool = false;
     // dependent on the state of the subst.
     // intrinsic, intensive properties go here like density
@@ -34,10 +44,10 @@ class ChemType {
         if(freeze) Object.freeze(this);
     }
 }
-interface ChemExact {
+export interface ChemExact {
     inchl: string;
 }
-class ChemTypeExact extends ChemType implements ChemExact {
+export class ChemTypeExact extends ChemType implements ChemExact {
     inchl: string;
     constructor(inchl: string) {
         super();
@@ -49,7 +59,7 @@ class ChemTypeExact extends ChemType implements ChemExact {
 }
 
 
-class ChemComponents {
+export class ChemComponents {
     static readonly BOUNDS_ONLY = new ChemComponents(); // pass this to newPhysicsHook to have a bounds-only physhook
     physhook?: PhysicsHook;
 
@@ -64,9 +74,9 @@ class ChemComponents {
     }
 }
 
-class ChemComponent extends ChemComponents {
+export class ChemComponent extends ChemComponents {
     // loc: Locatable = Locatable.NONE;
-    physhook?: PhysicsHook;
+    // physhook?: PhysicsHook; already present in ChemComponents
     // add some stuff to coerce it into technically being a system with only 1 thing in it
     readonly substances: ChemComponent[];
     readonly subsystems: ChemComponents[] = [];
@@ -140,20 +150,21 @@ class ChemComponent extends ChemComponents {
         if ('concentration' in this) (this as any).concentration = kval;
     }
 }
-interface SubstanceConstructor {
+export interface SubstanceConstructor {
     new(proto: ChemPrototype): ChemComponent;
 }
 
 
+// Mixin sorcery. Better leave it untouched
 // we use mixins. see https://www.typescriptlang.org/docs/handbook/mixins.html
-type GMixin<T, A> = new (...args: A[]) => T;
-type Mixin<T> = GMixin<T, any>;
+export type GMixin<T, A> = new (...args: A[]) => T;
+export type Mixin<T> = GMixin<T, any>;
 
-interface MolecularSubstance extends ChemComponent {
+export interface MolecularSubstance extends ChemComponent {
     molarMass: num;
     mol: num;
 }
-function makeMolecular<T extends Mixin<ChemComponent>>(s: T): Mixin<MolecularSubstance> & T {
+export function makeMolecular<T extends Mixin<ChemComponent>>(s: T): Mixin<MolecularSubstance> & T {
     return class MolecularSubstance extends s {
         get molarMass() { return this.type.molarMass; }
         set molarMass(m) { this.type.molarMass = m; }
@@ -166,23 +177,23 @@ function makeMolecular<T extends Mixin<ChemComponent>>(s: T): Mixin<MolecularSub
         }
     }
 }
-const MolecularSubstance = makeMolecular(ChemComponent);
-interface GaseousSubstance extends MolecularSubstance {
+export const MolecularSubstance = makeMolecular(ChemComponent);
+export interface GaseousSubstance extends MolecularSubstance {
     pressure: num;
 }
-function makeGaseous<T extends Mixin<MolecularSubstance>>(x: T): Mixin<GaseousSubstance> & T{
+export function makeGaseous<T extends Mixin<MolecularSubstance>>(x: T): Mixin<GaseousSubstance> & T{
 
     return class GaseousSubstance extends x {
         get pressure() { return this.mol * Constants.Ratm * this.temperature / this.volume }
     }
 }
-const GaseousSubstance = makeGaseous(MolecularSubstance);
+export const GaseousSubstance = makeGaseous(MolecularSubstance);
 
-interface AqueousSubstance {
+export interface AqueousSubstance {
     solvent: ChemComponent;
     concentration: num;
 }
-function makeAqueous<T extends Mixin<MolecularSubstance>>(x: T, solventIn: ChemComponent): Mixin<AqueousSubstance> & T {
+export function makeAqueous<T extends Mixin<MolecularSubstance>>(x: T, solventIn: ChemComponent): Mixin<AqueousSubstance> & T {
     return class AqueousSubstance extends x {
         solvent=solventIn;
         get concentration() {
@@ -204,17 +215,17 @@ function makeAqueous<T extends Mixin<MolecularSubstance>>(x: T, solventIn: ChemC
         }
     }
 }
-const AqueousSubstance = (solventIn: MolecularSubstance) => makeAqueous(MolecularSubstance, solventIn);
-function makeSpectralAqueous<T extends Mixin<AqueousSubstance>>(x: T, spectra_fIn: (wl: num) => num): Mixin<AqueousSubstance> & T {
+export const AqueousSubstance = (solventIn: MolecularSubstance) => makeAqueous(MolecularSubstance, solventIn);
+export function makeSpectralAqueous<T extends Mixin<AqueousSubstance>>(x: T, spectra_fIn: (wl: num) => num): Mixin<AqueousSubstance> & T {
     return class SpectralAqueousSubstance extends x {
         spectra_f = spectra_fIn;
         hexcolor(background: tup = [255, 255, 255], l: num = 1) {
-            return _hex(rgb_from_spectrum(x => f_daylight(x) * transmittance(this.spectra_f(x), this.concentration)));
+            return toHex(rgb_from_spectrum(x => f_daylight(x) * transmittance(this.spectra_f(x), this.concentration)));
         }
     }
 }
 
-class ChemPrototype extends ChemType {
+export class ChemPrototype extends ChemType {
     // static NONE = new ProtoSubstance();
     _statemap = new Map() as Map<string, ChemPrototype>;
     STPSelf: ChemPrototype;
@@ -290,7 +301,7 @@ class ChemPrototype extends ChemType {
             // then we create a new substancemaker
             orig = chemicals.setWithNewState(this, state);
         }
-        let ret = orig.form();
+        let ret = orig!.form(); // TODO bug?
         if (qty.mass) ret.mass = qty.mass;
         if (qty.mol && 'mol' in ret) (ret as MolecularSubstance).mol = qty.mol;
         if (qty.vol) ret.volume = qty.vol;

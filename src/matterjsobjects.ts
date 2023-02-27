@@ -1,8 +1,13 @@
 /// <reference path='first.ts'/>
 /// <reference types='../node_modules/@types/matter-js'/>
 
+import Matter, { Bodies } from "matter-js";
+import { Beaker, isBodyInWorld, makeBeaker } from "./beaker";
+import { debugBody } from "./dom/load";
+import { PhysicsHook } from "./phys";
 
-namespace MatterObjects {
+
+export namespace MatterObjects {
     export let idMap = new Map<string, Matter.Body>() as Map<string, Matter.Body> & {addAll: (bodies: Matter.Body[]) => void};
     idMap.addAll = function (bodies: Matter.Body[]) {
         for(let body of bodies) {
@@ -11,6 +16,30 @@ namespace MatterObjects {
     }
     // module aliases
 
+    /**
+     * 
+     * @param x top-left corner
+     * @param y top-left corner
+     * @param w 
+     * @param h 
+     * @param thick 
+     * @returns 
+     */
+    export function makeWalls(x = 0, y = 0, w = 1000, h = 600, thick = 200) {
+        let left = Bodies.rectangle(x, y + h / 2, thick, h, { label: 'ground' }) as PhysicsHook;
+        let right = Bodies.rectangle(x + w, y + h / 2, thick, h, { label: 'lwall' }) as PhysicsHook;
+        let floor = Bodies.rectangle(x + w / 2, y + h, w, thick, { label: 'rwall' }) as PhysicsHook; // small overlap of 5 to ensure there isn't a gap
+        let ceil = Bodies.rectangle(x + w / 2, y, w, thick, { label: 'ceil' }) as PhysicsHook;
+        floor.collisionFilter = left.collisionFilter = right.collisionFilter = ceil.collisionFilter = CollisionFilters.WALL;
+        floor.zIndex = left.zIndex = right.zIndex = ceil.zIndex = -999;
+        floor.mass = left.mass = right.mass = ceil.mass = Infinity;
+        floor.isStatic = left.isStatic = right.isStatic = ceil.isStatic = true;
+        floor.render.fillStyle = left.render.fillStyle = right.render.fillStyle = ceil.render.fillStyle = '#000';
+        return [left, right, floor, ceil];
+    }
+    export var mouseConstraint: Matter.MouseConstraint;
+}
+export function matterjsobjectsMain() {
     var Engine = Matter.Engine,
         Render = Matter.Render,
         Runner = Matter.Runner,
@@ -45,27 +74,7 @@ namespace MatterObjects {
     canva.width = 1000;
     canva.height = 600;
 
-    /**
-     * 
-     * @param x top-left corner
-     * @param y top-left corner
-     * @param w 
-     * @param h 
-     * @param thick 
-     * @returns 
-     */
-    function makeWalls(x = 0, y = 0, w = 1000, h = 600, thick = 200) {
-        let left  = Bodies.rectangle(x    , y+h/2, thick, h    , { label: 'ground' }) as PhysicsHook;
-        let right = Bodies.rectangle(x+w  , y+h/2, thick, h    , { label: 'lwall' }) as PhysicsHook;
-        let floor = Bodies.rectangle(x+w/2, y+h  , w    , thick, { label: 'rwall' }) as PhysicsHook; // small overlap of 5 to ensure there isn't a gap
-        let ceil  = Bodies.rectangle(x+w/2, y    , w    , thick, { label: 'ceil' }) as PhysicsHook;
-        floor.collisionFilter = left.collisionFilter = right.collisionFilter = ceil.collisionFilter = CollisionFilters.WALL;
-        floor.zIndex = left.zIndex = right.zIndex = ceil.zIndex = -999;
-        floor.mass = left.mass = right.mass = ceil.mass = Infinity;
-        floor.isStatic = left.isStatic = right.isStatic = ceil.isStatic = true;
-        floor.render.fillStyle = left.render.fillStyle = right.render.fillStyle = ceil.render.fillStyle = '#000';
-        return [left, right, floor, ceil];
-    }
+
 
     // create two boxes and a ground
     // var boxA = Bodies.rectangle(400, 200, 80, 80);
@@ -79,9 +88,9 @@ namespace MatterObjects {
     // ground.collisionFilter = lwall.collisionFilter = rwall.collisionFilter = ceil.collisionFilter = CollisionFilters.WALL;
     // ground.zIndex = lwall.zIndex = rwall.zIndex = ceil.zIndex = -999;
     // ground.mass = lwall.mass = rwall.mass = ceil.mass = Infinity;
-    let [lwall, rwall, ground, ceil] = makeWalls(-90, -90, 1000 + 90 * 2, 600 + 90 * 2, 200);
+    let [lwall, rwall, ground, ceil] = MatterObjects.makeWalls(-90, -90, 1000 + 90 * 2, 600 + 90 * 2, 200);
     // add all of the bodies to the world
-    idMap.addAll([ground, lwall, rwall, ceil]);
+    MatterObjects.idMap.addAll([ground, lwall, rwall, ceil]);
     Composite.add(engine.world, [ground, lwall, rwall, ceil]);
 
 
@@ -104,7 +113,7 @@ namespace MatterObjects {
     var runner = Runner.create();
     universe.runner = runner;
 
-    export var mouseConstraint = Matter.MouseConstraint.create(engine, { //Create Constraint
+    MatterObjects.mouseConstraint = Matter.MouseConstraint.create(engine, { //Create Constraint
         // @ts-ignore
         canvas: canva,
         mouse: mouse,
@@ -137,8 +146,8 @@ namespace MatterObjects {
     // }
     // Matter.Events.on(engine, 'beforeUpdate', limitMaxSpeed);
 
-    Matter.World.add(world, mouseConstraint);
-    Matter.Events.on(mouseConstraint, "startdrag", (event) => {
+    Matter.World.add(world, MatterObjects.mouseConstraint);
+    Matter.Events.on(MatterObjects.mouseConstraint, "startdrag", (event) => {
         let body = event.body;
         debugBody(body);
     });

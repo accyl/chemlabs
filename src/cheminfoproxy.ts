@@ -1,6 +1,7 @@
+import { ChemExact, ChemPrototype, ChemType } from "./substance";
 
+export namespace ChemInfo {
 
-namespace ChemInfo {
     export function initializeChemType(subst: ChemType & ChemExact) {
         let inchl = subst.inchl;
         throw new Error("Not implemented");

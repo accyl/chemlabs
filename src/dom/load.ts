@@ -1,4 +1,18 @@
-function addDefault() {
+import { f_daylight } from "../color/color";
+import { rgb_from_spectrum } from "../color/colormodels";
+import { rgb_from_spectrum_concen, spectra_kmno4_f, transmittance } from "../color/colortest";
+import { $Wc } from "../command";
+import { toHex } from "../first";
+import { glob, redraw, tangify } from "../physvis";
+import { AqueousSubstance, ChemComponents } from "../substance";
+
+declare global {
+    var addDefault: () => void;
+    var slider: () => void;
+    var graph: () => void;
+    var onCommandButton: () => void;
+}
+addDefault = function() {
     let sub = $Wc.g('KMnO4')!.form();
     tangify(sub);
 
@@ -7,7 +21,7 @@ function addDefault() {
     redraw();
 }
 
-function slider() {
+slider = function() {
     let h = document.querySelector("#slider") as any;
     for(let s of glob.substances) {
         if('concentration' in s) {
@@ -19,7 +33,6 @@ function slider() {
         }
     }
 
-    let canvas = document.getElementById("canvas");
     let hud = document.getElementById("hud");
 
     if (hud && hud instanceof HTMLCanvasElement) {
@@ -51,7 +64,7 @@ function slider() {
 
 
 
-function makeRect(x: num, y: num, width: num, height: num, col: num[], ctxt?: CanvasRenderingContext2D) {
+export function makeRect(x: num, y: num, width: num, height: num, col: num[], ctxt?: CanvasRenderingContext2D) {
     // if(!ctxt) {
         // ctxt = gvar.ctxt;
     // }
@@ -63,11 +76,11 @@ function makeRect(x: num, y: num, width: num, height: num, col: num[], ctxt?: Ca
             ctxt = c;
         } else throw "Couldn't find context for canvas";
     }
-    ctxt.fillStyle = _hex(col[0], col[1], col[2]);
+    ctxt.fillStyle = toHex(col[0], col[1], col[2]);
     ctxt.fillRect(x, y, width, height);
 }
 
-function graph(f?: (x: num) => num, start: num = 360, end: num = 830) {
+graph = function(f?: (x: num) => num, start: num = 360, end: num = 830) {
     if(!f) f = f_daylight;
     // if (!f) f = spectra_kmno4_f;
 
@@ -82,7 +95,7 @@ function graph(f?: (x: num) => num, start: num = 360, end: num = 830) {
     
 }
 
-function onCommandButton() {
+onCommandButton = function() {
     let h = document.getElementById("cmdbox");
     let h2 = h as HTMLTextAreaElement;
     let txt = h2.value;
@@ -94,7 +107,7 @@ function onCommandButton() {
     console.log(s);
     return s;
 }
-function debugBody(body: Matter.Body) {
+export function debugBody(body: Matter.Body) {
     let paste = document.getElementsByClassName('db-vw-paste')[0];
     if('substs' in body) {
         let ph = body as Matter.Body & {'substs': ChemComponents};
@@ -123,8 +136,7 @@ function debugBody(body: Matter.Body) {
 
 //     h.addEventListener("keypress", submitOnEnter);
 // }();
-addDefault();
-class CanvasButton {
+export class CanvasButton {
     x=100;
     y = 100;
     width = 100;
@@ -155,7 +167,9 @@ class CanvasButton {
         }
     }
 }
-class ButtonManager {
+let canvas = document.getElementById("canvas") as HTMLCanvasElement;
+
+export class ButtonManager {
     _isInside(pos: any, rect: any) {
         return rect.x < pos.x && pos.x < rect.x + rect.width && pos.y < rect.y + rect.height && rect.y< pos.y;
     }
@@ -195,6 +209,7 @@ class ButtonManager {
         }
     }
 }
+
 let pauseButtons = new ButtonManager();
 pauseButtons.buttons = (function () {
     let can = getCanvas();
@@ -296,7 +311,9 @@ function pauseUnpauseGame(pause?: Boolean) {
     }
 }
 
-(function () {
+export function loadMain() {
+// (function () {
+    addDefault();
     var canvas = getCanvas();
     var ctx = getCanvasContext(canvas);
     //The rectangle should have x,y,width,height properties
@@ -323,5 +340,6 @@ function pauseUnpauseGame(pause?: Boolean) {
     }, false);
     // Make sure this code gets executed after the DOM is loaded.
     
-})();
+// })();
+}
 

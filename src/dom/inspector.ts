@@ -1,6 +1,8 @@
 /// <reference path="../../node_modules/@types/jquery/index.d.ts" />
 /// <reference path="../substance.ts" />
 
+import { AqueousSubstance, ChemComponent, ChemType, GaseousSubstance, MolecularSubstance } from "../substance";
+
 
 $('#einspector').on('matterCreated', function (e, eventInfo) { 
     // originates from phys() in phys.ts
@@ -73,7 +75,7 @@ function traceExtensionsOn(obj: ChemComponent): (new () => any)[] {
 
     while (proto) {
         let name = proto.constructor.name;
-        if (['Substance', 'SubstGroup', 'Object'].includes(name)) break;
+        if (['ChemComponent', 'ChemComponents', 'Object'].includes(name)) break;
 
         result.push(proto.constructor);
 
@@ -96,11 +98,11 @@ function showSubstanceAttributes(subs: ChemComponent): JQuery<HTMLElement> {
     let div = $('<div>');
     div.addClass('substance-attributes');
     for (let ext of exts) {
-        let details = ext.name === 'Substance' ? $('<details open>') : $('<details>');
+        let details = ext.name === 'ChemComponent' ? $('<details open>') : $('<details>');
          // automatically open Substance
 
         let target = subs as {};
-        if(ext.name === 'SubstanceType') target = subs.type;
+        if(ext.name === 'ChemType') target = subs.type;
         // add .substance-attributes to details
         details.append($('<summary>').text(ext.name));
 
@@ -121,9 +123,10 @@ function showSubstanceAttributes(subs: ChemComponent): JQuery<HTMLElement> {
     }
     return div;
 }
-(function() {
-    cachedAttrs['Substance'] = ['mass', 'volume', 'temperature', 'state'];
-    cachedAttrs['SubstanceType'] = ['chemicalFormula', 'density', 'rgb', 'specificHeatCapacity'];
+
+export function inspectorInit() {
+    cachedAttrs['ChemComponent'] = ['mass', 'volume', 'temperature', 'state'];
+    cachedAttrs['ChemType'] = ['chemicalFormula', 'density', 'rgb', 'specificHeatCapacity'];
     let s = new ChemComponent();
     let ms = new MolecularSubstance();
     allNewAttributes(ms, s);
@@ -131,9 +134,7 @@ function showSubstanceAttributes(subs: ChemComponent): JQuery<HTMLElement> {
     allNewAttributes(as, ms);
     let gs = new GaseousSubstance();
     allNewAttributes(gs, ms);
-
-})();
-
+}
 
 $('#einspector').on('substanceCreated', function (e, eventInfo) { 
     // originates from tang() in physvis.ts, which itself calls phys() but also adds it to glob.s

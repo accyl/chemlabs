@@ -15,7 +15,7 @@
 // data from: http://cvrl.ioo.ucl.ac.uk/database/data/cmfs/ciexyz31_1.txt
 // massaged into this format.
 
-let _CIEXYZ_1931_table = [
+export let _CIEXYZ_1931_table = [
     [360, 0.000129900000, 0.000003917000, 0.000606100000],
     [361, 0.000145847000, 0.000004393581, 0.000680879200],
     [362, 0.000163802100, 0.000004929604, 0.000765145600],
@@ -506,9 +506,9 @@ const DEFAULT_DISPLAY_INTENSITY = 1.624
 // # Sun = 1.6 x 10 ^ 9
 
 // # an advertised LCD display(2008) = 300 cd / m ^ 2
-let xyz_from_wavelength: (wl_nm: num) => number[];
-let xyz_from_spectrum: (spectrum: (wl: number) => number) => tup;
-__ = function(){
+export let xyz_from_wavelength: (wl_nm: num) => number[];
+export let xyz_from_spectrum: (spectrum: (wl: number) => number) => tup;
+// __ = function(){
 function assert(b: boolean, s: string) {
     if(!b) throw s;
 }
@@ -519,7 +519,7 @@ let delta_wl_nm = 1.0;
 let _wavelengths = [];
 let _xyz_colors: number[][] = [];
 let _xyz_deltas: number[][] = [];
-function init(display_intensity: number = DEFAULT_DISPLAY_INTENSITY) {
+export function init(display_intensity: number = DEFAULT_DISPLAY_INTENSITY) {
     // '''Initialize the spectral sampling curves.'''
     // # Expect that the table ranges from 360 to 830
     let table_size = _CIEXYZ_1931_table.length;
@@ -569,7 +569,7 @@ function init(display_intensity: number = DEFAULT_DISPLAY_INTENSITY) {
         _xyz_deltas[i] = _xyz_colors[i + 1].map((x, j) => x - _xyz_colors[i][j]);
     _xyz_deltas[create_table_size - 1] = [0,0,0];
 }
-init();
+// init();
 
 /**
  * Given a wavelength (nm), return the corresponding xyz color, for unit intensity.
@@ -632,10 +632,10 @@ xyz_from_spectrum = function(spectrum: (wl: number) => number) {
 
 
     // return [xyz_from_spectrum, xyz_from_wavelength];
-}();
+// }();
 // as [(spectrum: (wl: number) => number) => number[], (wl_nm: num) => number[]];
 
-function f_whitish(wl:num):num {
+export function f_whitish(wl:num):num {
     if (wl > 640) {
         if(wl > 700)return 1/32;
         return 1/8;
@@ -657,7 +657,7 @@ function f_whitish(wl:num):num {
  * We use two lines to approximate it _very_ roughly
  * @param wavelength 
  */
-function f_daylight(wl: num): num {
+export function f_daylight(wl: num): num {
     // (440, .882) => (450, .882)
     // (360, .264)
     // (830, .569)
@@ -685,7 +685,7 @@ function f_daylight(wl: num): num {
     return factor * ((.882 - .39) / (450 - 800) * (wl - 450) + .882);
 }
 
-function f_fluor_white(wavelen: num): num {
+export function f_fluor_white(wavelen: num): num {
     // downwards parabola at (580, .714) = point 0
     // parabola also goes thru (650, .174) = point 1
     // spikes @ (435, .712), (544, .986), (577, .842), (403, .181)

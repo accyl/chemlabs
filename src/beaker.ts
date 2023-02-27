@@ -1,35 +1,37 @@
+import Matter from "matter-js";
+import { PhysicsHook } from "./phys";
+import { ChemComponent } from "./substance";
 
-namespace internal {
-    export let tempViewportBound: Matter.Bounds;
 
-    export function createTempViewportBoundIfNotAlready() {
-        if (internal.tempViewportBound === undefined) {
-            let vertices: Matter.Vector[] = [];
-            var canvas = document.getElementById('canvas') as HTMLCanvasElement;
+let tempViewportBound: Matter.Bounds;
+function createTempViewportBoundIfNotAlready() {
+    if (tempViewportBound === undefined) {
+        let vertices: Matter.Vector[] = [];
+        var canvas = document.getElementById('canvas') as HTMLCanvasElement;
 
-            let tolerance = 80;
-            vertices.push(Matter.Vector.create(0 - tolerance, 0 - tolerance));
-            let othercorner = [canvas.width, canvas.height];
-            vertices.push(Matter.Vector.create(othercorner[0] + tolerance, 0 - tolerance));
-            vertices.push(Matter.Vector.create(othercorner[0] + tolerance, othercorner[1] + tolerance));
-            vertices.push(Matter.Vector.create(0 - tolerance, othercorner[1] + tolerance));
+        let tolerance = 80;
+        vertices.push(Matter.Vector.create(0 - tolerance, 0 - tolerance));
+        let othercorner = [canvas.width, canvas.height];
+        vertices.push(Matter.Vector.create(othercorner[0] + tolerance, 0 - tolerance));
+        vertices.push(Matter.Vector.create(othercorner[0] + tolerance, othercorner[1] + tolerance));
+        vertices.push(Matter.Vector.create(0 - tolerance, othercorner[1] + tolerance));
 
-            internal.tempViewportBound = Matter.Bounds.create(Matter.Vertices.create(vertices, undefined!));
-            return;
-            let bottomleft = { ...MatterObjects.idMap.get('lwall')!.bounds.min };
-            let topright = { ...MatterObjects.idMap.get('rwall')!.bounds.max };
-            let tol = 10; // tolerance
-            bottomleft.x -= tol;
-            bottomleft.y -= tol;
-            topright.x += tol;
-            topright.y += tol;
-            // let size = [topright.x - bottomleft.x + tol*2, topright.y - bottomleft.y + tol*2];
-            // internal.tempViewportBody = Matter.Bodies.fromVertices(0, 0, [[bottomleft], [topright]], { isStatic: true });
-        }
+        tempViewportBound = Matter.Bounds.create(Matter.Vertices.create(vertices, undefined!));
+        return;
+        // let bottomleft = { ...MatterObjects.idMap.get('lwall')!.bounds.min };
+        // let topright = { ...MatterObjects.idMap.get('rwall')!.bounds.max };
+        // let tol = 10; // tolerance
+        // bottomleft.x -= tol;
+        // bottomleft.y -= tol;
+        // topright.x += tol;
+        // topright.y += tol;
+        // let size = [topright.x - bottomleft.x + tol*2, topright.y - bottomleft.y + tol*2];
+        // internal.tempViewportBody = Matter.Bodies.fromVertices(0, 0, [[bottomleft], [topright]], { isStatic: true });
     }
 }
 
-namespace Beaker {
+
+export namespace Beaker {
     /**
      * O(n)
      * @param bodies 
@@ -49,22 +51,22 @@ namespace Beaker {
     }
 }
 
-function isBodyInWorld(body: Matter.Body) {
-    internal.createTempViewportBoundIfNotAlready();
-    return Matter.Bounds.contains(internal.tempViewportBound, body.position);
+export function isBodyInWorld(body: Matter.Body) {
+    createTempViewportBoundIfNotAlready();
+    return Matter.Bounds.contains(tempViewportBound, body.position);
 }
 
-function allBodiesWithinViewport(bodies?: Matter.Body[], inside = true) {
+export function allBodiesWithinViewport(bodies?: Matter.Body[], inside = true) {
     if (bodies === undefined) bodies = Matter.Composite.allBodies(universe.world);
-    internal.createTempViewportBoundIfNotAlready();
-    if (inside) return bodies.filter(body => Matter.Bounds.contains(internal.tempViewportBound, body.position));
-    else return bodies.filter(body => !Matter.Bounds.contains(internal.tempViewportBound, body.position));
+    createTempViewportBoundIfNotAlready();
+    if (inside) return bodies.filter(body => Matter.Bounds.contains(tempViewportBound, body.position));
+    else return bodies.filter(body => !Matter.Bounds.contains(tempViewportBound, body.position));
     // all bodies outside viewport - AKA, they teleported out (probably because of user intervention)
 }
 
-/// <reference path="interact.ts"/>
+// <reference path="interact.ts"/>
 
-type Beaker = Matter.Body & {_substances: Set<ChemComponent>, _tracked: Set<Matter.Body>, addTracked: (body: Matter.Body) => void, equilibriumAssigner?: EquilibriumAssigner};
+export type Beaker = Matter.Body & {_substances: Set<ChemComponent>, _tracked: Set<Matter.Body>, addTracked: (body: Matter.Body) => void, equilibriumAssigner?: EquilibriumAssigner};
 
 /**
  * The real interior width of the beaker = w - thick/2 - thick/2
@@ -77,7 +79,7 @@ type Beaker = Matter.Body & {_substances: Set<ChemComponent>, _tracked: Set<Matt
  * @param thick thickness of the beaker
  * @returns 
  */
-function makeBeaker(x = 250, y = 250, w = 270, h = 350, thick = 40): Beaker {
+export function makeBeaker(x = 250, y = 250, w = 270, h = 350, thick = 40): Beaker {
     let beakerLeft = Matter.Bodies.rectangle(x, y, thick, h) as PhysicsHook;
     let beakerRight = Matter.Bodies.rectangle(x + w, y, thick, h) as PhysicsHook;
     // let rect1 = Bodies.rectangle(300, 300, 200, 40, { ignoreGravity: true } as any) as PhysicsHook;

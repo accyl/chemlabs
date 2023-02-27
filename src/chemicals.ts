@@ -1,14 +1,19 @@
 /// <reference path='substance.ts'/>
 
-type Canonical = string;
+import { spectra_kmno4_f } from "./color/colortest";
+import { $Wc, AtomTracker } from "./command";
+import { ptable } from "./data/ptable";
+import { ChemComponent, ChemPrototype, ChemType, makeAqueous, makeMolecular, makeSpectralAqueous } from "./substance";
+
+export type Canonical = string;
 /**
  * Use a SMILES/SMARTS support instead of ChemicalFormula
  * Smiles 
  * MarvinJS
- * InCHI = similar to SMILES, but totally canonical
+ * InCHI = similar to SMILES, but totally canonical. = Exact
  * javascript chemoinformatics: kekule.js
  */
-interface ChemicalsMap { // extends Map<string, ProtoSubstance>
+export interface ChemicalsMap { // extends Map<string, ProtoSubstance>
     setFromTracker(chem: AtomTracker): ChemPrototype;
     // updateWithNewState(qty: ComputedQty, model: ProtoSubstance): ProtoSubstance;
     getFromCanonical(canon: Canonical): ChemPrototype | undefined;
@@ -41,7 +46,7 @@ interface ChemicalsMap { // extends Map<string, ProtoSubstance>
     readonly size: number;
     */
 } // extends Map<Canonical, ProtoSubstance> 
-class ChemicalsDatabaseImpl implements ChemicalsMap{
+export class ChemicalsDatabaseImpl implements ChemicalsMap{
     /**
      * Will always return the substance in STP state. 
      * @param canonical 
@@ -184,8 +189,9 @@ class ChemicalsDatabaseImpl implements ChemicalsMap{
     }
     // new method below
 }
-const chemicals = new ChemicalsDatabaseImpl();
+export const chemicals = new ChemicalsDatabaseImpl();
 
+export function chemicalsMain() {
 chemicals.setFromCanonical('1S/H2O/h1H2', function () { // 'H2O'
     // source: https://pubchem.ncbi.nlm.nih.gov/compound/Water#section=IUPAC-Name
     // CAS: 7732-18-5
@@ -260,6 +266,7 @@ chemicals.setFromCanonical('1S/H2/h1H', function () { // H2
     };
     return ChemPrototype.fromJson(all, g, [l]);
 }());
+}
 $Wc.g = function(key: string): ChemPrototype | undefined {
     return chemicals.getFromFormula(key);
 }

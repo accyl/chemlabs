@@ -2,11 +2,15 @@
 // <reference path='color/colormodels.ts'/>
 // <reference path='../raw/tut.matter.js'/>
 
+import Matter from "matter-js";
+import { applyPhyshook, newBounds } from "./phys";
+import { ChemComponent, ChemComponents } from "./substance";
+
 // import _ from "lodash";
 
 
 
-class Drawer {
+export class Drawer {
     drawSubstance(ctx: CanvasRenderingContext2D, s: ChemComponent | ChemComponents) {
         if (s instanceof ChemComponent) {
             // if (s instanceof AqueousSubstance) {
@@ -108,7 +112,7 @@ class Drawer {
 let canvas = document.getElementById('canvas') as HTMLCanvasElement;
 let ctx = canvas.getContext('2d');
 
-class Global extends ChemComponents {
+export class ChemGlobal extends ChemComponents {
     solids_i=0;
     gases_i=0;
     liquids_i=0;
@@ -130,12 +134,9 @@ class Global extends ChemComponents {
         // }
     }
 }
-const glob = new Global();
-universe.glob = glob;
-applyPhyshook(glob, [0, 0], [canvas.width, canvas.height]);
-let b = newBounds({ x: canvas.width / 4, y: canvas.height / 4 }, { x: canvas.width / 2, y: canvas.height / 2 }); // canvas.width/2, y:canvas.height/2});
+export const glob = new ChemGlobal();
 
-function tangify<S extends ChemComponent | ChemComponents>(s: S, addToGlobal=true, pos?: [num, num, num], size?: [num, num, num],): S {
+export function tangify<S extends ChemComponent | ChemComponents>(s: S, addToGlobal=true, pos?: [num, num, num], size?: [num, num, num],): S {
     let ret = applyPhyshook(s);
 
 
@@ -153,19 +154,19 @@ function tangify<S extends ChemComponent | ChemComponents>(s: S, addToGlobal=tru
     return ret;
 }
 
-var drawer = new Drawer(); // the principal drawer
+export var principalDrawer = new Drawer(); // the principal drawer
 
-function redraw(t?: num) {
+export function redraw(t?: num) {
 
     let ctx = getCanvasContext();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     ctx.fillStyle = '#000000';
-    drawer.drawComposite(ctx, universe.world);
-    drawer.drawSubstance(ctx, glob);
+    principalDrawer.drawComposite(ctx, universe.world);
+    principalDrawer.drawSubstance(ctx, glob);
 
 }
-function updateZIndex() {
+export function updateZIndex() {
     // basically, move gases towards the front of the so they're drawn behind solids
     // TODO: reorder universe.world according to glob
     universe.world.bodies.sort((a, b) => {
@@ -178,12 +179,19 @@ function updateZIndex() {
     // Matter.Composite.rebase(universe.world);
 }
 
-(function() {
+// (function() {
+export function physvisMain() {
+    universe.glob = glob;
+
+
+    applyPhyshook(glob, [0, 0], [canvas.width, canvas.height]);
+    let b = newBounds({ x: canvas.width / 4, y: canvas.height / 4 }, { x: canvas.width / 2, y: canvas.height / 2 }); // canvas.width/2, y:canvas.height/2});
+
     let func = () => {
         if(!universe.paused) redraw();
         requestAnimationFrame(func);
     }
     // window.requestAnimationFrame(func);
-})();
-
+// })();
+}
 

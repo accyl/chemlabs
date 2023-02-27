@@ -1,13 +1,18 @@
-/// <reference path='first.ts'/>
-/// <reference path='chemicals.ts'/>
-/// <reference path='data/ptable.ts'/>
+// <reference path='first.ts'/>
+// <reference path='chemicals.ts'/>
+// <reference path='data/ptable.ts'/>
+
+import { chemicals } from "./chemicals";
+import { ptable, ptable_symbs, ptable_symb_tree } from "./data/ptable";
+import { redraw, tangify, updateZIndex } from "./physvis";
+import { ChemComponent, ChemPrototype, MolecularSubstance } from "./substance";
 
 
 // H2O (l) 2mol 
 // H2O(l) 2mol
 // H2O (l) 5mL
 // CH3CH2OH(l) 16g
-class AtomTracker {
+export class AtomTracker {
     // start old atomtracker
     atoms: (string | AtomTracker)[]=[]; // can be a polyatomic
     qtys:num[] = [];
@@ -89,7 +94,104 @@ class AtomTracker {
     }
 }
 
-namespace Tokenizers {
+export class QtyUnitList {
+    qtys: num[] = [];
+    si_prefixes: string[] = [];
+    units: string[] = [];
+    push(qty: num, unit1: string, unit2?: string) {
+        this.qtys.push(qty);
+        if (unit2) {
+            // if we have unit2, then we know
+            // that unit1 is a prefix, and unit2 is a base unit
+            // 
+            this.si_prefixes.push(unit1);
+            this.units.push(unit2);
+        } else {
+            this.si_prefixes.push('');
+            this.units.push(unit1);
+        }
+    }
+    toString() {
+        let str = '';
+        for (let i = 0; i < this.qtys.length; i++) {
+            str += `[${this.qtys[i]} ${this.units[i]}], `
+        }
+        return str;
+    }
+    computed() {
+        return new ComputedQty(this);
+        // for(let i=0;i<this.qtys.length;i++) {
+        // let qty = this.qtys[i];
+        // let pref = this.si_prefixes[i];
+        // let unit = this.units[i];
+        // b.push(qty, pref, unit);
+        // }
+    }
+    /**
+     * Gets the corresponding value based on the unit.
+     * If the unit has not been specified, undefined is returned
+     * @param base_unit For example, if `HCl 5mL 6mol` has been tokenized, the base unit would be `L` or `mol`
+     */
+    get(base_unit: string) {
+        let idx = this.units.indexOf(base_unit);
+        if (idx === -1) return undefined;
+        return this.qtys[idx] * QtyUnitList.prefixToMultiplier(this.si_prefixes[idx]);
+    }
+    /**
+     * This version of get() returns the unit prefix instead of multiplying.
+     */
+    getPrefixial(base_unit: string): [num, string] | undefined {
+        let idx = this.units.indexOf(base_unit);
+        if (idx === -1) return undefined;
+        return [this.qtys[idx], this.si_prefixes[idx]];
+    }
+    static prefixToMultiplier(si_pref: string) {
+        let si_prefixes = Constants.SIprefs;
+        let mults = Constants.SIprefscoeffs;
+        let idx = si_prefixes.indexOf(si_pref);
+        if (idx >= 0) {
+            return mults[idx];
+        } else {
+            throw ReferenceError(`prefix ${si_pref} not recognized!`);;
+        }
+    }
+}
+/**
+ * Contains all quantitative properties of a substance (plus the state),
+ * such that given a valid protosubstance we will be able to construct a substance from this.
+ */
+export class ComputedQty {
+    qul: QtyUnitList;
+    mass?: num;
+    mol?: num;
+    vol?: num;
+    state?: string;
+    constructor(qul: QtyUnitList) {
+        this.qul = qul;
+        this.mass = qul.get('g'); // mass, mol, and vol are the most vital stats.
+        this.mol = qul.get('mol');
+        this.vol = qul.get('L');
+
+        let M = qul.get('M');
+        // magic inferral happens here
+        if (this.state === undefined && M !== undefined) this.state = 'aq'; // ifwe get a Molarity reading (ie. 5M), assume aqueous
+        if (M) {
+            if (this.vol !== undefined && this.mol === undefined) {
+                this.mol = M * this.vol;
+            } else if (this.vol === undefined && this.mol !== undefined) {
+                this.vol = M / this.mol;
+            } else if (this.mol === undefined && this.mass === undefined && this.vol === undefined) {
+                this.vol = 1;
+                this.mol = this.vol * M;
+            }
+        }
+    }
+
+    // formFrom(pc: SubstanceMaker): Substance { // see SubstanceMaker.amount() }
+
+}
+
+export namespace Tokenizers {
     function _isLower(inp: string) {
         return inp.length === 1 && 'abcdefghijklmnopqrstuvwxyz'.includes(inp);
     }
@@ -120,7 +222,7 @@ namespace Tokenizers {
         // bdr.atomt = new OldAtomTracker();
         // let elemt = bdr.atomt;
 
-        let ptree = ptable_symb_tree as any;
+        let ptree = ptable_symb_tree;
         let i=startidx;
 
         function updateBdr(sliceidx: num, newidx: num = sliceidx): [string, num] {
@@ -135,7 +237,8 @@ namespace Tokenizers {
                 // start searching the tree
                 if (!(c in ptable_symb_tree)) throw `Couldn't find capital letter ${c} as a chemical element name at index ${i} of ${inp} `;
                 let capital = c;
-                let possibs = ptree[c];
+                // @ts-ignore
+                let possibs = ptree[c] as string;
             
                 // look ahead one
                 if(i+1 >= inp.length) {
@@ -476,69 +579,8 @@ namespace Tokenizers {
     }
 
     // let q = [] as [num, string, string][];
-    export class QtyUnitList {
-        qtys: num[] = [];
-        si_prefixes: string[] = [];
-        units: string[] = [];
-        push(qty: num, unit1: string, unit2?: string) {
-            this.qtys.push(qty);
-            if(unit2) {
-                // if we have unit2, then we know
-                // that unit1 is a prefix, and unit2 is a base unit
-                // 
-                this.si_prefixes.push(unit1);
-                this.units.push(unit2);
-            } else {
-                this.si_prefixes.push('');
-                this.units.push(unit1);
-            }
-        }
-        toString() {
-            let str = '';
-            for(let i=0;i<this.qtys.length;i++) {
-                str += `[${this.qtys[i]} ${this.units[i]}], `
-            }
-            return str;
-        }
-        computed() {
-            return new ComputedQty(this);
-            // for(let i=0;i<this.qtys.length;i++) {
-                // let qty = this.qtys[i];
-                // let pref = this.si_prefixes[i];
-                // let unit = this.units[i];
-                // b.push(qty, pref, unit);
-            // }
-        }
-        /**
-         * Gets the corresponding value based on the unit.
-         * If the unit has not been specified, undefined is returned
-         * @param base_unit For example, if `HCl 5mL 6mol` has been tokenized, the base unit would be `L` or `mol`
-         */
-        get(base_unit: string) {
-            let idx = this.units.indexOf(base_unit);
-            if(idx === -1) return undefined;
-            return this.qtys[idx] * QtyUnitList.prefixToMultiplier(this.si_prefixes[idx]);
-        }
-        /**
-         * This version of get() returns the unit prefix instead of multiplying.
-         */
-        getPrefixial(base_unit: string): [num, string] | undefined {
-            let idx = this.units.indexOf(base_unit);
-            if (idx === -1) return undefined;
-            return [this.qtys[idx], this.si_prefixes[idx]];
-        }
-        static prefixToMultiplier(si_pref: string) {
-            let si_prefixes = Constants.SIprefs;
-            let mults = Constants.SIprefscoeffs;
-            let idx = si_prefixes.indexOf(si_pref);
-            if (idx >= 0) {
-                return mults[idx];
-            } else {
-                throw ReferenceError(`prefix ${si_pref} not recognized!`);;
-            }
-        }
-    }
-}
+    
+// }
 /**
  * Deprecated for this reason: the order of quantities should NOT matter unless it's a last resort.
  * For instance, we want `5M 5mol and 5mol 5M` to be consistent 100% of the time.
@@ -614,41 +656,7 @@ class QtyBuilder {
     
 }*/
 
-/**
- * Contains all quantitative properties of a substance (plus the state),
- * such that given a valid protosubstance we will be able to construct a substance from this.
- */
-class ComputedQty {
-    qul: Tokenizers.QtyUnitList;
-    mass?:num;
-    mol?:num;
-    vol?:num;
-    state?:string;
-    constructor(qul: Tokenizers.QtyUnitList) {
-        this.qul = qul;
-        this.mass = qul.get('g'); // mass, mol, and vol are the most vital stats.
-        this.mol = qul.get('mol');
-        this.vol = qul.get('L');
-        
-        let M = qul.get('M');
-        // magic inferral happens here
-        if (this.state === undefined && M !== undefined) this.state = 'aq'; // ifwe get a Molarity reading (ie. 5M), assume aqueous
-        if(M) {
-            if(this.vol !== undefined && this.mol === undefined) {
-                this.mol = M * this.vol;
-            } else if(this.vol === undefined && this.mol !== undefined) {
-                this.vol = M / this.mol;
-            } else if(this.mol === undefined && this.mass === undefined && this.vol === undefined) {
-                this.vol = 1;
-                this.mol = this.vol * M;
-            }
-        }
-    }
-
-    // formFrom(pc: SubstanceMaker): Substance { // see SubstanceMaker.amount() }
-
-}
-namespace Tokenizers {
+// export namespace Tokenizers {
     /**
      * 
      * @param inp 
@@ -716,5 +724,103 @@ namespace Tokenizers {
         }
         return [inp.slice(startidx, idx), idx, qbdr];
     }
+// }
+
+export function WStringTknr(inp: string, startidx = 0): [AtomTracker, QtyUnitList] {
+    if (startidx >= inp.length)
+        throw ReferenceError("bruh"); // really?
+    if (_isNumeric(inp[startidx])) {
+        let qbdr = new QtyUnitList();
+        let [qty, idx, _] = quantitiesTokenizer(inp, startidx, qbdr);
+        let [__, idx2] = whitespaceTokenizer(inp, idx);
+        let fbdr = new AtomTracker();
+        let [formula, idx3] = formulaTokenizer(inp, idx2, fbdr);
+        return [fbdr, qbdr];
+    } else {
+
+        let fbdr = new AtomTracker();
+        let [formula, idx] = formulaTokenizer(inp, startidx, fbdr);
+        let qbdr = new QtyUnitList();
+        let [qty, idx2, _] = quantitiesTokenizer(inp, idx, qbdr);
+        let [__, idx3] = whitespaceTokenizer(inp, idx2);
+        return [fbdr, qbdr];
+    }
+}
+// }
+
 }
 
+
+
+// Tokenizers DONE. Now for tungsten functions
+// The thing about tungsten functions is that they depend
+// on chemicals.ts, chem.ts, and substance.ts files
+
+export const tungstenCreate = function (inp: string, display = true): ChemComponent {
+    let subst;
+    let [chem, qty] = Tokenizers.WStringTknr(inp);
+    // form.formula
+    let formula = chem.formula;
+    let protos = undefined;
+    if (chemicals.hasFormula(formula)) {
+        protos = chemicals.getFromFormula(formula);
+    } else {
+        protos = chemicals.setFromTracker(chem);
+        console.log(`formula ${formula} not found in list of chemicals. autogenerating...`);
+    }
+    if (protos) {
+        // let pargs = protos.args();
+        // let qbuild = qty.toBuilder();
+        subst = protos.amount(qty.computed(), chem.state);
+
+    } else {
+        throw protos;
+    }
+    // } else {
+    if (display) {
+        tangify(subst);
+        updateZIndex();
+        redraw();
+        return subst;
+    } else {
+        return subst;
+    }
+    // TODO: with a greedy algorithm, we can
+    // actually attempt to process formulas that
+    // are 'lazily' in all lower case. for
+    // example kmno4. 
+    // although by definition it won't always work - see no
+    // or hga - HGa
+} as { (inp: string, display?: boolean): ChemComponent; g: (inp: string) => ChemPrototype | undefined; };
+/**
+ * Find all elements that match the selector
+ * @param selector 
+ * If selector is a number, it is interpreted as the index.
+ * @returns 
+ */
+export function tungstenFind(selector: num | string): ChemComponent[] {
+    let glob = universe.glob;
+    if (typeof selector === 'number') {
+        return [(glob as any).s[selector]];
+    } else {
+        let [chem, qty] = Tokenizers.WStringTknr(selector);
+        let out = (glob as any).s.filter((s: any) => s.type.chemicalFormula === chem.formula);
+        let cqty = qty.computed();
+        if (cqty.mass !== undefined) out = out.filter((s: any) => s.mass === cqty.mass);
+        if (cqty.vol !== undefined) out = out.filter((s: any) => s.volume === cqty.vol);
+        if (cqty.state !== undefined) out = out.filter((s: any) => s.state === cqty.state);
+        if (cqty.mol !== undefined) out = out.filter((s: any) => 'mol' in s && (s as MolecularSubstance).mol === cqty.mol);
+        return out;
+    }
+}
+/**
+ * W c = Tungsten create
+ */
+export const $Wc = tungstenCreate;
+
+
+export const $Wf = tungstenFind;
+
+export const $Wg = function (args: string) {
+    return chemicals.getFromFormula(args);
+}
