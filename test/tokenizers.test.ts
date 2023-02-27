@@ -1,5 +1,7 @@
 /// <reference path="../src/command.ts"/>
 
+import { AtomTracker, Tokenizers } from "../src/command";
+
 describe("Whitespace Tokenizer", function() {
     it("strips whitespace", function() {
         expect(Tokenizers.whitespaceTokenizer("    removes preceding whitespace", 0)).toEqual(["    ", 4]);
@@ -46,13 +48,13 @@ describe("Formula Tokenizer", function() {
 
     });
 
-    function molarMass(inp) {
+    function molarMass(inp: string) {
         let atomt = new AtomTracker();
         Tokenizers.formulaTokenizer(inp, 0, atomt);
         return atomt.molarMass();
     }
 
-    function expectMolarMass(x) {
+    function expectMolarMass(x: string) {
         return expect(molarMass(x)).withContext(x);
     }
     it("calculates molar masses", function() {

@@ -12,7 +12,7 @@ $('#einspector').on('matterCreated', function (e, eventInfo) {
 // TODO
 // since we are given mixin creation functions for each phase, we can reflexively discover the attributes that each subclass of substance creates
 // so we can show them in the inspector
-function allKeys(obj: any) {
+export function allKeys(obj: any) {
     // https://stackoverflow.com/questions/8024149/is-it-possible-to-get-the-non-enumerable-inherited-property-names-of-an-object
     // let result = new Set();
 
@@ -43,8 +43,8 @@ function allKeys(obj: any) {
     }
     return [...result];
 }
-let cachedAttrs = {} as { [key: string]: string[] };
-function allNewAttributes<NEW extends ChemComponent, OLD extends ChemComponent>(obj: NEW, oldobj?: OLD, cache = true) {
+export let cachedAttrs = {} as { [key: string]: string[] };
+export function allNewAttributes<NEW extends ChemComponent, OLD extends ChemComponent>(obj: NEW, oldobj?: OLD, cache = true) {
 
     if (cache) {
         let name = obj.constructor.name;
@@ -68,7 +68,7 @@ function allNewAttributes<NEW extends ChemComponent, OLD extends ChemComponent>(
     return diff;
 
 }
-function traceExtensionsOn(obj: ChemComponent): (new () => any)[] {
+export function traceExtensionsOn(obj: ChemComponent): (new () => any)[] {
 
     var proto = obj.constructor.prototype;
     var result = [];
@@ -86,7 +86,7 @@ function traceExtensionsOn(obj: ChemComponent): (new () => any)[] {
     return result;
 }
 
-function showSubstanceAttributes(subs: ChemComponent): JQuery<HTMLElement> {
+export function showSubstanceAttributes(subs: ChemComponent): JQuery<HTMLElement> {
     let exts = traceExtensionsOn(subs);
     exts.push(ChemComponent);
 

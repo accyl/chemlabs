@@ -7,7 +7,8 @@
     <title>Jasmine Runner</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jasmine/3.6.0/jasmine.css">
-    </link>
+    <link rel="stylesheet" href="test.css">
+
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/3.6.0/jasmine.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/3.6.0/jasmine-html.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/3.6.0/boot.js"></script>
@@ -15,19 +16,31 @@
 </head>
 
 <body>
-    <script src="../public/bin/first.js"></script>
 
-    <script src="../public/bin/data/ptable.js"></script>
-    <script src="../public/bin/command.js"></script>
+    <!-- <script src="../public/bin/first.js"></script> -->
 
-    <script src="tokenizers.test.js"></script>
+    <!-- <script src="../public/bin/data/ptable.js"></script> -->
+    <!-- <script src="../public/bin/command.js"></script> -->
 
-    <script src="../public/libs/jquery-3.6.0.min.js"></script>
-    <script src="../public/bin/substance.js"></script>
+    <!-- <script src="tokenizers.test.js"></script> -->
 
-    <script src="../public/bin/dom/inspector.js"></script>
+    <!-- <script src="../public/libs/jquery-3.6.0.min.js"></script> -->
+    <!-- <script src="../public/bin/substance.js"></script> -->
 
-    <script src="inspector.test.js"></script>
+    <!-- <script src="../public/bin/dom/inspector.js"></script> -->
+
+    <!-- <script src="inspector.test.js"></script> -->
+    <script src="../src/zero.js"></script>
+    <script src="../src/zero.ts"></script>
+    <script src="../libs/jquery-3.6.0.min.js"></script>
+
+    <script type="module" src="../src/entry.ts"></script>
+    <script type="module" src="tokenizers.test.ts"></script>
+
+    <script type="module" src="inspector.test.ts"></script>
+    <canvas id="canvas" class='noselect' height=100px width=100px>
+            
+            </canvas>
 
 </body>
 

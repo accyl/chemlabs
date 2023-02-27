@@ -12,9 +12,10 @@ https://open-reaction-database.org/client/search
 
  */
 
-import { ChemComponent } from "./substance";
+import { Beaker } from "./beaker";
+import { ChemComponent, ChemType } from "./substance";
 
-class RateExpression {
+export class RateExpression {
     reactants: ChemType[] = [];
     powers: num[] = [];
     k: num = 1; // rate 
@@ -28,8 +29,8 @@ class RateExpression {
         return tot;
     }
 }
-type RateExpr = RateExpression;
-class BoundRateExpr extends RateExpression{
+export type RateExpr = RateExpression;
+export class BoundRateExpr extends RateExpression{
     brx: ChemComponent[] = [];
     constructor(k: num, reactants: ChemType[]) {
         super();
@@ -50,7 +51,7 @@ class BoundRateExpr extends RateExpression{
         return super.R(this.brx);
     }
 }
-class BalancedRxn {
+export class BalancedRxn {
     reactants: ChemType[] = [];
     products: ChemType[] = [];
     coefficients: num[] = []; // reactants, then products
@@ -83,7 +84,7 @@ class BalancedRxn {
     }
     
 }
-class Equilibrium extends BalancedRxn {
+export class Equilibrium extends BalancedRxn {
 
     // ΔG = nFE
     // ΔG = ΔH - TΔS
@@ -145,12 +146,12 @@ class Equilibrium extends BalancedRxn {
     }
 
 }
-type Eqb = Equilibrium;
+export type Eqb = Equilibrium;
 /**
  * An object that represents both an equilibrium and a binding between real substances
  *  such that Q can be calculated without worrying about the ordering of reactants and products
  */
-class BoundEqb {
+export class BoundEqb {
     eqb: Eqb;
     brx: ChemComponent[] = [];
     bpx: ChemComponent[] = [];
@@ -287,7 +288,7 @@ class BoundEqb {
         }
     }
 }
-class InteractionGroup {
+export class InteractionGroup {
     substs: ChemComponent[] = [];
     beqbs: BoundEqb[] = [];
     constructor(substs: ChemComponent[], eqbs: Equilibrium[]) {
@@ -385,7 +386,7 @@ class InteractionGroup {
 
 
 
-abstract class InteractionsDatabase {
+export abstract class InteractionsDatabase {
     abstract equilibriaByReactants(reactants: ChemComponent[]): Equilibrium[]; 
     abstract storeEquilibrium(eqb: Equilibrium): void;
     static compare(a: ChemComponent, b: ChemComponent): number {
@@ -398,7 +399,7 @@ abstract class InteractionsDatabase {
         }
     }
 }
-class DatabaseHashMap implements InteractionsDatabase {
+export class DatabaseHashMap implements InteractionsDatabase {
 
     eqbmap: Map<ChemType, Equilibrium[]> = new Map();
 
@@ -464,7 +465,7 @@ class DatabaseHashMap implements InteractionsDatabase {
 
 }
 
-class EquilibriumAssigner {
+export class EquilibriumAssigner {
     // assigns a beaker to a list of equilibria that are active in that beaker
     // here we also provide logic for stepping an equilibrium
 

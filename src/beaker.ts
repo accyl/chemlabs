@@ -1,4 +1,5 @@
 import Matter from "matter-js";
+import { EquilibriumAssigner } from "./interact";
 import { PhysicsHook } from "./phys";
 import { ChemComponent } from "./substance";
 
