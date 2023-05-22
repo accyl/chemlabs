@@ -6,7 +6,12 @@
         "test": "test"
     },
     "dependencies": {
+        "cors": "^2.8.5",
+        "dotenv": "^16.0.3",
+        "express": "^4.18.2",
+        "express-async-errors": "^3.1.1",
         "lodash": "^4.17.21",
+        "mongodb": "^5.5.0",
         "nerdamer": "^1.1.13",
         "typescript": "^4.2.4",
         "vite": "^4.1.4",
@@ -17,15 +22,20 @@
         "@types/jasmine": "^4.0.3",
         "@types/jquery": "^3.5.14",
         "@types/matter-js": "^0.17.7",
+        "concurrently": "^8.0.1",
         "jquery": "^3.6.3",
         "matter-js": "^0.19.0",
+        "nodemon": "^2.0.22",
         "typescript": "^4.9.3",
         "vite": "^4.1.0"
     },
+    "type": "module",
     "scripts": {
         "test": "jasmine-browser-runner runSpecs",
         "deploy": "git subtree push --prefix public origin master",
-        "dev": "vite",
+        "dev:frontend": "vite",
+        "dev:backend": "nodemon server/index.js",
+        "dev": "concurrently 'npm:dev:frontend' 'npm:dev:backend'",
         "build": "tsc && vite build",
         "preview": "vite preview"
     },

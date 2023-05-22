@@ -1,0 +1,20 @@
+use Inorganic;
+db.physical.aggregate([{
+    $out: 'mytemp'
+}]); // make a copy
+db.mytemp.aggregate([
+    {
+        $match: {formula: {$ne: null}}
+    }, {$lookup: {
+            from: "thermo",
+            localField: "formula",
+            foreignField: "formula",
+            as: "thermo"
+        }
+    },
+    {$out: 'merged'}
+]);
+
+db.merged.updateMany({}, {$unset: {"thermo.$[].prefix":""}})
+
+// at this point, 779 compounds were matched with thermo props

@@ -80,7 +80,7 @@ canvas {
 /* .icons, .copyright { */
 
 body {
-    margin: 3vh 1vw 3vh 3vw;
+    margin: 0;
 }
 
 code {
@@ -157,4 +157,109 @@ footer,
     margin: auto;
     padding-top: 0.5em;
     padding-bottom: 0.25em;
+}
+
+.menu {
+    /* Style for the menu header */
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+}
+
+.menu-header {
+    font-size: x-large;
+    padding: 10px;
+}
+
+.menu-item {
+    padding: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.menu-active {
+    background-color: #555;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    z-index: 1;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    transform: translate(-10px, 0.8em);
+    /*10px: left padding in menu. 1em: approximate*/
+}
+
+.dropdown-content a {
+    /* Style for the dropdown links */
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content.show {
+    display: block;
+}
+
+.dropdown-item:hover {
+    /* Style for the dropdown links on hover */
+    background-color: #f1f1f1;
+}
+
+.dropdown-item.active {
+    /* Style for the active dropdown link */
+    background-color: #4caf50;
+    color: white;
+}
+
+.modal-close {
+    /* The Close Button */
+    color: #aaaaaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.modal-close:hover,
+.modal-close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal {
+    /* The Modal (background) */
+    display: none;
+    /* Hidden by default */
+    position: fixed;
+    /* Stay in place */
+    z-index: 1;
+    padding-top: 100px;
+    /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%;
+    /* Full width */
+    height: 100%;
+    /* Full height */
+    overflow: auto;
+    /* Enable scroll if needed */
+    background-color: rgb(0, 0, 0);
+    background-color: rgba(0, 0, 0, 0.4);
+    /* Black w/ opacity */
+}
+
+.modal div {
+    /* Modal Content */
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
 }

@@ -1,4 +1,0 @@
-https://stackoverflow.com/questions/26041155/way-to-serve-a-public-folder-in-github-pages
-
-
-git subtree push --prefix dist origin gh-pages

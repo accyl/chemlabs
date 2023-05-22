@@ -10,11 +10,90 @@
 
 <body>
     <!-- Header -->
+    <div class="menu">
+        <span class="menu-header">ChemLabs</span>
+        <div class="menu-item menu-active dropdown">File
+            <div class="dropdown-content">
+                <a href="#" class="dropdown-item active">New</a>
+                <a href="#">Open</a>
+                <a href="#">Save</a>
+            </div>
+        </div>
+        <div class="menu-item dropdown">Edit
+            <div class="dropdown-content">
+                <a href="#">Cut</a>
+                <a href="#">Copy</a>
+                <a href="#">Paste</a>
+            </div>
+        </div>
+        <div class="menu-item dropdown">Inspect
+            <div class="dropdown-content">
+                <a href="#">Filter by Properties</a>
+                <a href="#">Zoom Out</a>
+                <a href="#">Reset Zoom</a>
+            </div>
+        </div>
+        <div class="menu-item dropdown">New
+            <div class="dropdown-content">
+                <a href="#" class="dropdown-item" id="menu-new-by-name">New Substance by Name</a>
+                <a href="#" class="dropdown-item" id="menu-new-by-formula">New Substance by Formula</a>
+                <!-- <a href="#" class="dropdown-item" id="menu-new-by-wstr">New Substance by Tungsten String</a> -->
+
+            </div>
+        </div>
+
+        <!-- Add more menu items as needed -->
+    </div>
     <header class="main-header container">
-        <h1>ChemLabs</h1>
     </header>
     <div class='main-container container'>
+        <div id="modal-container">
+            <div id="modal-new-by-name" class="modal">
+                <div class>
+                    <span class="modal-close">&times;</span>
+                    <p>New substance by (common) name: </p>
+                    <input type="text" id="input-new-by-name" placeholder="(ie. Methanol)">
+                    <button class="button" onclick="Resolver.newByName()">Add to World</button>
+                </div>
 
+            </div>
+            <!-- <div id="modal-new-by-smiles" class="modal">
+                <div class>
+                    <span class="modal-close">&times;</span>
+                    <p>New substance by SMILES identifier: </p>
+                    <input type="text" id="input-new-by-smiles" placeholder="(ie. CC(C)CO)">
+                    <button class="button" onclick="Resolver.newBySMILES()">Add to World</button>
+                </div>
+
+            </div> -->
+            <!-- <div id="modal-new-by-inchi" class="modal">
+                <div class>
+                    <span class="modal-close">&times;</span>
+                    <p>New substance by InCHI identifier: </p>
+                    <input type="text" id="input-new-by-inchi" placeholder="InChI=1S/C2H6O/c1-2-3/h3H,2H2,1H3 (ethanol)">
+                    <button class="button" onclick="Resolver.newByInCHI()">Add to World</button>
+                </div>
+
+            </div> -->
+            <div id="modal-new-by-formula" class="modal">
+                <div class>
+                    <span class="modal-close">&times;</span>
+                    <p>New substance by Formula: </p>
+                    <input type="text" id="input-new-by-formula" placeholder="InChI=1S/C2H6O/c1-2-3/h3H,2H2,1H3 (ethanol)">
+                    <button class="button" onclick="Resolver.newByFormula()">Add to World</button>
+                </div>
+            
+            </div>
+            <!-- <div id="modal-new-by-wstr" class="modal">
+                <div class>
+                    <span class="modal-close">&times;</span>
+                    <p>New substance by Tungsten query: </p>
+                    <input type="text" id="input-new-by-wstr" placeholder="Enter query here">
+                    <button class="button" onclick="Resolver.newByWStr()">Add to World</button>
+                </div>
+
+            </div> -->
+        </div>
         <div id="cwrap">
             <div id="cdiv">
                 <canvas id="canvas" class='noselect'>
@@ -77,11 +156,13 @@
     </div>
     <!-- Scripts -->
     <div class="scripts-div">
-        <script src="src/zero.js"></script>
-        <script src="src/zero.ts"></script>
-        <script src="libs/jquery-3.6.0.min.js"></script>
+        <script src="/src/zero.js"></script>
+        <script src="/src/zero.ts"></script>
+        <script src="/libs/jquery-3.6.0.min.js"></script>
 
-        <script type="module" src="src/entry.ts"></script>
+        <script type="module" src="/src/entry.ts"></script>
+        <script type="module" src="/src/dom/menus.ts"></script>
+        <script type="module" src="/src/resolver/newResolver.ts"></script>
 
     </div>
 

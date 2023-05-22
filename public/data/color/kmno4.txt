@@ -27,7 +27,7 @@ known as I, II andIII standards, respectively) was prepared by serial"
 
 
 KMnO4
-InChl Key:
+InChI Key:
 VZJVWSHVAAUDKD-UHFFFAOYSA-N
 According to: https://pubchem.ncbi.nlm.nih.gov/compound/Potassium-permanganate#section=InChI
 

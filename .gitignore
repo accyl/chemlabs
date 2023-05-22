@@ -37,3 +37,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+ChemDoodleWeb-9.5.0
+private/*
+src/data/options.txt
+
+# server/*
+# just be safe for now
+server/.env
+server/db/conn.js

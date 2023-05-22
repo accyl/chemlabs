@@ -93,3 +93,7 @@ physvisMain();
 inspectorInit();
 loadMain();
 
+// this is a SO-approved way to make module stuffs available to global:
+// https://stackoverflow.com/a/56738910/6844235
+import * as resolver from "./dom/menuResolvers";
+(window as any).Resolver = resolver;

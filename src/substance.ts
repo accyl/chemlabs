@@ -1,7 +1,7 @@
 // <reference path='phys/physold.ts'/>
 
 import { chemicals } from "./chemicals";
-import { ChemInfo } from "./cheminfoproxy";
+
 import { f_daylight } from "./color/color";
 import { rgb_from_spectrum } from "./color/colormodels";
 import { transmittance } from "./color/colortest";
@@ -44,19 +44,19 @@ export class ChemType {
         if(freeze) Object.freeze(this);
     }
 }
-export interface ChemExact {
-    inchl: string;
-}
-export class ChemTypeExact extends ChemType implements ChemExact {
-    inchl: string;
-    constructor(inchl: string) {
-        super();
-        this.inchl = inchl;
-        this.exact = true;
-        // from 
-        ChemInfo.initializeChemType(this);
-    }
-}
+// export interface ChemExact {
+//     inchi: string;
+// }
+// export class ChemTypeExact extends ChemType implements ChemExact {
+//     inchi: string;
+//     constructor(inchi: string) {
+//         super();
+//         this.inchi = inchi;
+//         this.exact = true;
+//         // from 
+//         ChemInfo.initializeChemType(this);
+//     }
+// }
 
 
 export class ChemComponents {
