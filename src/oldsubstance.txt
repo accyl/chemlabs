@@ -1,0 +1,140 @@
+// export interface SubstanceConstructor {
+//     new(proto: ChemPrototype): ChemComponent;
+// }
+
+
+
+
+// export class ChemPrototype extends ChemType {
+//     // static NONE = new ProtoSubstance();
+//     _statemap = new Map() as Map<string, ChemPrototype>;
+//     STPSelf: ChemPrototype;
+//     _substConstr: SubstanceConstructor;
+    
+//     constructor(state: string, stpself?: ChemPrototype, constructor: SubstanceConstructor = MolecularSubstance) {
+//         super();
+//         this.STPSelf = stpself ? stpself : this; // default value for `stpself` is `this` if `stpself` is omitted.
+
+//         this.state = state;
+//         if (state !== '') {
+//             this.STPSelf.registerNonSTPSelf(this, state); 
+//             // ^ that function is a bit of a misnomer; it's ok if this = STPSelf. 
+//             // a better name would be pushNotNecessarilySTPSelf see the comments
+//         }
+//         this._substConstr = constructor;
+//     }
+//     getSTPSelf(): ChemPrototype {
+//         return this.STPSelf;
+//     }
+//     /**
+//      * This is a bit of a misnomer because
+//      * you can actually retrieve the STP self from this function.
+//      * What I mean is that you can get versions of the
+//      * substance itself that could be STP, but not necessarily.
+//      * A better name would be getNotNecessarilySTPSelf,
+//      * but that's a bit long.
+//      * @param args 
+//      * @returns 
+//      */
+//     getNonSTPSelf(args: ComputedQty | string): ChemPrototype | undefined {
+//         let state = args instanceof ComputedQty ? args.state : args;
+//         let standard = this.getSTPSelf();
+//         if (state === standard.state) return standard;
+//         let ret = state ? this.getSTPSelf()._statemap.get(state) : undefined;
+//         return ret;
+//     }
+
+//     registerNotNecessarilySTPSelf(chemical: ChemPrototype, condition: ComputedQty | string) {
+//         let state = condition instanceof ComputedQty ? condition.state : condition;
+//         let map = this.getSTPSelf()._statemap;
+//         if(state && !map.has(state)) {
+//             map.set(state, chemical);
+//         }
+//         // if (state && this.getNonSTPSelf(state) === undefined) {
+//         //     this.getSTPSelf()._statemap.set(state, chemical);
+//         // }
+//     }
+//     /**
+//      * This is quite a bit of a misnomer because
+//      * you are required to push the STP self to this function.
+//      * A better name would be pushNotNecessarilySTPSelf, 
+//      * but that is a bit of a mouthful.
+//      * @param args 
+//      * @returns 
+//      */
+//     registerNonSTPSelf = this.registerNotNecessarilySTPSelf;
+
+//     /**
+//      * Makes a substance with the specified amount
+//      * @param qty 
+//      * @param state 
+//      * @returns 
+//      */
+//     amount(qty: ComputedQty, state?: string) {
+//         // let args = new PSArgs(this, qty);
+//         if (state) qty.state = state;
+//         // return qty.formFrom(this);
+//         ///**
+//         let orig = this.getNonSTPSelf(qty);
+//         if(orig === undefined) {
+//             // perhaps a state isn't set
+//             // then we create a new substancemaker
+//             orig = chemicals.setWithNewState(this, state);
+//         }
+//         let ret = orig!.form(); // TODO bug?
+//         if (qty.mass) ret.mass = qty.mass;
+//         if (qty.mol && 'mol' in ret) (ret as MolecularSubstance).mol = qty.mol;
+//         if (qty.vol) ret.volume = qty.vol;
+//         if (qty.state && !ret.state) ret.state = qty.state; // for custom
+//         return ret;
+//         // */
+//     }
+//     // _getWithArgs(args: ComputedQty): ProtoChemical {
+//     //     return this; // doesn't work right now
+//     // }
+//     /**
+//      * Shortcut for getting one with default args
+//      * @returns 
+//      */
+//     form(): ChemComponent {
+//         return new this._substConstr(this);
+//     }
+
+//     static fromJson(all: {}, defaul: JsonChemical, altStates?: JsonChemical[], freeze = true): ChemPrototype { //sObj?: any, lObj?: any, gObj?: any, aqObj?: any){
+//         // TODO
+//         // any such function that constructs from JSON must be able to customize the constructor
+//         // For example using a spectralA
+//         // maybe make that itself as a json option flag?
+//         // THen we need to pass arguments into the constructor.
+//         // Again we might just have arguments under '0', '1' pipe into 
+//         // the constructor and set default readings to be equivalent
+//         // if(constructed && constructed.length == 0) constructed = undefined;
+//         altStates = altStates ? altStates : [] as JsonChemical[];
+//         // if(constructed) assert(constructed.length === 1 + altStates.length);
+
+//         let main = Object.assign(new ChemPrototype(defaul.state), defaul, all) as ChemPrototype & JsonChemical; // & { stateMap: any };
+//         // main.stateMap = new Map() as Map<string, ProtoChemical>;
+
+//         let subs = [];
+//         subs.push(main);
+
+//         for (let alt of altStates) {
+//             let sub = Object.assign(new ChemPrototype(alt.state, main), alt, all);
+//             subs.push(sub);
+//         }
+//         for (let sub of subs) {
+//             main.registerNonSTPSelf(sub, sub.state);
+//         }
+//         // main.stateMap.set(sub.state, sub);
+//         // main._getWithArgs = function (x) {
+//         //     let o = main.stateMap.get(x);
+//         //     return o === undefined ? main : o;
+//         // }
+//         for (let x of subs) {
+//             x.finalize(freeze);
+//         }
+        
+//         return main;
+//     }
+// }
+

@@ -73,3 +73,5 @@ class Constants {
     static SIprefs = ['n', 'µ', 'm', 'c', 'd', '', 'k'];
     static SIprefscoeffs = [1e-9, 1e-6, 1e-3, 1e-2, 1e-1, 1, 1e3];
 }
+
+type StateEnum = 's' | 'l' | 'g' | 'aq' | "";

@@ -1,5 +1,11 @@
 // import nerdamer from 'nerdamer';
 /// <reference path="../node_modules/nerdamer/index.d.ts" />
+
+import nerdamer from "../node_modules/nerdamer/index";
+// import { MolecularSubstance } from "./mixins";
+import { ChemComponent, field } from "./substance";
+import { MolecularSubstance } from "./substances";
+
 // TODO i've just created a glorified alias system. 
 
 let idealGasLaw = nerdamer('P*V=n*R*T');
@@ -21,8 +27,8 @@ abstract class DynamicLaw<S extends ChemComponent> {
     //     return this.varCount - 1;
     // }
     abstract constants(): Record<string, number>;
-    abstract getters(s: S): Record<string, number>; // dynamic is possible, but expensive. see https://stackoverflow.com/questions/28402257/is-it-possible-to-get-a-reference-to-the-setter-function-of-a-setter
-    abstract setter(s: S, key: string, value: num): void;
+    abstract getters(s: S): Record<string, field>; // dynamic is possible, but expensive. see https://stackoverflow.com/questions/28402257/is-it-possible-to-get-a-reference-to-the-setter-function-of-a-setter
+    abstract setter(s: S, key: string, value: field): void;
     abstract law: Law;
     abstract defaultPreservedVars: string[];
     /**
@@ -214,7 +220,7 @@ class DensityLaw<S extends ChemComponent & {density: number}> extends CompactLaw
         super.setter(s, key, value);
     }
 }
-class IdealGasLaw<S extends MolecularSubstance & {pressure:number}> extends DynamicLaw<S>{
+class IdealGasLaw<S extends MolecularSubstance & {pressure:field}> extends DynamicLaw<S>{
     defaultPreservedVars = ['T'];
     law: Law = nerdamer('P*V=n*R*T');
 
@@ -232,7 +238,7 @@ class IdealGasLaw<S extends MolecularSubstance & {pressure:number}> extends Dyna
         }
     }
     varCount = 4;
-    setter(s: S, key: string, value: number): void {
+    setter(s: S, key: string, value: field): void {
         switch(key) {
             case 'P':
                 s.pressure = value;

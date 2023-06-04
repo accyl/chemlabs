@@ -1,8 +1,9 @@
 /// <reference path="../../node_modules/@types/jquery/index.d.ts" />
 /// <reference path="../substance.ts" />
 
-import { AqueousSubstance, ChemComponent, ChemType, GaseousSubstance, MolecularSubstance } from "../substance";
-
+import { ChemComponent, ChemType}  from "../substance";
+import { Components } from "../substances";
+// import { GaseousSubstance, MolecularSubstance, AqueousSubstance } from "../mixins";
 
 $('#einspector').on('matterCreated', function (e, eventInfo) { 
     // originates from phys() in phys.ts
@@ -126,13 +127,13 @@ export function showSubstanceAttributes(subs: ChemComponent): JQuery<HTMLElement
 
 export function inspectorInit() {
     cachedAttrs['ChemComponent'] = ['mass', 'volume', 'temperature', 'state'];
-    cachedAttrs['ChemType'] = ['chemicalFormula', 'density', 'rgb', 'specificHeatCapacity'];
+    cachedAttrs['ChemType'] = ['formula', 'density', 'rgb', 'heat_capacity', 'gibbs', 'enthalpy', 'entropy'];
     let s = new ChemComponent();
-    let ms = new MolecularSubstance();
+    let ms = Components.Molecular(); // new MolecularSubstance();
     allNewAttributes(ms, s);
-    let as = new (AqueousSubstance(ms))();
+    let as = Components.Aqueous(undefined, ms); // new (AqueousSubstance(ms))();
     allNewAttributes(as, ms);
-    let gs = new GaseousSubstance();
+    let gs = Components.Gaseous(); // new GaseousSubstance();
     allNewAttributes(gs, ms);
 }
 
@@ -142,7 +143,7 @@ $('#einspector').on('substanceCreated', function (e, eventInfo) {
     console.log('observed appendage of ' + subs.toString() + ' to the glob');
     let globule = document.createElement('div');
     globule.classList.add('globule');
-    globule.textContent = subs.physhook!.label;
+    globule.textContent = subs.physhook ? subs.physhook!.label : "N/A";
     $('#einspector')[0].append(globule);
 
     let $globule = $(globule);

@@ -73,7 +73,7 @@
 // raw/load
 */
 
-import { chemicalsMain } from "./chemicals";
+// import { chemicalsMain } from "./chemicals";
 import { loadMain } from "./dom/load";
 import { firstMain } from "./first";
 import { matterjsobjectsMain } from "./matterjsobjects";
@@ -88,12 +88,13 @@ colorInit();
 colorModelsInit();
 
 // phys, substance stateless
-chemicalsMain();
+// chemicalsMain();
 physvisMain();
 inspectorInit();
 loadMain();
 
 // this is a SO-approved way to make module stuffs available to global:
 // https://stackoverflow.com/a/56738910/6844235
-import * as resolver from "./dom/menuResolvers";
+console.log('load resolver...');
+import * as resolver from "./data/resolver";
 (window as any).Resolver = resolver;

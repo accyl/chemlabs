@@ -18,3 +18,5 @@ db.mytemp.aggregate([
 db.merged.updateMany({}, {$unset: {"thermo.$[].prefix":""}})
 
 // at this point, 779 compounds were matched with thermo props
+
+db.collection.updateMany({}, { $set: { "thermo.$[elem].state": "s" } }, { arrayFilters: [{ "elem.state": "c" }] })

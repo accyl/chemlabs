@@ -1,11 +1,13 @@
 import { f_daylight } from "../color/color";
 import { rgb_from_spectrum } from "../color/colormodels";
 import { rgb_from_spectrum_concen, spectra_kmno4_f, transmittance } from "../color/colortest";
-import { $Wc } from "../command";
+import { $Wc, tungstenCreate } from "../command";
 import { toHex } from "../first";
 import { glob, redraw, tangify } from "../physvis";
-import { AqueousSubstance, ChemComponents } from "../substance";
-
+import { ChemComponent } from "../substance";
+import { AqueousSubstance } from "../substances";
+// import { AqueousSubstance } from "../mixins";
+import * as Resolver from "../data/resolver";
 declare global {
     var addDefault: () => void;
     var slider: () => void;
@@ -13,17 +15,19 @@ declare global {
     var onCommandButton: () => void;
 }
 addDefault = function() {
-    let sub = $Wc.g('KMnO4')!.form();
-    tangify(sub);
+    // let sub = $Wc.g('KMnO4')!.form();
+    let sub = tungstenCreate('KMnO4', true);
 
+    // tangify(sub);
+    // redraw();
     let sub2 = $Wc('KMnO4');
     // sub2.physhook!.pos = {x:10, y:0};
-    redraw();
+    // redraw();
 }
 
 slider = function() {
     let h = document.querySelector("#slider") as any;
-    for(let s of glob.substances) {
+    for(let s of glob.subcomponents) {
         if('concentration' in s) {
             // s.concentration = h.value / 10000000;
             // s.concentration = h.value / 10;
@@ -110,13 +114,13 @@ onCommandButton = function() {
 export function debugBody(body: Matter.Body) {
     let paste = document.getElementsByClassName('db-vw-paste')[0];
     if('substs' in body) {
-        let ph = body as Matter.Body & {'substs': ChemComponents};
+        let ph = body as Matter.Body & {'substs': ChemComponent};
         let ret = '';
-        if(!(ph.substs instanceof ChemComponents)) throw "substs field isn't a system?";
-        let ss = ph.substs as ChemComponents;
+        // if(!(ph.substs instanceof ChemComponent)) throw "substs field isn't a system?";
+        let ss = ph.substs;
         lastClickedObject = ss;
-        for(let s of ss.substances) {
-            ret += `${s.type.chemicalFormula} (${s.state ? s.state : 'state unknown'}) ${s.mass}g ${s.volume}L ${s.temperature}K \n`;
+        for(let s of [ss, ...ss.subcomponents]) {
+            ret += `${s.type.formula} (${s.state ? s.state : 'state unknown'}) ${s.mass}g ${s.volume}L ${s.temperature}K \n`;
         }
         paste.textContent = ret;
     } else {
@@ -307,7 +311,7 @@ function pauseUnpauseGame(pause?: Boolean) {
         ctx.globalAlpha = 1;
         // ctx.filter = 'none';
 
-        // redraw();
+        redraw();
     }
 }
 

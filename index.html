@@ -53,7 +53,7 @@
                     <span class="modal-close">&times;</span>
                     <p>New substance by (common) name: </p>
                     <input type="text" id="input-new-by-name" placeholder="(ie. Methanol)">
-                    <button class="button" onclick="Resolver.newByName()">Add to World</button>
+                    <button class="button" onclick="Resolver.getByName()">Add to World</button>
                 </div>
 
             </div>
@@ -80,7 +80,7 @@
                     <span class="modal-close">&times;</span>
                     <p>New substance by Formula: </p>
                     <input type="text" id="input-new-by-formula" placeholder="InChI=1S/C2H6O/c1-2-3/h3H,2H2,1H3 (ethanol)">
-                    <button class="button" onclick="Resolver.newByFormula()">Add to World</button>
+                    <button class="button" onclick="Resolver.getByFormula()">Add to World</button>
                 </div>
             
             </div>
@@ -162,7 +162,6 @@
 
         <script type="module" src="/src/entry.ts"></script>
         <script type="module" src="/src/dom/menus.ts"></script>
-        <script type="module" src="/src/resolver/newResolver.ts"></script>
 
     </div>
 

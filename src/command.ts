@@ -2,11 +2,12 @@
 // <reference path='chemicals.ts'/>
 // <reference path='data/ptable.ts'/>
 
-import { chemicals } from "./chemicals";
+// import { chemicals } from "./chemicals";
 import { ptable, ptable_symbs, ptable_symb_tree } from "./data/ptable";
 import { redraw, tangify, updateZIndex } from "./physvis";
-import { ChemComponent, ChemPrototype, MolecularSubstance } from "./substance";
-
+import { ChemComponent, ChemType } from "./substance";
+import { MolecularSubstance } from "./substances";
+import * as Resolver from "./data/resolver";
 
 // H2O (l) 2mol 
 // H2O(l) 2mol
@@ -69,18 +70,19 @@ export class AtomTracker {
     // start old formulaTknrBuilder
     // elems: string[] = [];
     formula: string = '';
-    state: string = '';
+    state: StateEnum = '';
     // qty: string = '';
-    constructor(input?: ChemPrototype | string | undefined) {
+    constructor(input?: ChemComponent | string | undefined) {
         if(!input) return;
         if(typeof input === 'string') {
             Tokenizers.formulaTokenizer(input, 0, this);
-        } else if(input instanceof ChemPrototype) {
-            this.formula = input.chemicalFormula;
-            this.state = input.state;
+        } else if (input instanceof ChemComponent) {
+            this.formula = input.type.formula;
+            
+            this.state = input.state!; // TODO is this 
             if('newAtomTracker' in input) {
                 // if the AtomTracker was cached, then we can save some compute and copy over the cached values
-                let tracker = (input as ChemPrototype & {'newAtomTracker': AtomTracker}).newAtomTracker;
+                let tracker = (input as ChemComponent & {'newAtomTracker': AtomTracker}).newAtomTracker;
                 this.atoms = tracker.atoms;
                 this.qtys = tracker.qtys;
                 this.atomicNums = tracker.atomicNums;
@@ -165,7 +167,7 @@ export class ComputedQty {
     mass?: num;
     mol?: num;
     vol?: num;
-    state?: string;
+    state?: StateEnum;
     constructor(qul: QtyUnitList) {
         this.qul = qul;
         this.mass = qul.get('g'); // mass, mol, and vol are the most vital stats.
@@ -750,48 +752,65 @@ export function WStringTknr(inp: string, startidx = 0): [AtomTracker, QtyUnitLis
 
 }
 
-
-
 // Tokenizers DONE. Now for tungsten functions
 // The thing about tungsten functions is that they depend
 // on chemicals.ts, chem.ts, and substance.ts files
-
-export const tungstenCreate = function (inp: string, display = true): ChemComponent {
+export const tungstenCreate = function (inp: string, display = true): Promise<ChemComponent | undefined> {
     let subst;
     let [chem, qty] = Tokenizers.WStringTknr(inp);
     // form.formula
     let formula = chem.formula;
-    let protos = undefined;
-    if (chemicals.hasFormula(formula)) {
-        protos = chemicals.getFromFormula(formula);
-    } else {
-        protos = chemicals.setFromTracker(chem);
-        console.log(`formula ${formula} not found in list of chemicals. autogenerating...`);
-    }
-    if (protos) {
+    // let protos = undefined;
+    return Resolver.getByFormula(formula).then((dbr) => {
+        let result = undefined;
+        if(dbr) {
+            result = dbr; // chemicals.getFromFormula(formula);
+
+        } else {
+            Resolver.suggestNewByFormula(formula, chem);
+            console.log(`formula ${formula} not found in list of chemicals. autogenerating...`);
+            return undefined;
+        }
+        if(result) {
+            if(result.length > 1) {
+                // TODO
+                // set up a disambiguation popup
+            }
+            subst = Resolver.amount(result[0], qty.computed(), chem.state);
+            return subst;
+        }
+    }).then((subst) => {
+        if(!subst) return subst;
+        if (display) {
+            tangify(subst);
+            updateZIndex();
+            redraw();
+            return subst;
+        } else {
+            return subst;
+        }
+    });
+    // if (resp) {
+    // } else {
+        // protos = chemicals.setFromTracker(chem);
+}
+    // if (protos) {
         // let pargs = protos.args();
         // let qbuild = qty.toBuilder();
-        subst = protos.amount(qty.computed(), chem.state);
+        // subst = protos.amount(qty.computed(), chem.state);
 
-    } else {
-        throw protos;
-    }
     // } else {
-    if (display) {
-        tangify(subst);
-        updateZIndex();
-        redraw();
-        return subst;
-    } else {
-        return subst;
-    }
+        // throw protos;
+    // }
+    // } else {
+    
     // TODO: with a greedy algorithm, we can
     // actually attempt to process formulas that
     // are 'lazily' in all lower case. for
     // example kmno4. 
     // although by definition it won't always work - see no
     // or hga - HGa
-} as { (inp: string, display?: boolean): ChemComponent; g: (inp: string) => ChemPrototype | undefined; };
+ //} as { (inp: string, display?: boolean): ChemComponent; g: (inp: string) => ChemPrototype | undefined; };
 /**
  * Find all elements that match the selector
  * @param selector 
@@ -804,12 +823,12 @@ export function tungstenFind(selector: num | string): ChemComponent[] {
         return [(glob as any).s[selector]];
     } else {
         let [chem, qty] = Tokenizers.WStringTknr(selector);
-        let out = (glob as any).s.filter((s: any) => s.type.chemicalFormula === chem.formula);
+        let out = (glob as any).s.filter((s: ChemComponent) => s.type.formula === chem.formula);
         let cqty = qty.computed();
-        if (cqty.mass !== undefined) out = out.filter((s: any) => s.mass === cqty.mass);
-        if (cqty.vol !== undefined) out = out.filter((s: any) => s.volume === cqty.vol);
-        if (cqty.state !== undefined) out = out.filter((s: any) => s.state === cqty.state);
-        if (cqty.mol !== undefined) out = out.filter((s: any) => 'mol' in s && (s as MolecularSubstance).mol === cqty.mol);
+        if (cqty.mass !== undefined) out = out.filter((s: ChemComponent) => s.mass === cqty.mass);
+        if (cqty.vol !== undefined) out = out.filter((s: ChemComponent) => s.volume === cqty.vol);
+        if (cqty.state !== undefined) out = out.filter((s: ChemComponent) => s.state === cqty.state);
+        if (cqty.mol !== undefined) out = out.filter((s: ChemComponent) => 'mol' in s && (s as MolecularSubstance).mol === cqty.mol);
         return out;
     }
 }
@@ -821,6 +840,6 @@ export const $Wc = tungstenCreate;
 
 export const $Wf = tungstenFind;
 
-export const $Wg = function (args: string) {
-    return chemicals.getFromFormula(args);
-}
+// export const $Wg = function (args: string) {
+    // return chemicals.getFromFormula(args);
+// }

@@ -99,8 +99,11 @@ export function makeBeaker(x = 250, y = 250, w = 270, h = 350, thick = 40): Beak
         parts: [beakerLeft, beakerRight, beakerFloor], // , beakerCover],
         label: "Beaker"
     });
-    bod.render.lineWidth = 5;
-    bod.render.strokeStyle = 'black';
+    for(let b of bod.parts) {
+        b.render.lineWidth = 5;
+        b.render.strokeStyle = 'black';
+        // TODO: make a more refined render of beakers
+    }
     bod.collisionFilter = CollisionFilters.BEAKER;
 
     bod.inertia = Infinity;

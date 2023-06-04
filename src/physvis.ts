@@ -4,57 +4,41 @@
 
 import Matter from "matter-js";
 import { applyPhyshook, newBounds } from "./phys";
-import { ChemComponent, ChemComponents } from "./substance";
+import { ChemComponent, ChemType } from "./substance";
 
 // import _ from "lodash";
 
 
-
+// note: right now NONE of this actually runs, we're using the in-built renderer in matterjsobjects.ts
+/*
 export class Drawer {
-    drawSubstance(ctx: CanvasRenderingContext2D, s: ChemComponent | ChemComponents) {
-        if (s instanceof ChemComponent) {
-            // if (s instanceof AqueousSubstance) {
-                // ctx.beginPath();
-                // ctx.stroke();
-                // ctx.fillStyle = "#" + s.color().join("");
-                let prevs = ctx.fillStyle;
-                // let preva = ctx.globalAlpha;
-                ctx.fillStyle = s.hexcolor();
-                if(!s.physhook) s = applyPhyshook(s);
-                if(!s.physhook) throw new Error("No physhook for substance " + s.toString());
-                // ctx.globalAlpha = s.physhook.render.opacity ? s.physhook.render.opacity : 1;
-                this.drawBody(ctx, s.physhook, false); //.rect);
-                // ctx.fillRect(s.physhook.pos.x, s.physhook.pos.y, s.physhook.size.x, s.physhook.size.y);
-                ctx.fillStyle = prevs;
-                // ctx.globalAlpha = preva;
 
+    drawSubstance(ctx: CanvasRenderingContext2D, s: ChemComponent ) {
 
-                return;
-            // }
-        } else if (s instanceof ChemComponents) {
-            s = s as ChemComponents;
-
-            for (let sub of s.substances) {
+        if(s.subcomponents) {
+            for (let sub of s.subcomponents) {
                 this.drawSubstance(ctx, sub);
             }
-
-            for (let subsys of s.subsystems) {
-                this.drawSubstance(ctx, subsys);
-            }
+        } else {
+        // if (s instanceof AqueousSubstance) {
             // ctx.beginPath();
             // ctx.stroke();
-            // let prevs = ctx.fillStyle;
-            // ctx.fillStyle = "#FFFFFFFF";
-            // if (!s.physhook) s = phys(s);
-            // ctx.fillRect(s.physhook.loc[0], s.physhook.loc[1], s.physhook.xsize, s.physhook.ysize);
-            // if (!s.physhook) throw "broke";
-            // this.drawB(ctx, s.physhook.rect);
-            // ctx.fillStyle = prevs;
-            // the order kinda matters but I'll leave that up to custom drawers
-            // actually let's not draw Systems
-            // Also Systems correspond to Composites extremely closely - reduce objects
+            // ctx.fillStyle = "#" + s.color().join("");
+            let prevs = ctx.fillStyle;
+            // let preva = ctx.globalAlpha;
+            ctx.fillStyle = s.hexcolor();
+            // if(!s.physhook) s = applyPhyshook(s);
+            if(!s.physhook) return; // if physhook is not present, there is nothing to do
+            // ctx.globalAlpha = s.physhook.render.opacity ? s.physhook.render.opacity : 1;
+            this.drawBody(ctx, s.physhook, false); 
+            // ctx.fillRect(s.physhook.pos.x, s.physhook.pos.y, s.physhook.size.x, s.physhook.size.y);
+            ctx.fillStyle = prevs;
+            // ctx.globalAlpha = preva;
+
+
             return;
-        } else throw "Somehow passed arg was neither substance nor system? " + s;
+        // }
+        }
 
     }
     
@@ -107,12 +91,12 @@ export class Drawer {
             if (prevs!) ctx.strokeStyle = prevs;
         }
     }
-}
+}*/
 
 let canvas = document.getElementById('canvas') as HTMLCanvasElement;
 let ctx = canvas.getContext('2d');
 
-export class ChemGlobal extends ChemComponents {
+export class ChemGlobal extends ChemComponent {
     solids_i=0;
     gases_i=0;
     liquids_i=0;
@@ -130,41 +114,57 @@ export class ChemGlobal extends ChemComponents {
         //     this.substances.splice(this.solids_i, 0, s); // insert at index
         //     this.solids_i++;
         // } else {
-            this.substances.push(s);
+            this.subcomponents.push(s);
         // }
+    }
+    constructor(type?: ChemType) {
+        super(type);
+        this.physhook = false; // no physhook
     }
 }
 export const glob = new ChemGlobal();
 
-export function tangify<S extends ChemComponent | ChemComponents>(s: S, addToGlobal=true, pos?: [num, num, num], size?: [num, num, num],): S {
-    let ret = applyPhyshook(s);
+/**
+ * If s is a ChemComponent with no associated PhysicsHook, then
+ * this function 
+ * 1) gives it a PhysicsHook, and 
+ * 2) (if addToGlobal) registers the component with global.
+ * @param s 
+ * @param addToGlobal 
+ * @param pos 
+ * @param size 
+ * @returns 
+ */
+export function tangify<S extends ChemComponent >(s: S, addToGlobal=true, pos?: [num, num], size?: [num, num],): S {
+    let ret = applyPhyshook(s, pos, size);
 
 
     if(addToGlobal) {
         if (ret instanceof ChemComponent) {
             // glob.substances.push(ret);
             glob.addSubst(ret);
-        } else if (ret instanceof ChemComponents) {
-            glob.subsystems.push(ret);
         } else throw "s " + ret + "not instanceof System nor Substance!";
-
 
     }
     eventDispatch('substanceCreated', { 'substance': s });
     return ret;
 }
-
+/*
 export var principalDrawer = new Drawer(); // the principal drawer
 
 export function redraw(t?: num) {
-
+    console.log('h');
     let ctx = getCanvasContext();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     ctx.fillStyle = '#000000';
     principalDrawer.drawComposite(ctx, universe.world);
-    principalDrawer.drawSubstance(ctx, glob);
+    // principalDrawer.drawSubstance(ctx, glob);
 
+}*/
+export function redraw(t?: num) {
+    // does nothing for now, I gutted the rendering
+    // mainly affects load.ts transition screens
 }
 export function updateZIndex() {
     // basically, move gases towards the front of the so they're drawn behind solids
@@ -183,14 +183,17 @@ export function updateZIndex() {
 export function physvisMain() {
     universe.glob = glob;
 
-
-    applyPhyshook(glob, [0, 0], [canvas.width, canvas.height]);
+    // applyPhyshook(glob, [0, 0], [canvas.width, canvas.height]);
+    for (let subs of glob.subcomponents) {
+        applyPhyshook(subs);
+    }
     let b = newBounds({ x: canvas.width / 4, y: canvas.height / 4 }, { x: canvas.width / 2, y: canvas.height / 2 }); // canvas.width/2, y:canvas.height/2});
 
+    /*
     let func = () => {
         if(!universe.paused) redraw();
         requestAnimationFrame(func);
-    }
+    }*/
     // window.requestAnimationFrame(func);
 // })();
 }

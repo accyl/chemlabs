@@ -3,8 +3,8 @@
 import { spectra_kmno4_f } from "./color/colortest";
 import { $Wc, AtomTracker } from "./command";
 import { ptable } from "./data/ptable";
-import { ChemComponent, ChemPrototype, ChemType, makeAqueous, makeMolecular, makeSpectralAqueous } from "./substance";
-
+import { ChemComponent, ChemPrototype, ChemType} from "./substance";
+import { makeAqueous, makeMolecular, makeSpectralAqueous } from "./mixins";
 export type Canonical = string;
 /**
  * Use a SMILES/SMARTS support instead of ChemicalFormula
